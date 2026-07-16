@@ -100,6 +100,12 @@
             <li>
                     <a class="function" href="#fill_gaps">fill_gaps</a>
             </li>
+            <li>
+                    <a class="function" href="#false_runs">false_runs</a>
+            </li>
+            <li>
+                    <a class="function" href="#find_bad_rangline_slices">find_bad_rangline_slices</a>
+            </li>
     </ul>
 
 
@@ -672,27 +678,84 @@
 </span><span id="L-549"><a href="#L-549"><span class="linenos">549</span></a>        <span class="n">pulse_swaths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
 </span><span id="L-550"><a href="#L-550"><span class="linenos">550</span></a>            <span class="p">[</span><span class="n">swath</span> <span class="k">for</span> <span class="n">swath</span> <span class="ow">in</span> <span class="n">pulse_swaths</span> <span class="k">if</span> <span class="n">swath</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">swath</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
 </span><span id="L-551"><a href="#L-551"><span class="linenos">551</span></a>        <span class="p">)</span>
-</span><span id="L-552"><a href="#L-552"><span class="linenos">552</span></a>        <span class="n">num_swaths</span> <span class="o">=</span> <span class="n">pulse_swaths</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-</span><span id="L-553"><a href="#L-553"><span class="linenos">553</span></a>        <span class="c1"># Gap leading up to first swath.</span>
-</span><span id="L-554"><a href="#L-554"><span class="linenos">554</span></a>        <span class="k">yield</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">pulse_swaths</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
-</span><span id="L-555"><a href="#L-555"><span class="linenos">555</span></a>        <span class="c1"># Gaps between swaths.</span>
-</span><span id="L-556"><a href="#L-556"><span class="linenos">556</span></a>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_swaths</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
-</span><span id="L-557"><a href="#L-557"><span class="linenos">557</span></a>            <span class="n">gap_start</span> <span class="o">=</span> <span class="n">pulse_swaths</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>      <span class="c1"># end of current swath</span>
-</span><span id="L-558"><a href="#L-558"><span class="linenos">558</span></a>            <span class="n">gap_end</span> <span class="o">=</span> <span class="n">pulse_swaths</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>    <span class="c1"># start of next swath</span>
-</span><span id="L-559"><a href="#L-559"><span class="linenos">559</span></a>            <span class="k">yield</span> <span class="nb">slice</span><span class="p">(</span><span class="n">gap_start</span><span class="p">,</span> <span class="n">gap_end</span><span class="p">)</span>
-</span><span id="L-560"><a href="#L-560"><span class="linenos">560</span></a>        <span class="c1"># Gap after last swath.</span>
-</span><span id="L-561"><a href="#L-561"><span class="linenos">561</span></a>        <span class="k">yield</span> <span class="nb">slice</span><span class="p">(</span><span class="n">pulse_swaths</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="kc">None</span><span class="p">)</span>
-</span><span id="L-562"><a href="#L-562"><span class="linenos">562</span></a>    <span class="c1"># When PRF is constant (not dithering), gap locations are constant.</span>
-</span><span id="L-563"><a href="#L-563"><span class="linenos">563</span></a>    <span class="n">unique_swaths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">swaths</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-</span><span id="L-564"><a href="#L-564"><span class="linenos">564</span></a>    <span class="k">if</span> <span class="n">unique_swaths</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-</span><span id="L-565"><a href="#L-565"><span class="linenos">565</span></a>        <span class="k">for</span> <span class="n">gap</span> <span class="ow">in</span> <span class="n">get_gap_slices</span><span class="p">(</span><span class="n">unique_swaths</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:]):</span>
-</span><span id="L-566"><a href="#L-566"><span class="linenos">566</span></a>            <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">gap</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
-</span><span id="L-567"><a href="#L-567"><span class="linenos">567</span></a>        <span class="k">return</span>
-</span><span id="L-568"><a href="#L-568"><span class="linenos">568</span></a>
-</span><span id="L-569"><a href="#L-569"><span class="linenos">569</span></a>    <span class="c1"># Otherwise we have to loop over each pulse.</span>
-</span><span id="L-570"><a href="#L-570"><span class="linenos">570</span></a>    <span class="k">for</span> <span class="n">ipulse</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_pulses</span><span class="p">):</span>
-</span><span id="L-571"><a href="#L-571"><span class="linenos">571</span></a>        <span class="k">for</span> <span class="n">gap</span> <span class="ow">in</span> <span class="n">get_gap_slices</span><span class="p">(</span><span class="n">swaths</span><span class="p">[:,</span> <span class="n">ipulse</span><span class="p">,</span> <span class="p">:]):</span>
-</span><span id="L-572"><a href="#L-572"><span class="linenos">572</span></a>            <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">ipulse</span><span class="p">,</span> <span class="n">gap</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+</span><span id="L-552"><a href="#L-552"><span class="linenos">552</span></a>        <span class="c1"># If there&#39;s no valid data then the whole rangeline is a &quot;gap&quot;.</span>
+</span><span id="L-553"><a href="#L-553"><span class="linenos">553</span></a>        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pulse_swaths</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+</span><span id="L-554"><a href="#L-554"><span class="linenos">554</span></a>            <span class="k">yield</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+</span><span id="L-555"><a href="#L-555"><span class="linenos">555</span></a>            <span class="k">return</span>
+</span><span id="L-556"><a href="#L-556"><span class="linenos">556</span></a>        <span class="n">num_swaths</span> <span class="o">=</span> <span class="n">pulse_swaths</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</span><span id="L-557"><a href="#L-557"><span class="linenos">557</span></a>        <span class="c1"># Gap leading up to first swath.</span>
+</span><span id="L-558"><a href="#L-558"><span class="linenos">558</span></a>        <span class="k">yield</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">pulse_swaths</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+</span><span id="L-559"><a href="#L-559"><span class="linenos">559</span></a>        <span class="c1"># Gaps between swaths.</span>
+</span><span id="L-560"><a href="#L-560"><span class="linenos">560</span></a>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_swaths</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+</span><span id="L-561"><a href="#L-561"><span class="linenos">561</span></a>            <span class="n">gap_start</span> <span class="o">=</span> <span class="n">pulse_swaths</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>      <span class="c1"># end of current swath</span>
+</span><span id="L-562"><a href="#L-562"><span class="linenos">562</span></a>            <span class="n">gap_end</span> <span class="o">=</span> <span class="n">pulse_swaths</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>    <span class="c1"># start of next swath</span>
+</span><span id="L-563"><a href="#L-563"><span class="linenos">563</span></a>            <span class="k">yield</span> <span class="nb">slice</span><span class="p">(</span><span class="n">gap_start</span><span class="p">,</span> <span class="n">gap_end</span><span class="p">)</span>
+</span><span id="L-564"><a href="#L-564"><span class="linenos">564</span></a>        <span class="c1"># Gap after last swath.</span>
+</span><span id="L-565"><a href="#L-565"><span class="linenos">565</span></a>        <span class="k">yield</span> <span class="nb">slice</span><span class="p">(</span><span class="n">pulse_swaths</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="kc">None</span><span class="p">)</span>
+</span><span id="L-566"><a href="#L-566"><span class="linenos">566</span></a>    <span class="c1"># When PRF is constant (not dithering), gap locations are constant.</span>
+</span><span id="L-567"><a href="#L-567"><span class="linenos">567</span></a>    <span class="n">unique_swaths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">swaths</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</span><span id="L-568"><a href="#L-568"><span class="linenos">568</span></a>    <span class="k">if</span> <span class="n">unique_swaths</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+</span><span id="L-569"><a href="#L-569"><span class="linenos">569</span></a>        <span class="k">for</span> <span class="n">gap</span> <span class="ow">in</span> <span class="n">get_gap_slices</span><span class="p">(</span><span class="n">unique_swaths</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:]):</span>
+</span><span id="L-570"><a href="#L-570"><span class="linenos">570</span></a>            <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">gap</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+</span><span id="L-571"><a href="#L-571"><span class="linenos">571</span></a>        <span class="k">return</span>
+</span><span id="L-572"><a href="#L-572"><span class="linenos">572</span></a>
+</span><span id="L-573"><a href="#L-573"><span class="linenos">573</span></a>    <span class="c1"># Otherwise we have to loop over each pulse.</span>
+</span><span id="L-574"><a href="#L-574"><span class="linenos">574</span></a>    <span class="k">for</span> <span class="n">ipulse</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_pulses</span><span class="p">):</span>
+</span><span id="L-575"><a href="#L-575"><span class="linenos">575</span></a>        <span class="k">for</span> <span class="n">gap</span> <span class="ow">in</span> <span class="n">get_gap_slices</span><span class="p">(</span><span class="n">swaths</span><span class="p">[:,</span> <span class="n">ipulse</span><span class="p">,</span> <span class="p">:]):</span>
+</span><span id="L-576"><a href="#L-576"><span class="linenos">576</span></a>            <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">ipulse</span><span class="p">,</span> <span class="n">gap</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+</span><span id="L-577"><a href="#L-577"><span class="linenos">577</span></a>
+</span><span id="L-578"><a href="#L-578"><span class="linenos">578</span></a>
+</span><span id="L-579"><a href="#L-579"><span class="linenos">579</span></a><span class="k">def</span><span class="w"> </span><span class="nf">false_runs</span><span class="p">(</span><span class="n">arr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">slice</span><span class="p">]:</span>
+</span><span id="L-580"><a href="#L-580"><span class="linenos">580</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-581"><a href="#L-581"><span class="linenos">581</span></a><span class="sd">    Return a list of slices selecting continuous runs of False values.</span>
+</span><span id="L-582"><a href="#L-582"><span class="linenos">582</span></a>
+</span><span id="L-583"><a href="#L-583"><span class="linenos">583</span></a><span class="sd">    Parameters</span>
+</span><span id="L-584"><a href="#L-584"><span class="linenos">584</span></a><span class="sd">    ----------</span>
+</span><span id="L-585"><a href="#L-585"><span class="linenos">585</span></a><span class="sd">    arr : np.ndarray</span>
+</span><span id="L-586"><a href="#L-586"><span class="linenos">586</span></a><span class="sd">        A 1D boolean NumPy array.</span>
+</span><span id="L-587"><a href="#L-587"><span class="linenos">587</span></a>
+</span><span id="L-588"><a href="#L-588"><span class="linenos">588</span></a><span class="sd">    Returns</span>
+</span><span id="L-589"><a href="#L-589"><span class="linenos">589</span></a><span class="sd">    -------</span>
+</span><span id="L-590"><a href="#L-590"><span class="linenos">590</span></a><span class="sd">    list[slice]</span>
+</span><span id="L-591"><a href="#L-591"><span class="linenos">591</span></a><span class="sd">        A list of slice objects, each selecting a contiguous run of False values.</span>
+</span><span id="L-592"><a href="#L-592"><span class="linenos">592</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-593"><a href="#L-593"><span class="linenos">593</span></a>    <span class="k">if</span> <span class="n">arr</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+</span><span id="L-594"><a href="#L-594"><span class="linenos">594</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Array must be 1D&quot;</span><span class="p">)</span>
+</span><span id="L-595"><a href="#L-595"><span class="linenos">595</span></a>
+</span><span id="L-596"><a href="#L-596"><span class="linenos">596</span></a>    <span class="c1"># Pad with True on both ends so edges are detected as transitions</span>
+</span><span id="L-597"><a href="#L-597"><span class="linenos">597</span></a>    <span class="n">padded</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(([</span><span class="kc">True</span><span class="p">],</span> <span class="n">arr</span><span class="p">,</span> <span class="p">[</span><span class="kc">True</span><span class="p">]))</span>
+</span><span id="L-598"><a href="#L-598"><span class="linenos">598</span></a>
+</span><span id="L-599"><a href="#L-599"><span class="linenos">599</span></a>    <span class="c1"># Find where transitions occur</span>
+</span><span id="L-600"><a href="#L-600"><span class="linenos">600</span></a>    <span class="n">diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">padded</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int8</span><span class="p">))</span>
+</span><span id="L-601"><a href="#L-601"><span class="linenos">601</span></a>
+</span><span id="L-602"><a href="#L-602"><span class="linenos">602</span></a>    <span class="c1"># A False run starts where True→False (diff == -1), ends where False→True (diff == 1)</span>
+</span><span id="L-603"><a href="#L-603"><span class="linenos">603</span></a>    <span class="n">starts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">diff</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># index in original array</span>
+</span><span id="L-604"><a href="#L-604"><span class="linenos">604</span></a>    <span class="n">ends</span>   <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">diff</span> <span class="o">==</span>  <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># exclusive end in original array</span>
+</span><span id="L-605"><a href="#L-605"><span class="linenos">605</span></a>
+</span><span id="L-606"><a href="#L-606"><span class="linenos">606</span></a>    <span class="k">return</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">ends</span><span class="p">)]</span>
+</span><span id="L-607"><a href="#L-607"><span class="linenos">607</span></a>
+</span><span id="L-608"><a href="#L-608"><span class="linenos">608</span></a>
+</span><span id="L-609"><a href="#L-609"><span class="linenos">609</span></a><span class="k">def</span><span class="w"> </span><span class="nf">find_bad_rangline_slices</span><span class="p">(</span><span class="n">swaths</span><span class="p">):</span>
+</span><span id="L-610"><a href="#L-610"><span class="linenos">610</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-611"><a href="#L-611"><span class="linenos">611</span></a><span class="sd">    Get slices corresponding to completely invalid rangelines.</span>
+</span><span id="L-612"><a href="#L-612"><span class="linenos">612</span></a>
+</span><span id="L-613"><a href="#L-613"><span class="linenos">613</span></a><span class="sd">    Parameters</span>
+</span><span id="L-614"><a href="#L-614"><span class="linenos">614</span></a><span class="sd">    ----------</span>
+</span><span id="L-615"><a href="#L-615"><span class="linenos">615</span></a><span class="sd">    swaths : numpy.ndarray[int]</span>
+</span><span id="L-616"><a href="#L-616"><span class="linenos">616</span></a><span class="sd">        Array of [start, stop) valid data regions, shape = (nswath, npulse, 2)</span>
+</span><span id="L-617"><a href="#L-617"><span class="linenos">617</span></a><span class="sd">        where nswath is the number of valid sub-swaths and npulse is the length</span>
+</span><span id="L-618"><a href="#L-618"><span class="linenos">618</span></a><span class="sd">        of the raw image grid.</span>
+</span><span id="L-619"><a href="#L-619"><span class="linenos">619</span></a>
+</span><span id="L-620"><a href="#L-620"><span class="linenos">620</span></a><span class="sd">    Returns</span>
+</span><span id="L-621"><a href="#L-621"><span class="linenos">621</span></a><span class="sd">    -------</span>
+</span><span id="L-622"><a href="#L-622"><span class="linenos">622</span></a><span class="sd">    num_invalid : int</span>
+</span><span id="L-623"><a href="#L-623"><span class="linenos">623</span></a><span class="sd">        Number of completely invalid ranglines.</span>
+</span><span id="L-624"><a href="#L-624"><span class="linenos">624</span></a><span class="sd">    slices : list[slice]</span>
+</span><span id="L-625"><a href="#L-625"><span class="linenos">625</span></a><span class="sd">        Azimuth index slices where all samples in the rangelines are invalid.</span>
+</span><span id="L-626"><a href="#L-626"><span class="linenos">626</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-627"><a href="#L-627"><span class="linenos">627</span></a>    <span class="n">has_some_valid_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">swaths</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">swaths</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span><span id="L-628"><a href="#L-628"><span class="linenos">628</span></a>    <span class="n">num_invalid</span> <span class="o">=</span> <span class="n">swaths</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">has_some_valid_data</span><span class="p">)</span>
+</span><span id="L-629"><a href="#L-629"><span class="linenos">629</span></a>    <span class="k">return</span> <span class="n">num_invalid</span><span class="p">,</span> <span class="n">false_runs</span><span class="p">(</span><span class="n">has_some_valid_data</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -1598,27 +1661,31 @@ allowed_range_gap : int, optional
 </span><span id="fill_gaps-550"><a href="#fill_gaps-550"><span class="linenos">550</span></a>        <span class="n">pulse_swaths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
 </span><span id="fill_gaps-551"><a href="#fill_gaps-551"><span class="linenos">551</span></a>            <span class="p">[</span><span class="n">swath</span> <span class="k">for</span> <span class="n">swath</span> <span class="ow">in</span> <span class="n">pulse_swaths</span> <span class="k">if</span> <span class="n">swath</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">swath</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
 </span><span id="fill_gaps-552"><a href="#fill_gaps-552"><span class="linenos">552</span></a>        <span class="p">)</span>
-</span><span id="fill_gaps-553"><a href="#fill_gaps-553"><span class="linenos">553</span></a>        <span class="n">num_swaths</span> <span class="o">=</span> <span class="n">pulse_swaths</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-</span><span id="fill_gaps-554"><a href="#fill_gaps-554"><span class="linenos">554</span></a>        <span class="c1"># Gap leading up to first swath.</span>
-</span><span id="fill_gaps-555"><a href="#fill_gaps-555"><span class="linenos">555</span></a>        <span class="k">yield</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">pulse_swaths</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
-</span><span id="fill_gaps-556"><a href="#fill_gaps-556"><span class="linenos">556</span></a>        <span class="c1"># Gaps between swaths.</span>
-</span><span id="fill_gaps-557"><a href="#fill_gaps-557"><span class="linenos">557</span></a>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_swaths</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
-</span><span id="fill_gaps-558"><a href="#fill_gaps-558"><span class="linenos">558</span></a>            <span class="n">gap_start</span> <span class="o">=</span> <span class="n">pulse_swaths</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>      <span class="c1"># end of current swath</span>
-</span><span id="fill_gaps-559"><a href="#fill_gaps-559"><span class="linenos">559</span></a>            <span class="n">gap_end</span> <span class="o">=</span> <span class="n">pulse_swaths</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>    <span class="c1"># start of next swath</span>
-</span><span id="fill_gaps-560"><a href="#fill_gaps-560"><span class="linenos">560</span></a>            <span class="k">yield</span> <span class="nb">slice</span><span class="p">(</span><span class="n">gap_start</span><span class="p">,</span> <span class="n">gap_end</span><span class="p">)</span>
-</span><span id="fill_gaps-561"><a href="#fill_gaps-561"><span class="linenos">561</span></a>        <span class="c1"># Gap after last swath.</span>
-</span><span id="fill_gaps-562"><a href="#fill_gaps-562"><span class="linenos">562</span></a>        <span class="k">yield</span> <span class="nb">slice</span><span class="p">(</span><span class="n">pulse_swaths</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="kc">None</span><span class="p">)</span>
-</span><span id="fill_gaps-563"><a href="#fill_gaps-563"><span class="linenos">563</span></a>    <span class="c1"># When PRF is constant (not dithering), gap locations are constant.</span>
-</span><span id="fill_gaps-564"><a href="#fill_gaps-564"><span class="linenos">564</span></a>    <span class="n">unique_swaths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">swaths</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-</span><span id="fill_gaps-565"><a href="#fill_gaps-565"><span class="linenos">565</span></a>    <span class="k">if</span> <span class="n">unique_swaths</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-</span><span id="fill_gaps-566"><a href="#fill_gaps-566"><span class="linenos">566</span></a>        <span class="k">for</span> <span class="n">gap</span> <span class="ow">in</span> <span class="n">get_gap_slices</span><span class="p">(</span><span class="n">unique_swaths</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:]):</span>
-</span><span id="fill_gaps-567"><a href="#fill_gaps-567"><span class="linenos">567</span></a>            <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">gap</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
-</span><span id="fill_gaps-568"><a href="#fill_gaps-568"><span class="linenos">568</span></a>        <span class="k">return</span>
-</span><span id="fill_gaps-569"><a href="#fill_gaps-569"><span class="linenos">569</span></a>
-</span><span id="fill_gaps-570"><a href="#fill_gaps-570"><span class="linenos">570</span></a>    <span class="c1"># Otherwise we have to loop over each pulse.</span>
-</span><span id="fill_gaps-571"><a href="#fill_gaps-571"><span class="linenos">571</span></a>    <span class="k">for</span> <span class="n">ipulse</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_pulses</span><span class="p">):</span>
-</span><span id="fill_gaps-572"><a href="#fill_gaps-572"><span class="linenos">572</span></a>        <span class="k">for</span> <span class="n">gap</span> <span class="ow">in</span> <span class="n">get_gap_slices</span><span class="p">(</span><span class="n">swaths</span><span class="p">[:,</span> <span class="n">ipulse</span><span class="p">,</span> <span class="p">:]):</span>
-</span><span id="fill_gaps-573"><a href="#fill_gaps-573"><span class="linenos">573</span></a>            <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">ipulse</span><span class="p">,</span> <span class="n">gap</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+</span><span id="fill_gaps-553"><a href="#fill_gaps-553"><span class="linenos">553</span></a>        <span class="c1"># If there&#39;s no valid data then the whole rangeline is a &quot;gap&quot;.</span>
+</span><span id="fill_gaps-554"><a href="#fill_gaps-554"><span class="linenos">554</span></a>        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pulse_swaths</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+</span><span id="fill_gaps-555"><a href="#fill_gaps-555"><span class="linenos">555</span></a>            <span class="k">yield</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+</span><span id="fill_gaps-556"><a href="#fill_gaps-556"><span class="linenos">556</span></a>            <span class="k">return</span>
+</span><span id="fill_gaps-557"><a href="#fill_gaps-557"><span class="linenos">557</span></a>        <span class="n">num_swaths</span> <span class="o">=</span> <span class="n">pulse_swaths</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</span><span id="fill_gaps-558"><a href="#fill_gaps-558"><span class="linenos">558</span></a>        <span class="c1"># Gap leading up to first swath.</span>
+</span><span id="fill_gaps-559"><a href="#fill_gaps-559"><span class="linenos">559</span></a>        <span class="k">yield</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">pulse_swaths</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+</span><span id="fill_gaps-560"><a href="#fill_gaps-560"><span class="linenos">560</span></a>        <span class="c1"># Gaps between swaths.</span>
+</span><span id="fill_gaps-561"><a href="#fill_gaps-561"><span class="linenos">561</span></a>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_swaths</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+</span><span id="fill_gaps-562"><a href="#fill_gaps-562"><span class="linenos">562</span></a>            <span class="n">gap_start</span> <span class="o">=</span> <span class="n">pulse_swaths</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>      <span class="c1"># end of current swath</span>
+</span><span id="fill_gaps-563"><a href="#fill_gaps-563"><span class="linenos">563</span></a>            <span class="n">gap_end</span> <span class="o">=</span> <span class="n">pulse_swaths</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>    <span class="c1"># start of next swath</span>
+</span><span id="fill_gaps-564"><a href="#fill_gaps-564"><span class="linenos">564</span></a>            <span class="k">yield</span> <span class="nb">slice</span><span class="p">(</span><span class="n">gap_start</span><span class="p">,</span> <span class="n">gap_end</span><span class="p">)</span>
+</span><span id="fill_gaps-565"><a href="#fill_gaps-565"><span class="linenos">565</span></a>        <span class="c1"># Gap after last swath.</span>
+</span><span id="fill_gaps-566"><a href="#fill_gaps-566"><span class="linenos">566</span></a>        <span class="k">yield</span> <span class="nb">slice</span><span class="p">(</span><span class="n">pulse_swaths</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="kc">None</span><span class="p">)</span>
+</span><span id="fill_gaps-567"><a href="#fill_gaps-567"><span class="linenos">567</span></a>    <span class="c1"># When PRF is constant (not dithering), gap locations are constant.</span>
+</span><span id="fill_gaps-568"><a href="#fill_gaps-568"><span class="linenos">568</span></a>    <span class="n">unique_swaths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">swaths</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</span><span id="fill_gaps-569"><a href="#fill_gaps-569"><span class="linenos">569</span></a>    <span class="k">if</span> <span class="n">unique_swaths</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+</span><span id="fill_gaps-570"><a href="#fill_gaps-570"><span class="linenos">570</span></a>        <span class="k">for</span> <span class="n">gap</span> <span class="ow">in</span> <span class="n">get_gap_slices</span><span class="p">(</span><span class="n">unique_swaths</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:]):</span>
+</span><span id="fill_gaps-571"><a href="#fill_gaps-571"><span class="linenos">571</span></a>            <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">gap</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+</span><span id="fill_gaps-572"><a href="#fill_gaps-572"><span class="linenos">572</span></a>        <span class="k">return</span>
+</span><span id="fill_gaps-573"><a href="#fill_gaps-573"><span class="linenos">573</span></a>
+</span><span id="fill_gaps-574"><a href="#fill_gaps-574"><span class="linenos">574</span></a>    <span class="c1"># Otherwise we have to loop over each pulse.</span>
+</span><span id="fill_gaps-575"><a href="#fill_gaps-575"><span class="linenos">575</span></a>    <span class="k">for</span> <span class="n">ipulse</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_pulses</span><span class="p">):</span>
+</span><span id="fill_gaps-576"><a href="#fill_gaps-576"><span class="linenos">576</span></a>        <span class="k">for</span> <span class="n">gap</span> <span class="ow">in</span> <span class="n">get_gap_slices</span><span class="p">(</span><span class="n">swaths</span><span class="p">[:,</span> <span class="n">ipulse</span><span class="p">,</span> <span class="p">:]):</span>
+</span><span id="fill_gaps-577"><a href="#fill_gaps-577"><span class="linenos">577</span></a>            <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">ipulse</span><span class="p">,</span> <span class="n">gap</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
 </span></pre></div>
 
 
@@ -1642,6 +1709,117 @@ value : complex, optional
 <p>Transmit gaps may contain recorded loop-back calibration pulses, depending
 on the instrument mode. These should typically be zeroed-out in the raw data
 prior to range compression when processing science data.</p>
+</div>
+
+
+                </section>
+                <section id="false_runs">
+                            <input id="false_runs-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">false_runs</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">arr</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span></span><span class="return-annotation">) -> <span class="nb">list</span><span class="p">[</span><span class="nb">slice</span><span class="p">]</span>:</span></span>
+
+                <label class="view-source-button" for="false_runs-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#false_runs"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="false_runs-580"><a href="#false_runs-580"><span class="linenos">580</span></a><span class="k">def</span><span class="w"> </span><span class="nf">false_runs</span><span class="p">(</span><span class="n">arr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">slice</span><span class="p">]:</span>
+</span><span id="false_runs-581"><a href="#false_runs-581"><span class="linenos">581</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="false_runs-582"><a href="#false_runs-582"><span class="linenos">582</span></a><span class="sd">    Return a list of slices selecting continuous runs of False values.</span>
+</span><span id="false_runs-583"><a href="#false_runs-583"><span class="linenos">583</span></a>
+</span><span id="false_runs-584"><a href="#false_runs-584"><span class="linenos">584</span></a><span class="sd">    Parameters</span>
+</span><span id="false_runs-585"><a href="#false_runs-585"><span class="linenos">585</span></a><span class="sd">    ----------</span>
+</span><span id="false_runs-586"><a href="#false_runs-586"><span class="linenos">586</span></a><span class="sd">    arr : np.ndarray</span>
+</span><span id="false_runs-587"><a href="#false_runs-587"><span class="linenos">587</span></a><span class="sd">        A 1D boolean NumPy array.</span>
+</span><span id="false_runs-588"><a href="#false_runs-588"><span class="linenos">588</span></a>
+</span><span id="false_runs-589"><a href="#false_runs-589"><span class="linenos">589</span></a><span class="sd">    Returns</span>
+</span><span id="false_runs-590"><a href="#false_runs-590"><span class="linenos">590</span></a><span class="sd">    -------</span>
+</span><span id="false_runs-591"><a href="#false_runs-591"><span class="linenos">591</span></a><span class="sd">    list[slice]</span>
+</span><span id="false_runs-592"><a href="#false_runs-592"><span class="linenos">592</span></a><span class="sd">        A list of slice objects, each selecting a contiguous run of False values.</span>
+</span><span id="false_runs-593"><a href="#false_runs-593"><span class="linenos">593</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="false_runs-594"><a href="#false_runs-594"><span class="linenos">594</span></a>    <span class="k">if</span> <span class="n">arr</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+</span><span id="false_runs-595"><a href="#false_runs-595"><span class="linenos">595</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Array must be 1D&quot;</span><span class="p">)</span>
+</span><span id="false_runs-596"><a href="#false_runs-596"><span class="linenos">596</span></a>
+</span><span id="false_runs-597"><a href="#false_runs-597"><span class="linenos">597</span></a>    <span class="c1"># Pad with True on both ends so edges are detected as transitions</span>
+</span><span id="false_runs-598"><a href="#false_runs-598"><span class="linenos">598</span></a>    <span class="n">padded</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(([</span><span class="kc">True</span><span class="p">],</span> <span class="n">arr</span><span class="p">,</span> <span class="p">[</span><span class="kc">True</span><span class="p">]))</span>
+</span><span id="false_runs-599"><a href="#false_runs-599"><span class="linenos">599</span></a>
+</span><span id="false_runs-600"><a href="#false_runs-600"><span class="linenos">600</span></a>    <span class="c1"># Find where transitions occur</span>
+</span><span id="false_runs-601"><a href="#false_runs-601"><span class="linenos">601</span></a>    <span class="n">diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">padded</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int8</span><span class="p">))</span>
+</span><span id="false_runs-602"><a href="#false_runs-602"><span class="linenos">602</span></a>
+</span><span id="false_runs-603"><a href="#false_runs-603"><span class="linenos">603</span></a>    <span class="c1"># A False run starts where True→False (diff == -1), ends where False→True (diff == 1)</span>
+</span><span id="false_runs-604"><a href="#false_runs-604"><span class="linenos">604</span></a>    <span class="n">starts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">diff</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># index in original array</span>
+</span><span id="false_runs-605"><a href="#false_runs-605"><span class="linenos">605</span></a>    <span class="n">ends</span>   <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">diff</span> <span class="o">==</span>  <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># exclusive end in original array</span>
+</span><span id="false_runs-606"><a href="#false_runs-606"><span class="linenos">606</span></a>
+</span><span id="false_runs-607"><a href="#false_runs-607"><span class="linenos">607</span></a>    <span class="k">return</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">ends</span><span class="p">)]</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>Return a list of slices selecting continuous runs of False values.</p>
+
+<h2 id="parameters">Parameters</h2>
+
+<p>arr : np.ndarray
+    A 1D boolean NumPy array.</p>
+
+<h2 id="returns">Returns</h2>
+
+<p>list[slice]
+    A list of slice objects, each selecting a contiguous run of False values.</p>
+</div>
+
+
+                </section>
+                <section id="find_bad_rangline_slices">
+                            <input id="find_bad_rangline_slices-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">find_bad_rangline_slices</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">swaths</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="find_bad_rangline_slices-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#find_bad_rangline_slices"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="find_bad_rangline_slices-610"><a href="#find_bad_rangline_slices-610"><span class="linenos">610</span></a><span class="k">def</span><span class="w"> </span><span class="nf">find_bad_rangline_slices</span><span class="p">(</span><span class="n">swaths</span><span class="p">):</span>
+</span><span id="find_bad_rangline_slices-611"><a href="#find_bad_rangline_slices-611"><span class="linenos">611</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="find_bad_rangline_slices-612"><a href="#find_bad_rangline_slices-612"><span class="linenos">612</span></a><span class="sd">    Get slices corresponding to completely invalid rangelines.</span>
+</span><span id="find_bad_rangline_slices-613"><a href="#find_bad_rangline_slices-613"><span class="linenos">613</span></a>
+</span><span id="find_bad_rangline_slices-614"><a href="#find_bad_rangline_slices-614"><span class="linenos">614</span></a><span class="sd">    Parameters</span>
+</span><span id="find_bad_rangline_slices-615"><a href="#find_bad_rangline_slices-615"><span class="linenos">615</span></a><span class="sd">    ----------</span>
+</span><span id="find_bad_rangline_slices-616"><a href="#find_bad_rangline_slices-616"><span class="linenos">616</span></a><span class="sd">    swaths : numpy.ndarray[int]</span>
+</span><span id="find_bad_rangline_slices-617"><a href="#find_bad_rangline_slices-617"><span class="linenos">617</span></a><span class="sd">        Array of [start, stop) valid data regions, shape = (nswath, npulse, 2)</span>
+</span><span id="find_bad_rangline_slices-618"><a href="#find_bad_rangline_slices-618"><span class="linenos">618</span></a><span class="sd">        where nswath is the number of valid sub-swaths and npulse is the length</span>
+</span><span id="find_bad_rangline_slices-619"><a href="#find_bad_rangline_slices-619"><span class="linenos">619</span></a><span class="sd">        of the raw image grid.</span>
+</span><span id="find_bad_rangline_slices-620"><a href="#find_bad_rangline_slices-620"><span class="linenos">620</span></a>
+</span><span id="find_bad_rangline_slices-621"><a href="#find_bad_rangline_slices-621"><span class="linenos">621</span></a><span class="sd">    Returns</span>
+</span><span id="find_bad_rangline_slices-622"><a href="#find_bad_rangline_slices-622"><span class="linenos">622</span></a><span class="sd">    -------</span>
+</span><span id="find_bad_rangline_slices-623"><a href="#find_bad_rangline_slices-623"><span class="linenos">623</span></a><span class="sd">    num_invalid : int</span>
+</span><span id="find_bad_rangline_slices-624"><a href="#find_bad_rangline_slices-624"><span class="linenos">624</span></a><span class="sd">        Number of completely invalid ranglines.</span>
+</span><span id="find_bad_rangline_slices-625"><a href="#find_bad_rangline_slices-625"><span class="linenos">625</span></a><span class="sd">    slices : list[slice]</span>
+</span><span id="find_bad_rangline_slices-626"><a href="#find_bad_rangline_slices-626"><span class="linenos">626</span></a><span class="sd">        Azimuth index slices where all samples in the rangelines are invalid.</span>
+</span><span id="find_bad_rangline_slices-627"><a href="#find_bad_rangline_slices-627"><span class="linenos">627</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="find_bad_rangline_slices-628"><a href="#find_bad_rangline_slices-628"><span class="linenos">628</span></a>    <span class="n">has_some_valid_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">swaths</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">swaths</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span><span id="find_bad_rangline_slices-629"><a href="#find_bad_rangline_slices-629"><span class="linenos">629</span></a>    <span class="n">num_invalid</span> <span class="o">=</span> <span class="n">swaths</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">has_some_valid_data</span><span class="p">)</span>
+</span><span id="find_bad_rangline_slices-630"><a href="#find_bad_rangline_slices-630"><span class="linenos">630</span></a>    <span class="k">return</span> <span class="n">num_invalid</span><span class="p">,</span> <span class="n">false_runs</span><span class="p">(</span><span class="n">has_some_valid_data</span><span class="p">)</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>Get slices corresponding to completely invalid rangelines.</p>
+
+<h2 id="parameters">Parameters</h2>
+
+<p>swaths : numpy.ndarray[int]
+    Array of [start, stop) valid data regions, shape = (nswath, npulse, 2)
+    where nswath is the number of valid sub-swaths and npulse is the length
+    of the raw image grid.</p>
+
+<h2 id="returns">Returns</h2>
+
+<p>num_invalid : int
+    Number of completely invalid ranglines.
+slices : list[slice]
+    Azimuth index slices where all samples in the rangelines are invalid.</p>
 </div>
 
 
