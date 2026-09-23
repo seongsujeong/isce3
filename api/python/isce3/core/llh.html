@@ -101,7 +101,7 @@
 </span><span id="L-5"><a href="#L-5"><span class="linenos"> 5</span></a>
 </span><span id="L-6"><a href="#L-6"><span class="linenos"> 6</span></a><span class="nd">@dataclass</span>
 </span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a><span class="k">class</span><span class="w"> </span><span class="nc">LLH</span><span class="p">:</span>
-</span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-9"><a href="#L-9"><span class="linenos"> 9</span></a><span class="sd">    A point in a geodetic coordinate system.</span>
 </span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a>
 </span><span id="L-11"><a href="#L-11"><span class="linenos">11</span></a><span class="sd">    Parameters</span>
@@ -112,14 +112,14 @@
 </span><span id="L-16"><a href="#L-16"><span class="linenos">16</span></a><span class="sd">        The geodetic latitude, in radians.</span>
 </span><span id="L-17"><a href="#L-17"><span class="linenos">17</span></a><span class="sd">    height : float</span>
 </span><span id="L-18"><a href="#L-18"><span class="linenos">18</span></a><span class="sd">        The height of the point above the reference ellipsoid, in meters.</span>
-</span><span id="L-19"><a href="#L-19"><span class="linenos">19</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-19"><a href="#L-19"><span class="linenos">19</span></a><span class="sd">    """</span>
 </span><span id="L-20"><a href="#L-20"><span class="linenos">20</span></a>
 </span><span id="L-21"><a href="#L-21"><span class="linenos">21</span></a>    <span class="n">longitude</span><span class="p">:</span> <span class="nb">float</span>
 </span><span id="L-22"><a href="#L-22"><span class="linenos">22</span></a>    <span class="n">latitude</span><span class="p">:</span> <span class="nb">float</span>
 </span><span id="L-23"><a href="#L-23"><span class="linenos">23</span></a>    <span class="n">height</span><span class="p">:</span> <span class="nb">float</span>
 </span><span id="L-24"><a href="#L-24"><span class="linenos">24</span></a>
 </span><span id="L-25"><a href="#L-25"><span class="linenos">25</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">to_vec3</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-</span><span id="L-26"><a href="#L-26"><span class="linenos">26</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert the LLH object into an array containing [lon, lat, height].&quot;&quot;&quot;</span>
+</span><span id="L-26"><a href="#L-26"><span class="linenos">26</span></a><span class="w">        </span><span class="sd">"""Convert the LLH object into an array containing [lon, lat, height]."""</span>
 </span><span id="L-27"><a href="#L-27"><span class="linenos">27</span></a>        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">astuple</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
 </span></pre></div>
 
@@ -139,7 +139,7 @@
     <a class="headerlink" href="#LLH"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="LLH-7"><a href="#LLH-7"><span class="linenos"> 7</span></a><span class="nd">@dataclass</span>
 </span><span id="LLH-8"><a href="#LLH-8"><span class="linenos"> 8</span></a><span class="k">class</span><span class="w"> </span><span class="nc">LLH</span><span class="p">:</span>
-</span><span id="LLH-9"><a href="#LLH-9"><span class="linenos"> 9</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="LLH-9"><a href="#LLH-9"><span class="linenos"> 9</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="LLH-10"><a href="#LLH-10"><span class="linenos">10</span></a><span class="sd">    A point in a geodetic coordinate system.</span>
 </span><span id="LLH-11"><a href="#LLH-11"><span class="linenos">11</span></a>
 </span><span id="LLH-12"><a href="#LLH-12"><span class="linenos">12</span></a><span class="sd">    Parameters</span>
@@ -150,14 +150,14 @@
 </span><span id="LLH-17"><a href="#LLH-17"><span class="linenos">17</span></a><span class="sd">        The geodetic latitude, in radians.</span>
 </span><span id="LLH-18"><a href="#LLH-18"><span class="linenos">18</span></a><span class="sd">    height : float</span>
 </span><span id="LLH-19"><a href="#LLH-19"><span class="linenos">19</span></a><span class="sd">        The height of the point above the reference ellipsoid, in meters.</span>
-</span><span id="LLH-20"><a href="#LLH-20"><span class="linenos">20</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="LLH-20"><a href="#LLH-20"><span class="linenos">20</span></a><span class="sd">    """</span>
 </span><span id="LLH-21"><a href="#LLH-21"><span class="linenos">21</span></a>
 </span><span id="LLH-22"><a href="#LLH-22"><span class="linenos">22</span></a>    <span class="n">longitude</span><span class="p">:</span> <span class="nb">float</span>
 </span><span id="LLH-23"><a href="#LLH-23"><span class="linenos">23</span></a>    <span class="n">latitude</span><span class="p">:</span> <span class="nb">float</span>
 </span><span id="LLH-24"><a href="#LLH-24"><span class="linenos">24</span></a>    <span class="n">height</span><span class="p">:</span> <span class="nb">float</span>
 </span><span id="LLH-25"><a href="#LLH-25"><span class="linenos">25</span></a>
 </span><span id="LLH-26"><a href="#LLH-26"><span class="linenos">26</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">to_vec3</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-</span><span id="LLH-27"><a href="#LLH-27"><span class="linenos">27</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert the LLH object into an array containing [lon, lat, height].&quot;&quot;&quot;</span>
+</span><span id="LLH-27"><a href="#LLH-27"><span class="linenos">27</span></a><span class="w">        </span><span class="sd">"""Convert the LLH object into an array containing [lon, lat, height]."""</span>
 </span><span id="LLH-28"><a href="#LLH-28"><span class="linenos">28</span></a>        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">astuple</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
 </span></pre></div>
 
@@ -232,7 +232,7 @@ height : float
     </div>
     <a class="headerlink" href="#LLH.to_vec3"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="LLH.to_vec3-26"><a href="#LLH.to_vec3-26"><span class="linenos">26</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">to_vec3</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-</span><span id="LLH.to_vec3-27"><a href="#LLH.to_vec3-27"><span class="linenos">27</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert the LLH object into an array containing [lon, lat, height].&quot;&quot;&quot;</span>
+</span><span id="LLH.to_vec3-27"><a href="#LLH.to_vec3-27"><span class="linenos">27</span></a><span class="w">        </span><span class="sd">"""Convert the LLH object into an array containing [lon, lat, height]."""</span>
 </span><span id="LLH.to_vec3-28"><a href="#LLH.to_vec3-28"><span class="linenos">28</span></a>        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">astuple</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
 </span></pre></div>
 

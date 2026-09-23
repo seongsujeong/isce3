@@ -79,15 +79,15 @@
                         <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos"> 1</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">isce3.parsers.CEOS.PlatformPositionDataRecordType</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">PlatformPositionDataRecordHeaderType</span><span class="p">,</span> <span class="n">PlatformPositionDataRecordStateVectorType</span><span class="p">)</span>
 </span><span id="L-2"><a href="#L-2"><span class="linenos"> 2</span></a>
 </span><span id="L-3"><a href="#L-3"><span class="linenos"> 3</span></a><span class="k">def</span><span class="w"> </span><span class="nf">PlatformPositionDataRecordTrailerType</span><span class="p">():</span>
-</span><span id="L-4"><a href="#L-4"><span class="linenos"> 4</span></a><span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="L-4"><a href="#L-4"><span class="linenos"> 4</span></a><span class="w">    </span><span class="sd">'''</span>
 </span><span id="L-5"><a href="#L-5"><span class="linenos"> 5</span></a><span class="sd">    Returns ALOS specific trailer.</span>
-</span><span id="L-6"><a href="#L-6"><span class="linenos"> 6</span></a><span class="sd">    &#39;&#39;&#39;</span>
+</span><span id="L-6"><a href="#L-6"><span class="linenos"> 6</span></a><span class="sd">    '''</span>
 </span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a>
 </span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a>    <span class="kn">from</span><span class="w"> </span><span class="nn">isce3.parsers.CEOS.BasicTypes</span><span class="w"> </span><span class="kn">import</span> <span class="n">BlankType</span><span class="p">,</span> <span class="n">IntegerType</span><span class="p">,</span> <span class="n">MultiType</span>
 </span><span id="L-9"><a href="#L-9"><span class="linenos"> 9</span></a>
-</span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a>    <span class="k">return</span> <span class="n">MultiType</span><span class="p">([(</span><span class="s1">&#39;blanks1&#39;</span><span class="p">,</span> <span class="n">BlankType</span><span class="p">(</span><span class="mi">18</span><span class="p">)),</span>
-</span><span id="L-11"><a href="#L-11"><span class="linenos">11</span></a>                      <span class="p">(</span><span class="s1">&#39;LeapSecondFlag&#39;</span><span class="p">,</span> <span class="n">IntegerType</span><span class="p">(</span><span class="mi">1</span><span class="p">)),</span>
-</span><span id="L-12"><a href="#L-12"><span class="linenos">12</span></a>                      <span class="p">(</span><span class="s1">&#39;blanks2&#39;</span><span class="p">,</span> <span class="n">BlankType</span><span class="p">(</span><span class="mi">579</span><span class="p">))])</span>
+</span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a>    <span class="k">return</span> <span class="n">MultiType</span><span class="p">([(</span><span class="s1">'blanks1'</span><span class="p">,</span> <span class="n">BlankType</span><span class="p">(</span><span class="mi">18</span><span class="p">)),</span>
+</span><span id="L-11"><a href="#L-11"><span class="linenos">11</span></a>                      <span class="p">(</span><span class="s1">'LeapSecondFlag'</span><span class="p">,</span> <span class="n">IntegerType</span><span class="p">(</span><span class="mi">1</span><span class="p">)),</span>
+</span><span id="L-12"><a href="#L-12"><span class="linenos">12</span></a>                      <span class="p">(</span><span class="s1">'blanks2'</span><span class="p">,</span> <span class="n">BlankType</span><span class="p">(</span><span class="mi">579</span><span class="p">))])</span>
 </span></pre></div>
 
 
@@ -104,15 +104,15 @@
     </div>
     <a class="headerlink" href="#PlatformPositionDataRecordTrailerType"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="PlatformPositionDataRecordTrailerType-4"><a href="#PlatformPositionDataRecordTrailerType-4"><span class="linenos"> 4</span></a><span class="k">def</span><span class="w"> </span><span class="nf">PlatformPositionDataRecordTrailerType</span><span class="p">():</span>
-</span><span id="PlatformPositionDataRecordTrailerType-5"><a href="#PlatformPositionDataRecordTrailerType-5"><span class="linenos"> 5</span></a><span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="PlatformPositionDataRecordTrailerType-5"><a href="#PlatformPositionDataRecordTrailerType-5"><span class="linenos"> 5</span></a><span class="w">    </span><span class="sd">'''</span>
 </span><span id="PlatformPositionDataRecordTrailerType-6"><a href="#PlatformPositionDataRecordTrailerType-6"><span class="linenos"> 6</span></a><span class="sd">    Returns ALOS specific trailer.</span>
-</span><span id="PlatformPositionDataRecordTrailerType-7"><a href="#PlatformPositionDataRecordTrailerType-7"><span class="linenos"> 7</span></a><span class="sd">    &#39;&#39;&#39;</span>
+</span><span id="PlatformPositionDataRecordTrailerType-7"><a href="#PlatformPositionDataRecordTrailerType-7"><span class="linenos"> 7</span></a><span class="sd">    '''</span>
 </span><span id="PlatformPositionDataRecordTrailerType-8"><a href="#PlatformPositionDataRecordTrailerType-8"><span class="linenos"> 8</span></a>
 </span><span id="PlatformPositionDataRecordTrailerType-9"><a href="#PlatformPositionDataRecordTrailerType-9"><span class="linenos"> 9</span></a>    <span class="kn">from</span><span class="w"> </span><span class="nn">isce3.parsers.CEOS.BasicTypes</span><span class="w"> </span><span class="kn">import</span> <span class="n">BlankType</span><span class="p">,</span> <span class="n">IntegerType</span><span class="p">,</span> <span class="n">MultiType</span>
 </span><span id="PlatformPositionDataRecordTrailerType-10"><a href="#PlatformPositionDataRecordTrailerType-10"><span class="linenos">10</span></a>
-</span><span id="PlatformPositionDataRecordTrailerType-11"><a href="#PlatformPositionDataRecordTrailerType-11"><span class="linenos">11</span></a>    <span class="k">return</span> <span class="n">MultiType</span><span class="p">([(</span><span class="s1">&#39;blanks1&#39;</span><span class="p">,</span> <span class="n">BlankType</span><span class="p">(</span><span class="mi">18</span><span class="p">)),</span>
-</span><span id="PlatformPositionDataRecordTrailerType-12"><a href="#PlatformPositionDataRecordTrailerType-12"><span class="linenos">12</span></a>                      <span class="p">(</span><span class="s1">&#39;LeapSecondFlag&#39;</span><span class="p">,</span> <span class="n">IntegerType</span><span class="p">(</span><span class="mi">1</span><span class="p">)),</span>
-</span><span id="PlatformPositionDataRecordTrailerType-13"><a href="#PlatformPositionDataRecordTrailerType-13"><span class="linenos">13</span></a>                      <span class="p">(</span><span class="s1">&#39;blanks2&#39;</span><span class="p">,</span> <span class="n">BlankType</span><span class="p">(</span><span class="mi">579</span><span class="p">))])</span>
+</span><span id="PlatformPositionDataRecordTrailerType-11"><a href="#PlatformPositionDataRecordTrailerType-11"><span class="linenos">11</span></a>    <span class="k">return</span> <span class="n">MultiType</span><span class="p">([(</span><span class="s1">'blanks1'</span><span class="p">,</span> <span class="n">BlankType</span><span class="p">(</span><span class="mi">18</span><span class="p">)),</span>
+</span><span id="PlatformPositionDataRecordTrailerType-12"><a href="#PlatformPositionDataRecordTrailerType-12"><span class="linenos">12</span></a>                      <span class="p">(</span><span class="s1">'LeapSecondFlag'</span><span class="p">,</span> <span class="n">IntegerType</span><span class="p">(</span><span class="mi">1</span><span class="p">)),</span>
+</span><span id="PlatformPositionDataRecordTrailerType-13"><a href="#PlatformPositionDataRecordTrailerType-13"><span class="linenos">13</span></a>                      <span class="p">(</span><span class="s1">'blanks2'</span><span class="p">,</span> <span class="n">BlankType</span><span class="p">(</span><span class="mi">579</span><span class="p">))])</span>
 </span></pre></div>
 
 

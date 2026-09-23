@@ -106,19 +106,19 @@
 </span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a>
 </span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a>
 </span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a><span class="k">class</span><span class="w"> </span><span class="nc">OrbitPassDirection</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
-</span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;The pass direction of a satellite in polar orbit.&quot;&quot;&quot;</span>
+</span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a><span class="w">    </span><span class="sd">"""The pass direction of a satellite in polar orbit."""</span>
 </span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a>
-</span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a>    <span class="n">ASCENDING</span> <span class="o">=</span> <span class="s2">&quot;ascending&quot;</span>
-</span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;An ascending pass, indicating a northward-traveling satellite.&quot;&quot;&quot;</span>
-</span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a>    <span class="n">DESCENDING</span> <span class="o">=</span> <span class="s2">&quot;descending&quot;</span>
-</span><span id="L-15"><a href="#L-15"><span class="linenos"> 15</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;A descending pass, indicating a southward-traveling satellite.&quot;&quot;&quot;</span>
+</span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a>    <span class="n">ASCENDING</span> <span class="o">=</span> <span class="s2">"ascending"</span>
+</span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a><span class="w">    </span><span class="sd">"""An ascending pass, indicating a northward-traveling satellite."""</span>
+</span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a>    <span class="n">DESCENDING</span> <span class="o">=</span> <span class="s2">"descending"</span>
+</span><span id="L-15"><a href="#L-15"><span class="linenos"> 15</span></a><span class="w">    </span><span class="sd">"""A descending pass, indicating a southward-traveling satellite."""</span>
 </span><span id="L-16"><a href="#L-16"><span class="linenos"> 16</span></a>
 </span><span id="L-17"><a href="#L-17"><span class="linenos"> 17</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 </span><span id="L-18"><a href="#L-18"><span class="linenos"> 18</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
 </span><span id="L-19"><a href="#L-19"><span class="linenos"> 19</span></a>
 </span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a>
 </span><span id="L-21"><a href="#L-21"><span class="linenos"> 21</span></a><span class="k">def</span><span class="w"> </span><span class="nf">count_sign_changes</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-</span><span id="L-22"><a href="#L-22"><span class="linenos"> 22</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-22"><a href="#L-22"><span class="linenos"> 22</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-23"><a href="#L-23"><span class="linenos"> 23</span></a><span class="sd">    Count the number of sign changes between consecutive elements in an array.</span>
 </span><span id="L-24"><a href="#L-24"><span class="linenos"> 24</span></a>
 </span><span id="L-25"><a href="#L-25"><span class="linenos"> 25</span></a><span class="sd">    A sign change occurs between two values if one is negative and the other is</span>
@@ -138,7 +138,7 @@
 </span><span id="L-39"><a href="#L-39"><span class="linenos"> 39</span></a><span class="sd">    -------</span>
 </span><span id="L-40"><a href="#L-40"><span class="linenos"> 40</span></a><span class="sd">    int</span>
 </span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a><span class="sd">        The number of sign changes.</span>
-</span><span id="L-42"><a href="#L-42"><span class="linenos"> 42</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-42"><a href="#L-42"><span class="linenos"> 42</span></a><span class="sd">    """</span>
 </span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a>    <span class="c1"># Get a mask of negative-valued elements in `x`.</span>
 </span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a>    <span class="n">is_negative</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">signbit</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 </span><span id="L-45"><a href="#L-45"><span class="linenos"> 45</span></a>
@@ -152,15 +152,15 @@
 </span><span id="L-53"><a href="#L-53"><span class="linenos"> 53</span></a>
 </span><span id="L-54"><a href="#L-54"><span class="linenos"> 54</span></a>
 </span><span id="L-55"><a href="#L-55"><span class="linenos"> 55</span></a><span class="k">class</span><span class="w"> </span><span class="nc">AmbiguousOrbitPassDirection</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-</span><span id="L-56"><a href="#L-56"><span class="linenos"> 56</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Raised when the pass direction of an orbit could not be clearly discerned.&quot;&quot;&quot;</span>
+</span><span id="L-56"><a href="#L-56"><span class="linenos"> 56</span></a><span class="w">    </span><span class="sd">"""Raised when the pass direction of an orbit could not be clearly discerned."""</span>
 </span><span id="L-57"><a href="#L-57"><span class="linenos"> 57</span></a>
 </span><span id="L-58"><a href="#L-58"><span class="linenos"> 58</span></a>
 </span><span id="L-59"><a href="#L-59"><span class="linenos"> 59</span></a><span class="k">def</span><span class="w"> </span><span class="nf">get_orbit_pass_direction</span><span class="p">(</span><span class="n">orbit</span><span class="p">:</span> <span class="n">Orbit</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OrbitPassDirection</span><span class="p">:</span>
-</span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-61"><a href="#L-61"><span class="linenos"> 61</span></a><span class="sd">    Get the pass direction (ascending or descending) of an orbit interval.</span>
 </span><span id="L-62"><a href="#L-62"><span class="linenos"> 62</span></a>
 </span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a><span class="sd">    In the event that the input orbit contains more than one pass direction (e.g. it</span>
-</span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a><span class="sd">    crosses near the poles) the pass direction of the majority of the orbit&#39;s time tags</span>
+</span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a><span class="sd">    crosses near the poles) the pass direction of the majority of the orbit's time tags</span>
 </span><span id="L-65"><a href="#L-65"><span class="linenos"> 65</span></a><span class="sd">    is returned.</span>
 </span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a>
 </span><span id="L-67"><a href="#L-67"><span class="linenos"> 67</span></a><span class="sd">    If the orbit pass direction changes multiple times, then no clear pass direction can</span>
@@ -188,9 +188,9 @@
 </span><span id="L-89"><a href="#L-89"><span class="linenos"> 89</span></a><span class="sd">    -----</span>
 </span><span id="L-90"><a href="#L-90"><span class="linenos"> 90</span></a><span class="sd">    If the orbit contains an equal number of ascending and descending samples, it will</span>
 </span><span id="L-91"><a href="#L-91"><span class="linenos"> 91</span></a><span class="sd">    be considered a descending pass.</span>
-</span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a><span class="sd">    """</span>
 </span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a>    <span class="k">if</span> <span class="n">orbit</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
-</span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;input orbit must contain at least one state vector&quot;</span><span class="p">)</span>
+</span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"input orbit must contain at least one state vector"</span><span class="p">)</span>
 </span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a>
 </span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a>    <span class="c1"># Get the z-component of velocity of each orbit state vector.</span>
 </span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a>    <span class="n">vz</span> <span class="o">=</span> <span class="n">orbit</span><span class="o">.</span><span class="n">velocity</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
@@ -198,9 +198,9 @@
 </span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a>    <span class="n">num_sign_changes</span> <span class="o">=</span> <span class="n">count_sign_changes</span><span class="p">(</span><span class="n">vz</span><span class="p">)</span>
 </span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a>    <span class="k">if</span> <span class="n">num_sign_changes</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
 </span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a>        <span class="k">raise</span> <span class="n">AmbiguousOrbitPassDirection</span><span class="p">(</span>
-</span><span id="L-102"><a href="#L-102"><span class="linenos">102</span></a>            <span class="sa">f</span><span class="s2">&quot;the z-component of the orbit velocity changes sign </span><span class="si">{</span><span class="n">num_sign_changes</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span id="L-103"><a href="#L-103"><span class="linenos">103</span></a>            <span class="s2">&quot; times so no clear orbit pass direction can be determined -- consider&quot;</span>
-</span><span id="L-104"><a href="#L-104"><span class="linenos">104</span></a>            <span class="s2">&quot; cropping the orbit to a narrower interval&quot;</span>
+</span><span id="L-102"><a href="#L-102"><span class="linenos">102</span></a>            <span class="sa">f</span><span class="s2">"the z-component of the orbit velocity changes sign </span><span class="si">{</span><span class="n">num_sign_changes</span><span class="si">}</span><span class="s2">"</span>
+</span><span id="L-103"><a href="#L-103"><span class="linenos">103</span></a>            <span class="s2">" times so no clear orbit pass direction can be determined -- consider"</span>
+</span><span id="L-104"><a href="#L-104"><span class="linenos">104</span></a>            <span class="s2">" cropping the orbit to a narrower interval"</span>
 </span><span id="L-105"><a href="#L-105"><span class="linenos">105</span></a>        <span class="p">)</span>
 </span><span id="L-106"><a href="#L-106"><span class="linenos">106</span></a>
 </span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a>    <span class="c1"># Get the number of ascending and descending time points.</span>
@@ -231,12 +231,12 @@
     </div>
     <a class="headerlink" href="#OrbitPassDirection"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="OrbitPassDirection-10"><a href="#OrbitPassDirection-10"><span class="linenos">10</span></a><span class="k">class</span><span class="w"> </span><span class="nc">OrbitPassDirection</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
-</span><span id="OrbitPassDirection-11"><a href="#OrbitPassDirection-11"><span class="linenos">11</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;The pass direction of a satellite in polar orbit.&quot;&quot;&quot;</span>
+</span><span id="OrbitPassDirection-11"><a href="#OrbitPassDirection-11"><span class="linenos">11</span></a><span class="w">    </span><span class="sd">"""The pass direction of a satellite in polar orbit."""</span>
 </span><span id="OrbitPassDirection-12"><a href="#OrbitPassDirection-12"><span class="linenos">12</span></a>
-</span><span id="OrbitPassDirection-13"><a href="#OrbitPassDirection-13"><span class="linenos">13</span></a>    <span class="n">ASCENDING</span> <span class="o">=</span> <span class="s2">&quot;ascending&quot;</span>
-</span><span id="OrbitPassDirection-14"><a href="#OrbitPassDirection-14"><span class="linenos">14</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;An ascending pass, indicating a northward-traveling satellite.&quot;&quot;&quot;</span>
-</span><span id="OrbitPassDirection-15"><a href="#OrbitPassDirection-15"><span class="linenos">15</span></a>    <span class="n">DESCENDING</span> <span class="o">=</span> <span class="s2">&quot;descending&quot;</span>
-</span><span id="OrbitPassDirection-16"><a href="#OrbitPassDirection-16"><span class="linenos">16</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;A descending pass, indicating a southward-traveling satellite.&quot;&quot;&quot;</span>
+</span><span id="OrbitPassDirection-13"><a href="#OrbitPassDirection-13"><span class="linenos">13</span></a>    <span class="n">ASCENDING</span> <span class="o">=</span> <span class="s2">"ascending"</span>
+</span><span id="OrbitPassDirection-14"><a href="#OrbitPassDirection-14"><span class="linenos">14</span></a><span class="w">    </span><span class="sd">"""An ascending pass, indicating a northward-traveling satellite."""</span>
+</span><span id="OrbitPassDirection-15"><a href="#OrbitPassDirection-15"><span class="linenos">15</span></a>    <span class="n">DESCENDING</span> <span class="o">=</span> <span class="s2">"descending"</span>
+</span><span id="OrbitPassDirection-16"><a href="#OrbitPassDirection-16"><span class="linenos">16</span></a><span class="w">    </span><span class="sd">"""A descending pass, indicating a southward-traveling satellite."""</span>
 </span><span id="OrbitPassDirection-17"><a href="#OrbitPassDirection-17"><span class="linenos">17</span></a>
 </span><span id="OrbitPassDirection-18"><a href="#OrbitPassDirection-18"><span class="linenos">18</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 </span><span id="OrbitPassDirection-19"><a href="#OrbitPassDirection-19"><span class="linenos">19</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
@@ -288,7 +288,7 @@
     </div>
     <a class="headerlink" href="#count_sign_changes"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="count_sign_changes-22"><a href="#count_sign_changes-22"><span class="linenos">22</span></a><span class="k">def</span><span class="w"> </span><span class="nf">count_sign_changes</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-</span><span id="count_sign_changes-23"><a href="#count_sign_changes-23"><span class="linenos">23</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="count_sign_changes-23"><a href="#count_sign_changes-23"><span class="linenos">23</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="count_sign_changes-24"><a href="#count_sign_changes-24"><span class="linenos">24</span></a><span class="sd">    Count the number of sign changes between consecutive elements in an array.</span>
 </span><span id="count_sign_changes-25"><a href="#count_sign_changes-25"><span class="linenos">25</span></a>
 </span><span id="count_sign_changes-26"><a href="#count_sign_changes-26"><span class="linenos">26</span></a><span class="sd">    A sign change occurs between two values if one is negative and the other is</span>
@@ -308,7 +308,7 @@
 </span><span id="count_sign_changes-40"><a href="#count_sign_changes-40"><span class="linenos">40</span></a><span class="sd">    -------</span>
 </span><span id="count_sign_changes-41"><a href="#count_sign_changes-41"><span class="linenos">41</span></a><span class="sd">    int</span>
 </span><span id="count_sign_changes-42"><a href="#count_sign_changes-42"><span class="linenos">42</span></a><span class="sd">        The number of sign changes.</span>
-</span><span id="count_sign_changes-43"><a href="#count_sign_changes-43"><span class="linenos">43</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="count_sign_changes-43"><a href="#count_sign_changes-43"><span class="linenos">43</span></a><span class="sd">    """</span>
 </span><span id="count_sign_changes-44"><a href="#count_sign_changes-44"><span class="linenos">44</span></a>    <span class="c1"># Get a mask of negative-valued elements in `x`.</span>
 </span><span id="count_sign_changes-45"><a href="#count_sign_changes-45"><span class="linenos">45</span></a>    <span class="n">is_negative</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">signbit</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 </span><span id="count_sign_changes-46"><a href="#count_sign_changes-46"><span class="linenos">46</span></a>
@@ -357,7 +357,7 @@ will be counted.</p>
     </div>
     <a class="headerlink" href="#AmbiguousOrbitPassDirection"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="AmbiguousOrbitPassDirection-56"><a href="#AmbiguousOrbitPassDirection-56"><span class="linenos">56</span></a><span class="k">class</span><span class="w"> </span><span class="nc">AmbiguousOrbitPassDirection</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-</span><span id="AmbiguousOrbitPassDirection-57"><a href="#AmbiguousOrbitPassDirection-57"><span class="linenos">57</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Raised when the pass direction of an orbit could not be clearly discerned.&quot;&quot;&quot;</span>
+</span><span id="AmbiguousOrbitPassDirection-57"><a href="#AmbiguousOrbitPassDirection-57"><span class="linenos">57</span></a><span class="w">    </span><span class="sd">"""Raised when the pass direction of an orbit could not be clearly discerned."""</span>
 </span></pre></div>
 
 
@@ -378,11 +378,11 @@ will be counted.</p>
     </div>
     <a class="headerlink" href="#get_orbit_pass_direction"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="get_orbit_pass_direction-60"><a href="#get_orbit_pass_direction-60"><span class="linenos"> 60</span></a><span class="k">def</span><span class="w"> </span><span class="nf">get_orbit_pass_direction</span><span class="p">(</span><span class="n">orbit</span><span class="p">:</span> <span class="n">Orbit</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OrbitPassDirection</span><span class="p">:</span>
-</span><span id="get_orbit_pass_direction-61"><a href="#get_orbit_pass_direction-61"><span class="linenos"> 61</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="get_orbit_pass_direction-61"><a href="#get_orbit_pass_direction-61"><span class="linenos"> 61</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="get_orbit_pass_direction-62"><a href="#get_orbit_pass_direction-62"><span class="linenos"> 62</span></a><span class="sd">    Get the pass direction (ascending or descending) of an orbit interval.</span>
 </span><span id="get_orbit_pass_direction-63"><a href="#get_orbit_pass_direction-63"><span class="linenos"> 63</span></a>
 </span><span id="get_orbit_pass_direction-64"><a href="#get_orbit_pass_direction-64"><span class="linenos"> 64</span></a><span class="sd">    In the event that the input orbit contains more than one pass direction (e.g. it</span>
-</span><span id="get_orbit_pass_direction-65"><a href="#get_orbit_pass_direction-65"><span class="linenos"> 65</span></a><span class="sd">    crosses near the poles) the pass direction of the majority of the orbit&#39;s time tags</span>
+</span><span id="get_orbit_pass_direction-65"><a href="#get_orbit_pass_direction-65"><span class="linenos"> 65</span></a><span class="sd">    crosses near the poles) the pass direction of the majority of the orbit's time tags</span>
 </span><span id="get_orbit_pass_direction-66"><a href="#get_orbit_pass_direction-66"><span class="linenos"> 66</span></a><span class="sd">    is returned.</span>
 </span><span id="get_orbit_pass_direction-67"><a href="#get_orbit_pass_direction-67"><span class="linenos"> 67</span></a>
 </span><span id="get_orbit_pass_direction-68"><a href="#get_orbit_pass_direction-68"><span class="linenos"> 68</span></a><span class="sd">    If the orbit pass direction changes multiple times, then no clear pass direction can</span>
@@ -410,9 +410,9 @@ will be counted.</p>
 </span><span id="get_orbit_pass_direction-90"><a href="#get_orbit_pass_direction-90"><span class="linenos"> 90</span></a><span class="sd">    -----</span>
 </span><span id="get_orbit_pass_direction-91"><a href="#get_orbit_pass_direction-91"><span class="linenos"> 91</span></a><span class="sd">    If the orbit contains an equal number of ascending and descending samples, it will</span>
 </span><span id="get_orbit_pass_direction-92"><a href="#get_orbit_pass_direction-92"><span class="linenos"> 92</span></a><span class="sd">    be considered a descending pass.</span>
-</span><span id="get_orbit_pass_direction-93"><a href="#get_orbit_pass_direction-93"><span class="linenos"> 93</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="get_orbit_pass_direction-93"><a href="#get_orbit_pass_direction-93"><span class="linenos"> 93</span></a><span class="sd">    """</span>
 </span><span id="get_orbit_pass_direction-94"><a href="#get_orbit_pass_direction-94"><span class="linenos"> 94</span></a>    <span class="k">if</span> <span class="n">orbit</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
-</span><span id="get_orbit_pass_direction-95"><a href="#get_orbit_pass_direction-95"><span class="linenos"> 95</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;input orbit must contain at least one state vector&quot;</span><span class="p">)</span>
+</span><span id="get_orbit_pass_direction-95"><a href="#get_orbit_pass_direction-95"><span class="linenos"> 95</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"input orbit must contain at least one state vector"</span><span class="p">)</span>
 </span><span id="get_orbit_pass_direction-96"><a href="#get_orbit_pass_direction-96"><span class="linenos"> 96</span></a>
 </span><span id="get_orbit_pass_direction-97"><a href="#get_orbit_pass_direction-97"><span class="linenos"> 97</span></a>    <span class="c1"># Get the z-component of velocity of each orbit state vector.</span>
 </span><span id="get_orbit_pass_direction-98"><a href="#get_orbit_pass_direction-98"><span class="linenos"> 98</span></a>    <span class="n">vz</span> <span class="o">=</span> <span class="n">orbit</span><span class="o">.</span><span class="n">velocity</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
@@ -420,9 +420,9 @@ will be counted.</p>
 </span><span id="get_orbit_pass_direction-100"><a href="#get_orbit_pass_direction-100"><span class="linenos">100</span></a>    <span class="n">num_sign_changes</span> <span class="o">=</span> <span class="n">count_sign_changes</span><span class="p">(</span><span class="n">vz</span><span class="p">)</span>
 </span><span id="get_orbit_pass_direction-101"><a href="#get_orbit_pass_direction-101"><span class="linenos">101</span></a>    <span class="k">if</span> <span class="n">num_sign_changes</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
 </span><span id="get_orbit_pass_direction-102"><a href="#get_orbit_pass_direction-102"><span class="linenos">102</span></a>        <span class="k">raise</span> <span class="n">AmbiguousOrbitPassDirection</span><span class="p">(</span>
-</span><span id="get_orbit_pass_direction-103"><a href="#get_orbit_pass_direction-103"><span class="linenos">103</span></a>            <span class="sa">f</span><span class="s2">&quot;the z-component of the orbit velocity changes sign </span><span class="si">{</span><span class="n">num_sign_changes</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span id="get_orbit_pass_direction-104"><a href="#get_orbit_pass_direction-104"><span class="linenos">104</span></a>            <span class="s2">&quot; times so no clear orbit pass direction can be determined -- consider&quot;</span>
-</span><span id="get_orbit_pass_direction-105"><a href="#get_orbit_pass_direction-105"><span class="linenos">105</span></a>            <span class="s2">&quot; cropping the orbit to a narrower interval&quot;</span>
+</span><span id="get_orbit_pass_direction-103"><a href="#get_orbit_pass_direction-103"><span class="linenos">103</span></a>            <span class="sa">f</span><span class="s2">"the z-component of the orbit velocity changes sign </span><span class="si">{</span><span class="n">num_sign_changes</span><span class="si">}</span><span class="s2">"</span>
+</span><span id="get_orbit_pass_direction-104"><a href="#get_orbit_pass_direction-104"><span class="linenos">104</span></a>            <span class="s2">" times so no clear orbit pass direction can be determined -- consider"</span>
+</span><span id="get_orbit_pass_direction-105"><a href="#get_orbit_pass_direction-105"><span class="linenos">105</span></a>            <span class="s2">" cropping the orbit to a narrower interval"</span>
 </span><span id="get_orbit_pass_direction-106"><a href="#get_orbit_pass_direction-106"><span class="linenos">106</span></a>        <span class="p">)</span>
 </span><span id="get_orbit_pass_direction-107"><a href="#get_orbit_pass_direction-107"><span class="linenos">107</span></a>
 </span><span id="get_orbit_pass_direction-108"><a href="#get_orbit_pass_direction-108"><span class="linenos">108</span></a>    <span class="c1"># Get the number of ascending and descending time points.</span>

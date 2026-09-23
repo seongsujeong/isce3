@@ -117,10 +117,10 @@
 </span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a>
 </span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a><span class="nd">@dataclass</span>
 </span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a><span class="k">class</span><span class="w"> </span><span class="nc">BlockParam</span><span class="p">:</span>
-</span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a><span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a><span class="w">    </span><span class="sd">'''</span>
 </span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a><span class="sd">    Class for block specific parameters</span>
 </span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a><span class="sd">    Facilitate block parameters exchange between functions</span>
-</span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a><span class="sd">    &#39;&#39;&#39;</span>
+</span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a><span class="sd">    '''</span>
 </span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a>    <span class="c1"># Length of current block to filter; padding not included</span>
 </span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a>    <span class="n">block_length</span><span class="p">:</span> <span class="nb">int</span>
 </span><span id="L-15"><a href="#L-15"><span class="linenos"> 15</span></a>
@@ -144,7 +144,7 @@
 </span><span id="L-33"><a href="#L-33"><span class="linenos"> 33</span></a>    <span class="n">data_width</span><span class="p">:</span> <span class="nb">int</span>
 </span><span id="L-34"><a href="#L-34"><span class="linenos"> 34</span></a>
 </span><span id="L-35"><a href="#L-35"><span class="linenos"> 35</span></a><span class="k">def</span><span class="w"> </span><span class="nf">block_param_generator</span><span class="p">(</span><span class="n">lines_per_block</span><span class="p">,</span> <span class="n">data_shape</span><span class="p">,</span> <span class="n">pad_shape</span><span class="p">):</span>
-</span><span id="L-36"><a href="#L-36"><span class="linenos"> 36</span></a><span class="w">    </span><span class="sd">&#39;&#39;&#39; Generator for block specific parameter class.</span>
+</span><span id="L-36"><a href="#L-36"><span class="linenos"> 36</span></a><span class="w">    </span><span class="sd">''' Generator for block specific parameter class.</span>
 </span><span id="L-37"><a href="#L-37"><span class="linenos"> 37</span></a>
 </span><span id="L-38"><a href="#L-38"><span class="linenos"> 38</span></a><span class="sd">    Parameters</span>
 </span><span id="L-39"><a href="#L-39"><span class="linenos"> 39</span></a><span class="sd">    ----------</span>
@@ -159,7 +159,7 @@
 </span><span id="L-48"><a href="#L-48"><span class="linenos"> 48</span></a><span class="sd">    -------</span>
 </span><span id="L-49"><a href="#L-49"><span class="linenos"> 49</span></a><span class="sd">    _: BlockParam</span>
 </span><span id="L-50"><a href="#L-50"><span class="linenos"> 50</span></a><span class="sd">        BlockParam object for current block</span>
-</span><span id="L-51"><a href="#L-51"><span class="linenos"> 51</span></a><span class="sd">    &#39;&#39;&#39;</span>
+</span><span id="L-51"><a href="#L-51"><span class="linenos"> 51</span></a><span class="sd">    '''</span>
 </span><span id="L-52"><a href="#L-52"><span class="linenos"> 52</span></a>    <span class="n">data_length</span><span class="p">,</span> <span class="n">data_width</span> <span class="o">=</span> <span class="n">data_shape</span>
 </span><span id="L-53"><a href="#L-53"><span class="linenos"> 53</span></a>    <span class="n">pad_length</span><span class="p">,</span> <span class="n">pad_width</span> <span class="o">=</span> <span class="n">pad_shape</span>
 </span><span id="L-54"><a href="#L-54"><span class="linenos"> 54</span></a>
@@ -228,7 +228,7 @@
 </span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a>    <span class="k">return</span>
 </span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a>
 </span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a><span class="k">def</span><span class="w"> </span><span class="nf">get_raster_block</span><span class="p">(</span><span class="n">raster</span><span class="p">,</span> <span class="n">block_param</span><span class="p">):</span>
-</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a><span class="w">    </span><span class="sd">&#39;&#39;&#39; Get a block of data from raster.</span>
+</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a><span class="w">    </span><span class="sd">''' Get a block of data from raster.</span>
 </span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a><span class="sd">        Raster can be a HDF5 file or a GDAL-friendly raster</span>
 </span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a>
 </span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a><span class="sd">    Parameters</span>
@@ -244,7 +244,7 @@
 </span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a><span class="sd">    -------</span>
 </span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a><span class="sd">    data_block: np.ndarray</span>
 </span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a><span class="sd">        Block read from raster with shape specified in block_param.</span>
-</span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a><span class="sd">    &#39;&#39;&#39;</span>
+</span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a><span class="sd">    '''</span>
 </span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a>    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">raster</span><span class="p">,</span> <span class="n">h5py</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
 </span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a>        <span class="n">data_block</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">block_param</span><span class="o">.</span><span class="n">read_length</span><span class="p">,</span> <span class="n">block_param</span><span class="o">.</span><span class="n">data_width</span><span class="p">),</span>
 </span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a>                           <span class="n">dtype</span><span class="o">=</span><span class="n">raster</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
@@ -260,12 +260,12 @@
 </span><span id="L-149"><a href="#L-149"><span class="linenos">149</span></a>
 </span><span id="L-150"><a href="#L-150"><span class="linenos">150</span></a>    <span class="c1"># Pad igram_block with zeros according to pad_length/pad_width</span>
 </span><span id="L-151"><a href="#L-151"><span class="linenos">151</span></a>    <span class="n">data_block</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">data_block</span><span class="p">,</span> <span class="n">block_param</span><span class="o">.</span><span class="n">block_pad</span><span class="p">,</span>
-</span><span id="L-152"><a href="#L-152"><span class="linenos">152</span></a>                         <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">,</span> <span class="n">constant_values</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span><span id="L-152"><a href="#L-152"><span class="linenos">152</span></a>                         <span class="n">mode</span><span class="o">=</span><span class="s1">'constant'</span><span class="p">,</span> <span class="n">constant_values</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </span><span id="L-153"><a href="#L-153"><span class="linenos">153</span></a>
 </span><span id="L-154"><a href="#L-154"><span class="linenos">154</span></a>    <span class="k">return</span> <span class="n">data_block</span>
 </span><span id="L-155"><a href="#L-155"><span class="linenos">155</span></a>
 </span><span id="L-156"><a href="#L-156"><span class="linenos">156</span></a><span class="k">def</span><span class="w"> </span><span class="nf">write_raster_block</span><span class="p">(</span><span class="n">out_raster</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">block_param</span><span class="p">):</span>
-</span><span id="L-157"><a href="#L-157"><span class="linenos">157</span></a><span class="w">    </span><span class="sd">&#39;&#39;&#39; Write processed block to out_raster.</span>
+</span><span id="L-157"><a href="#L-157"><span class="linenos">157</span></a><span class="w">    </span><span class="sd">''' Write processed block to out_raster.</span>
 </span><span id="L-158"><a href="#L-158"><span class="linenos">158</span></a>
 </span><span id="L-159"><a href="#L-159"><span class="linenos">159</span></a><span class="sd">    Parameters</span>
 </span><span id="L-160"><a href="#L-160"><span class="linenos">160</span></a><span class="sd">    ----------</span>
@@ -276,7 +276,7 @@
 </span><span id="L-165"><a href="#L-165"><span class="linenos">165</span></a><span class="sd">        Filtered data to write to out_raster.</span>
 </span><span id="L-166"><a href="#L-166"><span class="linenos">166</span></a><span class="sd">    block_param: BlockParam</span>
 </span><span id="L-167"><a href="#L-167"><span class="linenos">167</span></a><span class="sd">        Object specifying where and how much to write to out_raster.</span>
-</span><span id="L-168"><a href="#L-168"><span class="linenos">168</span></a><span class="sd">    &#39;&#39;&#39;</span>
+</span><span id="L-168"><a href="#L-168"><span class="linenos">168</span></a><span class="sd">    '''</span>
 </span><span id="L-169"><a href="#L-169"><span class="linenos">169</span></a>    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">out_raster</span><span class="p">,</span> <span class="n">h5py</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
 </span><span id="L-170"><a href="#L-170"><span class="linenos">170</span></a>       <span class="n">out_raster</span><span class="o">.</span><span class="n">write_direct</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>
 </span><span id="L-171"><a href="#L-171"><span class="linenos">171</span></a>                      <span class="n">dest_sel</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">s_</span><span class="p">[</span>
@@ -303,10 +303,10 @@
     <a class="headerlink" href="#BlockParam"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="BlockParam-8"><a href="#BlockParam-8"><span class="linenos"> 8</span></a><span class="nd">@dataclass</span>
 </span><span id="BlockParam-9"><a href="#BlockParam-9"><span class="linenos"> 9</span></a><span class="k">class</span><span class="w"> </span><span class="nc">BlockParam</span><span class="p">:</span>
-</span><span id="BlockParam-10"><a href="#BlockParam-10"><span class="linenos">10</span></a><span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="BlockParam-10"><a href="#BlockParam-10"><span class="linenos">10</span></a><span class="w">    </span><span class="sd">'''</span>
 </span><span id="BlockParam-11"><a href="#BlockParam-11"><span class="linenos">11</span></a><span class="sd">    Class for block specific parameters</span>
 </span><span id="BlockParam-12"><a href="#BlockParam-12"><span class="linenos">12</span></a><span class="sd">    Facilitate block parameters exchange between functions</span>
-</span><span id="BlockParam-13"><a href="#BlockParam-13"><span class="linenos">13</span></a><span class="sd">    &#39;&#39;&#39;</span>
+</span><span id="BlockParam-13"><a href="#BlockParam-13"><span class="linenos">13</span></a><span class="sd">    '''</span>
 </span><span id="BlockParam-14"><a href="#BlockParam-14"><span class="linenos">14</span></a>    <span class="c1"># Length of current block to filter; padding not included</span>
 </span><span id="BlockParam-15"><a href="#BlockParam-15"><span class="linenos">15</span></a>    <span class="n">block_length</span><span class="p">:</span> <span class="nb">int</span>
 </span><span id="BlockParam-16"><a href="#BlockParam-16"><span class="linenos">16</span></a>
@@ -427,7 +427,7 @@ Facilitate block parameters exchange between functions</p>
     </div>
     <a class="headerlink" href="#block_param_generator"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="block_param_generator-36"><a href="#block_param_generator-36"><span class="linenos"> 36</span></a><span class="k">def</span><span class="w"> </span><span class="nf">block_param_generator</span><span class="p">(</span><span class="n">lines_per_block</span><span class="p">,</span> <span class="n">data_shape</span><span class="p">,</span> <span class="n">pad_shape</span><span class="p">):</span>
-</span><span id="block_param_generator-37"><a href="#block_param_generator-37"><span class="linenos"> 37</span></a><span class="w">    </span><span class="sd">&#39;&#39;&#39; Generator for block specific parameter class.</span>
+</span><span id="block_param_generator-37"><a href="#block_param_generator-37"><span class="linenos"> 37</span></a><span class="w">    </span><span class="sd">''' Generator for block specific parameter class.</span>
 </span><span id="block_param_generator-38"><a href="#block_param_generator-38"><span class="linenos"> 38</span></a>
 </span><span id="block_param_generator-39"><a href="#block_param_generator-39"><span class="linenos"> 39</span></a><span class="sd">    Parameters</span>
 </span><span id="block_param_generator-40"><a href="#block_param_generator-40"><span class="linenos"> 40</span></a><span class="sd">    ----------</span>
@@ -442,7 +442,7 @@ Facilitate block parameters exchange between functions</p>
 </span><span id="block_param_generator-49"><a href="#block_param_generator-49"><span class="linenos"> 49</span></a><span class="sd">    -------</span>
 </span><span id="block_param_generator-50"><a href="#block_param_generator-50"><span class="linenos"> 50</span></a><span class="sd">    _: BlockParam</span>
 </span><span id="block_param_generator-51"><a href="#block_param_generator-51"><span class="linenos"> 51</span></a><span class="sd">        BlockParam object for current block</span>
-</span><span id="block_param_generator-52"><a href="#block_param_generator-52"><span class="linenos"> 52</span></a><span class="sd">    &#39;&#39;&#39;</span>
+</span><span id="block_param_generator-52"><a href="#block_param_generator-52"><span class="linenos"> 52</span></a><span class="sd">    '''</span>
 </span><span id="block_param_generator-53"><a href="#block_param_generator-53"><span class="linenos"> 53</span></a>    <span class="n">data_length</span><span class="p">,</span> <span class="n">data_width</span> <span class="o">=</span> <span class="n">data_shape</span>
 </span><span id="block_param_generator-54"><a href="#block_param_generator-54"><span class="linenos"> 54</span></a>    <span class="n">pad_length</span><span class="p">,</span> <span class="n">pad_width</span> <span class="o">=</span> <span class="n">pad_shape</span>
 </span><span id="block_param_generator-55"><a href="#block_param_generator-55"><span class="linenos"> 55</span></a>
@@ -543,7 +543,7 @@ pad_shape: tuple(int, int)
     </div>
     <a class="headerlink" href="#get_raster_block"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="get_raster_block-120"><a href="#get_raster_block-120"><span class="linenos">120</span></a><span class="k">def</span><span class="w"> </span><span class="nf">get_raster_block</span><span class="p">(</span><span class="n">raster</span><span class="p">,</span> <span class="n">block_param</span><span class="p">):</span>
-</span><span id="get_raster_block-121"><a href="#get_raster_block-121"><span class="linenos">121</span></a><span class="w">    </span><span class="sd">&#39;&#39;&#39; Get a block of data from raster.</span>
+</span><span id="get_raster_block-121"><a href="#get_raster_block-121"><span class="linenos">121</span></a><span class="w">    </span><span class="sd">''' Get a block of data from raster.</span>
 </span><span id="get_raster_block-122"><a href="#get_raster_block-122"><span class="linenos">122</span></a><span class="sd">        Raster can be a HDF5 file or a GDAL-friendly raster</span>
 </span><span id="get_raster_block-123"><a href="#get_raster_block-123"><span class="linenos">123</span></a>
 </span><span id="get_raster_block-124"><a href="#get_raster_block-124"><span class="linenos">124</span></a><span class="sd">    Parameters</span>
@@ -559,7 +559,7 @@ pad_shape: tuple(int, int)
 </span><span id="get_raster_block-134"><a href="#get_raster_block-134"><span class="linenos">134</span></a><span class="sd">    -------</span>
 </span><span id="get_raster_block-135"><a href="#get_raster_block-135"><span class="linenos">135</span></a><span class="sd">    data_block: np.ndarray</span>
 </span><span id="get_raster_block-136"><a href="#get_raster_block-136"><span class="linenos">136</span></a><span class="sd">        Block read from raster with shape specified in block_param.</span>
-</span><span id="get_raster_block-137"><a href="#get_raster_block-137"><span class="linenos">137</span></a><span class="sd">    &#39;&#39;&#39;</span>
+</span><span id="get_raster_block-137"><a href="#get_raster_block-137"><span class="linenos">137</span></a><span class="sd">    '''</span>
 </span><span id="get_raster_block-138"><a href="#get_raster_block-138"><span class="linenos">138</span></a>    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">raster</span><span class="p">,</span> <span class="n">h5py</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
 </span><span id="get_raster_block-139"><a href="#get_raster_block-139"><span class="linenos">139</span></a>        <span class="n">data_block</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">block_param</span><span class="o">.</span><span class="n">read_length</span><span class="p">,</span> <span class="n">block_param</span><span class="o">.</span><span class="n">data_width</span><span class="p">),</span>
 </span><span id="get_raster_block-140"><a href="#get_raster_block-140"><span class="linenos">140</span></a>                           <span class="n">dtype</span><span class="o">=</span><span class="n">raster</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
@@ -575,7 +575,7 @@ pad_shape: tuple(int, int)
 </span><span id="get_raster_block-150"><a href="#get_raster_block-150"><span class="linenos">150</span></a>
 </span><span id="get_raster_block-151"><a href="#get_raster_block-151"><span class="linenos">151</span></a>    <span class="c1"># Pad igram_block with zeros according to pad_length/pad_width</span>
 </span><span id="get_raster_block-152"><a href="#get_raster_block-152"><span class="linenos">152</span></a>    <span class="n">data_block</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">data_block</span><span class="p">,</span> <span class="n">block_param</span><span class="o">.</span><span class="n">block_pad</span><span class="p">,</span>
-</span><span id="get_raster_block-153"><a href="#get_raster_block-153"><span class="linenos">153</span></a>                         <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">,</span> <span class="n">constant_values</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span><span id="get_raster_block-153"><a href="#get_raster_block-153"><span class="linenos">153</span></a>                         <span class="n">mode</span><span class="o">=</span><span class="s1">'constant'</span><span class="p">,</span> <span class="n">constant_values</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </span><span id="get_raster_block-154"><a href="#get_raster_block-154"><span class="linenos">154</span></a>
 </span><span id="get_raster_block-155"><a href="#get_raster_block-155"><span class="linenos">155</span></a>    <span class="k">return</span> <span class="n">data_block</span>
 </span></pre></div>
@@ -613,7 +613,7 @@ block_param: BlockParam
     </div>
     <a class="headerlink" href="#write_raster_block"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="write_raster_block-157"><a href="#write_raster_block-157"><span class="linenos">157</span></a><span class="k">def</span><span class="w"> </span><span class="nf">write_raster_block</span><span class="p">(</span><span class="n">out_raster</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">block_param</span><span class="p">):</span>
-</span><span id="write_raster_block-158"><a href="#write_raster_block-158"><span class="linenos">158</span></a><span class="w">    </span><span class="sd">&#39;&#39;&#39; Write processed block to out_raster.</span>
+</span><span id="write_raster_block-158"><a href="#write_raster_block-158"><span class="linenos">158</span></a><span class="w">    </span><span class="sd">''' Write processed block to out_raster.</span>
 </span><span id="write_raster_block-159"><a href="#write_raster_block-159"><span class="linenos">159</span></a>
 </span><span id="write_raster_block-160"><a href="#write_raster_block-160"><span class="linenos">160</span></a><span class="sd">    Parameters</span>
 </span><span id="write_raster_block-161"><a href="#write_raster_block-161"><span class="linenos">161</span></a><span class="sd">    ----------</span>
@@ -624,7 +624,7 @@ block_param: BlockParam
 </span><span id="write_raster_block-166"><a href="#write_raster_block-166"><span class="linenos">166</span></a><span class="sd">        Filtered data to write to out_raster.</span>
 </span><span id="write_raster_block-167"><a href="#write_raster_block-167"><span class="linenos">167</span></a><span class="sd">    block_param: BlockParam</span>
 </span><span id="write_raster_block-168"><a href="#write_raster_block-168"><span class="linenos">168</span></a><span class="sd">        Object specifying where and how much to write to out_raster.</span>
-</span><span id="write_raster_block-169"><a href="#write_raster_block-169"><span class="linenos">169</span></a><span class="sd">    &#39;&#39;&#39;</span>
+</span><span id="write_raster_block-169"><a href="#write_raster_block-169"><span class="linenos">169</span></a><span class="sd">    '''</span>
 </span><span id="write_raster_block-170"><a href="#write_raster_block-170"><span class="linenos">170</span></a>    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">out_raster</span><span class="p">,</span> <span class="n">h5py</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
 </span><span id="write_raster_block-171"><a href="#write_raster_block-171"><span class="linenos">171</span></a>       <span class="n">out_raster</span><span class="o">.</span><span class="n">write_direct</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>
 </span><span id="write_raster_block-172"><a href="#write_raster_block-172"><span class="linenos">172</span></a>                      <span class="n">dest_sel</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">s_</span><span class="p">[</span>

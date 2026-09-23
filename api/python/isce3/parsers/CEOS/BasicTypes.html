@@ -189,96 +189,96 @@
 
                         <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos">  1</span></a><span class="c1">#Basic types needed for handling CEOS format data</span>
 </span><span id="L-2"><a href="#L-2"><span class="linenos">  2</span></a><span class="k">class</span><span class="w"> </span><span class="nc">StringType</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-</span><span id="L-3"><a href="#L-3"><span class="linenos">  3</span></a><span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="L-3"><a href="#L-3"><span class="linenos">  3</span></a><span class="w">    </span><span class="sd">'''</span>
 </span><span id="L-4"><a href="#L-4"><span class="linenos">  4</span></a><span class="sd">    Class to read in stream of bytes.</span>
-</span><span id="L-5"><a href="#L-5"><span class="linenos">  5</span></a><span class="sd">    &#39;&#39;&#39;</span>
+</span><span id="L-5"><a href="#L-5"><span class="linenos">  5</span></a><span class="sd">    '''</span>
 </span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a>
 </span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
-</span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a><span class="sd">        Constructor takes length of string as input.</span>
-</span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a><span class="sd">        '''</span>
 </span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a>
 </span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">size</span>
 </span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
 </span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a>
 </span><span id="L-15"><a href="#L-15"><span class="linenos"> 15</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="L-16"><a href="#L-16"><span class="linenos"> 16</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="L-16"><a href="#L-16"><span class="linenos"> 16</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="L-17"><a href="#L-17"><span class="linenos"> 17</span></a><span class="sd">        Return numpy format string to read into.</span>
-</span><span id="L-18"><a href="#L-18"><span class="linenos"> 18</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="L-18"><a href="#L-18"><span class="linenos"> 18</span></a><span class="sd">        '''</span>
 </span><span id="L-19"><a href="#L-19"><span class="linenos"> 19</span></a>
-</span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a>        <span class="k">return</span> <span class="s1">&#39;a</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+</span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a>        <span class="k">return</span> <span class="s1">'a</span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
 </span><span id="L-21"><a href="#L-21"><span class="linenos"> 21</span></a>
 </span><span id="L-22"><a href="#L-22"><span class="linenos"> 22</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">fromfile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fid</span><span class="p">):</span>
-</span><span id="L-23"><a href="#L-23"><span class="linenos"> 23</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="L-23"><a href="#L-23"><span class="linenos"> 23</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="L-24"><a href="#L-24"><span class="linenos"> 24</span></a><span class="sd">        Read one entry from file into data.</span>
-</span><span id="L-25"><a href="#L-25"><span class="linenos"> 25</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="L-25"><a href="#L-25"><span class="linenos"> 25</span></a><span class="sd">        '''</span>
 </span><span id="L-26"><a href="#L-26"><span class="linenos"> 26</span></a>        <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span>
 </span><span id="L-27"><a href="#L-27"><span class="linenos"> 27</span></a>
 </span><span id="L-28"><a href="#L-28"><span class="linenos"> 28</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fromfile</span><span class="p">(</span><span class="n">fid</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">(),</span> <span class="n">count</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </span><span id="L-29"><a href="#L-29"><span class="linenos"> 29</span></a>
 </span><span id="L-30"><a href="#L-30"><span class="linenos"> 30</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">assign</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-</span><span id="L-31"><a href="#L-31"><span class="linenos"> 31</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="L-31"><a href="#L-31"><span class="linenos"> 31</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="L-32"><a href="#L-32"><span class="linenos"> 32</span></a><span class="sd">        Assign value to field.</span>
-</span><span id="L-33"><a href="#L-33"><span class="linenos"> 33</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="L-33"><a href="#L-33"><span class="linenos"> 33</span></a><span class="sd">        '''</span>
 </span><span id="L-34"><a href="#L-34"><span class="linenos"> 34</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">x</span>
 </span><span id="L-35"><a href="#L-35"><span class="linenos"> 35</span></a>
 </span><span id="L-36"><a href="#L-36"><span class="linenos"> 36</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="L-37"><a href="#L-37"><span class="linenos"> 37</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="L-37"><a href="#L-37"><span class="linenos"> 37</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="L-38"><a href="#L-38"><span class="linenos"> 38</span></a><span class="sd">        Return value as string.</span>
-</span><span id="L-39"><a href="#L-39"><span class="linenos"> 39</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="L-39"><a href="#L-39"><span class="linenos"> 39</span></a><span class="sd">        '''</span>
 </span><span id="L-40"><a href="#L-40"><span class="linenos"> 40</span></a>
-</span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+</span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">'utf-8'</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
 </span><span id="L-42"><a href="#L-42"><span class="linenos"> 42</span></a>
 </span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a><span class="k">class</span><span class="w"> </span><span class="nc">BlankType</span><span class="p">(</span><span class="n">StringType</span><span class="p">):</span>
-</span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a><span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a><span class="w">    </span><span class="sd">'''</span>
 </span><span id="L-45"><a href="#L-45"><span class="linenos"> 45</span></a><span class="sd">    Class to read in void bytes.</span>
-</span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a><span class="sd">    &#39;&#39;&#39;</span>
+</span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a><span class="sd">    '''</span>
 </span><span id="L-47"><a href="#L-47"><span class="linenos"> 47</span></a>
 </span><span id="L-48"><a href="#L-48"><span class="linenos"> 48</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="L-49"><a href="#L-49"><span class="linenos"> 49</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="L-49"><a href="#L-49"><span class="linenos"> 49</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="L-50"><a href="#L-50"><span class="linenos"> 50</span></a><span class="sd">        Return numpy format string to read into.</span>
-</span><span id="L-51"><a href="#L-51"><span class="linenos"> 51</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="L-51"><a href="#L-51"><span class="linenos"> 51</span></a><span class="sd">        '''</span>
 </span><span id="L-52"><a href="#L-52"><span class="linenos"> 52</span></a>        
-</span><span id="L-53"><a href="#L-53"><span class="linenos"> 53</span></a>        <span class="k">return</span> <span class="s1">&#39;V</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+</span><span id="L-53"><a href="#L-53"><span class="linenos"> 53</span></a>        <span class="k">return</span> <span class="s1">'V</span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
 </span><span id="L-54"><a href="#L-54"><span class="linenos"> 54</span></a>
 </span><span id="L-55"><a href="#L-55"><span class="linenos"> 55</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="L-56"><a href="#L-56"><span class="linenos"> 56</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="L-56"><a href="#L-56"><span class="linenos"> 56</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="L-57"><a href="#L-57"><span class="linenos"> 57</span></a><span class="sd">        Return None for blanks.</span>
-</span><span id="L-58"><a href="#L-58"><span class="linenos"> 58</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="L-58"><a href="#L-58"><span class="linenos"> 58</span></a><span class="sd">        '''</span>
 </span><span id="L-59"><a href="#L-59"><span class="linenos"> 59</span></a>        
 </span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a>        <span class="k">return</span> <span class="kc">None</span>
 </span><span id="L-61"><a href="#L-61"><span class="linenos"> 61</span></a>
 </span><span id="L-62"><a href="#L-62"><span class="linenos"> 62</span></a><span class="k">class</span><span class="w"> </span><span class="nc">IntegerType</span><span class="p">(</span><span class="n">StringType</span><span class="p">):</span>
-</span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a><span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a><span class="w">    </span><span class="sd">'''</span>
 </span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a><span class="sd">    Treat the string as an integer.</span>
-</span><span id="L-65"><a href="#L-65"><span class="linenos"> 65</span></a><span class="sd">    &#39;&#39;&#39;</span>
+</span><span id="L-65"><a href="#L-65"><span class="linenos"> 65</span></a><span class="sd">    '''</span>
 </span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a>
 </span><span id="L-67"><a href="#L-67"><span class="linenos"> 67</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a><span class="sd">        Read one integer from file.</span>
-</span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a><span class="sd">        '''</span>
 </span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a>        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">value</span><span class="p">())</span>
 </span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a>
 </span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a><span class="k">class</span><span class="w"> </span><span class="nc">FloatType</span><span class="p">(</span><span class="n">StringType</span><span class="p">):</span>
-</span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a><span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a><span class="w">    </span><span class="sd">'''</span>
 </span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a><span class="sd">    Treat the string as an integer.</span>
-</span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a><span class="sd">    &#39;&#39;&#39;</span>
+</span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a><span class="sd">    '''</span>
 </span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a>
 </span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="L-79"><a href="#L-79"><span class="linenos"> 79</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="L-79"><a href="#L-79"><span class="linenos"> 79</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="L-80"><a href="#L-80"><span class="linenos"> 80</span></a><span class="sd">        Read one integer from file.</span>
-</span><span id="L-81"><a href="#L-81"><span class="linenos"> 81</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="L-81"><a href="#L-81"><span class="linenos"> 81</span></a><span class="sd">        '''</span>
 </span><span id="L-82"><a href="#L-82"><span class="linenos"> 82</span></a>        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">value</span><span class="p">())</span>
 </span><span id="L-83"><a href="#L-83"><span class="linenos"> 83</span></a>
 </span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a><span class="k">class</span><span class="w"> </span><span class="nc">BinaryType</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-</span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a><span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a><span class="w">    </span><span class="sd">'''</span>
 </span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a><span class="sd">    Class to read in binary data directly.</span>
-</span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a><span class="sd">    &#39;&#39;&#39;</span>
+</span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a><span class="sd">    '''</span>
 </span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a>
 </span><span id="L-89"><a href="#L-89"><span class="linenos"> 89</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intype</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-</span><span id="L-90"><a href="#L-90"><span class="linenos"> 90</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="L-90"><a href="#L-90"><span class="linenos"> 90</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="L-91"><a href="#L-91"><span class="linenos"> 91</span></a><span class="sd">        Constructor takes length of string as input.</span>
-</span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a><span class="sd">        '''</span>
 </span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a>        <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span>
 </span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a>
 </span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">intype</span> <span class="o">=</span> <span class="n">intype</span>
@@ -287,9 +287,9 @@
 </span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
 </span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a>
 </span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="L-102"><a href="#L-102"><span class="linenos">102</span></a><span class="sd">        Return numpy format string to read into.</span>
-</span><span id="L-103"><a href="#L-103"><span class="linenos">103</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="L-103"><a href="#L-103"><span class="linenos">103</span></a><span class="sd">        '''</span>
 </span><span id="L-104"><a href="#L-104"><span class="linenos">104</span></a>
 </span><span id="L-105"><a href="#L-105"><span class="linenos">105</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
 </span><span id="L-106"><a href="#L-106"><span class="linenos">106</span></a>            <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intype</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span><span class="p">)</span>
@@ -297,22 +297,22 @@
 </span><span id="L-108"><a href="#L-108"><span class="linenos">108</span></a>            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">intype</span>
 </span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a>
 </span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">fromfile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fid</span><span class="p">):</span>
-</span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a><span class="sd">        Read one entry from file into data.</span>
-</span><span id="L-113"><a href="#L-113"><span class="linenos">113</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="L-113"><a href="#L-113"><span class="linenos">113</span></a><span class="sd">        '''</span>
 </span><span id="L-114"><a href="#L-114"><span class="linenos">114</span></a>        <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span>  
 </span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fromfile</span><span class="p">(</span><span class="n">fid</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">(),</span> <span class="n">count</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">count</span><span class="p">)</span>
 </span><span id="L-116"><a href="#L-116"><span class="linenos">116</span></a>
 </span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">assign</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-</span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a><span class="sd">        Assign value to field.</span>
-</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a><span class="sd">        '''</span>
 </span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">x</span>
 </span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a>
 </span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a><span class="sd">        Return value as string.</span>
-</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a><span class="sd">        '''</span>
 </span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
 </span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a>            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a>        <span class="k">else</span><span class="p">:</span>
@@ -320,26 +320,26 @@
 </span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a>
 </span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a>
 </span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a><span class="k">class</span><span class="w"> </span><span class="nc">MultiType</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-</span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a><span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a><span class="w">    </span><span class="sd">'''</span>
 </span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a><span class="sd">    Generic type.</span>
-</span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a><span class="sd">    &#39;&#39;&#39;</span>
+</span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a><span class="sd">    '''</span>
 </span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a>
 </span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inlist</span><span class="p">):</span>
-</span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="L-140"><a href="#L-140"><span class="linenos">140</span></a><span class="sd">        Initiate type with dictionary.</span>
-</span><span id="L-141"><a href="#L-141"><span class="linenos">141</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="L-141"><a href="#L-141"><span class="linenos">141</span></a><span class="sd">        '''</span>
 </span><span id="L-142"><a href="#L-142"><span class="linenos">142</span></a>
 </span><span id="L-143"><a href="#L-143"><span class="linenos">143</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inlist</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-</span><span id="L-144"><a href="#L-144"><span class="linenos">144</span></a>            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Only lists are supported by CEOS parser.&#39;</span><span class="p">)</span>
+</span><span id="L-144"><a href="#L-144"><span class="linenos">144</span></a>            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'Only lists are supported by CEOS parser.'</span><span class="p">)</span>
 </span><span id="L-145"><a href="#L-145"><span class="linenos">145</span></a>
 </span><span id="L-146"><a href="#L-146"><span class="linenos">146</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span> <span class="o">=</span> <span class="n">inlist</span>
 </span><span id="L-147"><a href="#L-147"><span class="linenos">147</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
 </span><span id="L-148"><a href="#L-148"><span class="linenos">148</span></a>
 </span><span id="L-149"><a href="#L-149"><span class="linenos">149</span></a>
 </span><span id="L-150"><a href="#L-150"><span class="linenos">150</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="L-151"><a href="#L-151"><span class="linenos">151</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="L-151"><a href="#L-151"><span class="linenos">151</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="L-152"><a href="#L-152"><span class="linenos">152</span></a><span class="sd">        Return equivalent numpy dtype.</span>
-</span><span id="L-153"><a href="#L-153"><span class="linenos">153</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="L-153"><a href="#L-153"><span class="linenos">153</span></a><span class="sd">        '''</span>
 </span><span id="L-154"><a href="#L-154"><span class="linenos">154</span></a>        <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span> 
 </span><span id="L-155"><a href="#L-155"><span class="linenos">155</span></a>
 </span><span id="L-156"><a href="#L-156"><span class="linenos">156</span></a>        <span class="n">typelist</span> <span class="o">=</span> <span class="p">[]</span>
@@ -355,9 +355,9 @@
 </span><span id="L-166"><a href="#L-166"><span class="linenos">166</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">indata</span>
 </span><span id="L-167"><a href="#L-167"><span class="linenos">167</span></a>
 </span><span id="L-168"><a href="#L-168"><span class="linenos">168</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">fromfile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fid</span><span class="p">):</span>
-</span><span id="L-169"><a href="#L-169"><span class="linenos">169</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="L-169"><a href="#L-169"><span class="linenos">169</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="L-170"><a href="#L-170"><span class="linenos">170</span></a><span class="sd">        Parse record from file.</span>
-</span><span id="L-171"><a href="#L-171"><span class="linenos">171</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="L-171"><a href="#L-171"><span class="linenos">171</span></a><span class="sd">        '''</span>
 </span><span id="L-172"><a href="#L-172"><span class="linenos">172</span></a>        <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span>  
 </span><span id="L-173"><a href="#L-173"><span class="linenos">173</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fromfile</span><span class="p">(</span><span class="n">fid</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">(),</span> <span class="n">count</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </span><span id="L-174"><a href="#L-174"><span class="linenos">174</span></a>       
@@ -366,9 +366,9 @@
 </span><span id="L-177"><a href="#L-177"><span class="linenos">177</span></a>                <span class="n">v</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
 </span><span id="L-178"><a href="#L-178"><span class="linenos">178</span></a>
 </span><span id="L-179"><a href="#L-179"><span class="linenos">179</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-</span><span id="L-180"><a href="#L-180"><span class="linenos">180</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="L-180"><a href="#L-180"><span class="linenos">180</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="L-181"><a href="#L-181"><span class="linenos">181</span></a><span class="sd">        Return parsed value.</span>
-</span><span id="L-182"><a href="#L-182"><span class="linenos">182</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="L-182"><a href="#L-182"><span class="linenos">182</span></a><span class="sd">        '''</span>
 </span><span id="L-183"><a href="#L-183"><span class="linenos">183</span></a>        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="p">:</span>
 </span><span id="L-184"><a href="#L-184"><span class="linenos">184</span></a>            <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="n">key</span><span class="p">:</span>
 </span><span id="L-185"><a href="#L-185"><span class="linenos">185</span></a>                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">MultiType</span><span class="p">):</span>
@@ -376,7 +376,7 @@
 </span><span id="L-187"><a href="#L-187"><span class="linenos">187</span></a>                <span class="k">else</span><span class="p">:</span>
 </span><span id="L-188"><a href="#L-188"><span class="linenos">188</span></a>                    <span class="k">return</span> <span class="n">v</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
 </span><span id="L-189"><a href="#L-189"><span class="linenos">189</span></a>
-</span><span id="L-190"><a href="#L-190"><span class="linenos">190</span></a>        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;MultiType record does not contain field named </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+</span><span id="L-190"><a href="#L-190"><span class="linenos">190</span></a>        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'MultiType record does not contain field named </span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
 </span></pre></div>
 
 
@@ -393,45 +393,45 @@
     </div>
     <a class="headerlink" href="#StringType"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="StringType-3"><a href="#StringType-3"><span class="linenos"> 3</span></a><span class="k">class</span><span class="w"> </span><span class="nc">StringType</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-</span><span id="StringType-4"><a href="#StringType-4"><span class="linenos"> 4</span></a><span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="StringType-4"><a href="#StringType-4"><span class="linenos"> 4</span></a><span class="w">    </span><span class="sd">'''</span>
 </span><span id="StringType-5"><a href="#StringType-5"><span class="linenos"> 5</span></a><span class="sd">    Class to read in stream of bytes.</span>
-</span><span id="StringType-6"><a href="#StringType-6"><span class="linenos"> 6</span></a><span class="sd">    &#39;&#39;&#39;</span>
+</span><span id="StringType-6"><a href="#StringType-6"><span class="linenos"> 6</span></a><span class="sd">    '''</span>
 </span><span id="StringType-7"><a href="#StringType-7"><span class="linenos"> 7</span></a>
 </span><span id="StringType-8"><a href="#StringType-8"><span class="linenos"> 8</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
-</span><span id="StringType-9"><a href="#StringType-9"><span class="linenos"> 9</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="StringType-9"><a href="#StringType-9"><span class="linenos"> 9</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="StringType-10"><a href="#StringType-10"><span class="linenos">10</span></a><span class="sd">        Constructor takes length of string as input.</span>
-</span><span id="StringType-11"><a href="#StringType-11"><span class="linenos">11</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="StringType-11"><a href="#StringType-11"><span class="linenos">11</span></a><span class="sd">        '''</span>
 </span><span id="StringType-12"><a href="#StringType-12"><span class="linenos">12</span></a>
 </span><span id="StringType-13"><a href="#StringType-13"><span class="linenos">13</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">size</span>
 </span><span id="StringType-14"><a href="#StringType-14"><span class="linenos">14</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
 </span><span id="StringType-15"><a href="#StringType-15"><span class="linenos">15</span></a>
 </span><span id="StringType-16"><a href="#StringType-16"><span class="linenos">16</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="StringType-17"><a href="#StringType-17"><span class="linenos">17</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="StringType-17"><a href="#StringType-17"><span class="linenos">17</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="StringType-18"><a href="#StringType-18"><span class="linenos">18</span></a><span class="sd">        Return numpy format string to read into.</span>
-</span><span id="StringType-19"><a href="#StringType-19"><span class="linenos">19</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="StringType-19"><a href="#StringType-19"><span class="linenos">19</span></a><span class="sd">        '''</span>
 </span><span id="StringType-20"><a href="#StringType-20"><span class="linenos">20</span></a>
-</span><span id="StringType-21"><a href="#StringType-21"><span class="linenos">21</span></a>        <span class="k">return</span> <span class="s1">&#39;a</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+</span><span id="StringType-21"><a href="#StringType-21"><span class="linenos">21</span></a>        <span class="k">return</span> <span class="s1">'a</span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
 </span><span id="StringType-22"><a href="#StringType-22"><span class="linenos">22</span></a>
 </span><span id="StringType-23"><a href="#StringType-23"><span class="linenos">23</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">fromfile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fid</span><span class="p">):</span>
-</span><span id="StringType-24"><a href="#StringType-24"><span class="linenos">24</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="StringType-24"><a href="#StringType-24"><span class="linenos">24</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="StringType-25"><a href="#StringType-25"><span class="linenos">25</span></a><span class="sd">        Read one entry from file into data.</span>
-</span><span id="StringType-26"><a href="#StringType-26"><span class="linenos">26</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="StringType-26"><a href="#StringType-26"><span class="linenos">26</span></a><span class="sd">        '''</span>
 </span><span id="StringType-27"><a href="#StringType-27"><span class="linenos">27</span></a>        <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span>
 </span><span id="StringType-28"><a href="#StringType-28"><span class="linenos">28</span></a>
 </span><span id="StringType-29"><a href="#StringType-29"><span class="linenos">29</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fromfile</span><span class="p">(</span><span class="n">fid</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">(),</span> <span class="n">count</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </span><span id="StringType-30"><a href="#StringType-30"><span class="linenos">30</span></a>
 </span><span id="StringType-31"><a href="#StringType-31"><span class="linenos">31</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">assign</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-</span><span id="StringType-32"><a href="#StringType-32"><span class="linenos">32</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="StringType-32"><a href="#StringType-32"><span class="linenos">32</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="StringType-33"><a href="#StringType-33"><span class="linenos">33</span></a><span class="sd">        Assign value to field.</span>
-</span><span id="StringType-34"><a href="#StringType-34"><span class="linenos">34</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="StringType-34"><a href="#StringType-34"><span class="linenos">34</span></a><span class="sd">        '''</span>
 </span><span id="StringType-35"><a href="#StringType-35"><span class="linenos">35</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">x</span>
 </span><span id="StringType-36"><a href="#StringType-36"><span class="linenos">36</span></a>
 </span><span id="StringType-37"><a href="#StringType-37"><span class="linenos">37</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="StringType-38"><a href="#StringType-38"><span class="linenos">38</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="StringType-38"><a href="#StringType-38"><span class="linenos">38</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="StringType-39"><a href="#StringType-39"><span class="linenos">39</span></a><span class="sd">        Return value as string.</span>
-</span><span id="StringType-40"><a href="#StringType-40"><span class="linenos">40</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="StringType-40"><a href="#StringType-40"><span class="linenos">40</span></a><span class="sd">        '''</span>
 </span><span id="StringType-41"><a href="#StringType-41"><span class="linenos">41</span></a>
-</span><span id="StringType-42"><a href="#StringType-42"><span class="linenos">42</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+</span><span id="StringType-42"><a href="#StringType-42"><span class="linenos">42</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">'utf-8'</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
 </span></pre></div>
 
 
@@ -450,9 +450,9 @@
     </div>
     <a class="headerlink" href="#StringType.__init__"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="StringType.__init__-8"><a href="#StringType.__init__-8"><span class="linenos"> 8</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
-</span><span id="StringType.__init__-9"><a href="#StringType.__init__-9"><span class="linenos"> 9</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="StringType.__init__-9"><a href="#StringType.__init__-9"><span class="linenos"> 9</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="StringType.__init__-10"><a href="#StringType.__init__-10"><span class="linenos">10</span></a><span class="sd">        Constructor takes length of string as input.</span>
-</span><span id="StringType.__init__-11"><a href="#StringType.__init__-11"><span class="linenos">11</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="StringType.__init__-11"><a href="#StringType.__init__-11"><span class="linenos">11</span></a><span class="sd">        '''</span>
 </span><span id="StringType.__init__-12"><a href="#StringType.__init__-12"><span class="linenos">12</span></a>
 </span><span id="StringType.__init__-13"><a href="#StringType.__init__-13"><span class="linenos">13</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">size</span>
 </span><span id="StringType.__init__-14"><a href="#StringType.__init__-14"><span class="linenos">14</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
@@ -498,11 +498,11 @@
     </div>
     <a class="headerlink" href="#StringType.dtype"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="StringType.dtype-16"><a href="#StringType.dtype-16"><span class="linenos">16</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="StringType.dtype-17"><a href="#StringType.dtype-17"><span class="linenos">17</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="StringType.dtype-17"><a href="#StringType.dtype-17"><span class="linenos">17</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="StringType.dtype-18"><a href="#StringType.dtype-18"><span class="linenos">18</span></a><span class="sd">        Return numpy format string to read into.</span>
-</span><span id="StringType.dtype-19"><a href="#StringType.dtype-19"><span class="linenos">19</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="StringType.dtype-19"><a href="#StringType.dtype-19"><span class="linenos">19</span></a><span class="sd">        '''</span>
 </span><span id="StringType.dtype-20"><a href="#StringType.dtype-20"><span class="linenos">20</span></a>
-</span><span id="StringType.dtype-21"><a href="#StringType.dtype-21"><span class="linenos">21</span></a>        <span class="k">return</span> <span class="s1">&#39;a</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+</span><span id="StringType.dtype-21"><a href="#StringType.dtype-21"><span class="linenos">21</span></a>        <span class="k">return</span> <span class="s1">'a</span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -523,9 +523,9 @@
     </div>
     <a class="headerlink" href="#StringType.fromfile"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="StringType.fromfile-23"><a href="#StringType.fromfile-23"><span class="linenos">23</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">fromfile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fid</span><span class="p">):</span>
-</span><span id="StringType.fromfile-24"><a href="#StringType.fromfile-24"><span class="linenos">24</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="StringType.fromfile-24"><a href="#StringType.fromfile-24"><span class="linenos">24</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="StringType.fromfile-25"><a href="#StringType.fromfile-25"><span class="linenos">25</span></a><span class="sd">        Read one entry from file into data.</span>
-</span><span id="StringType.fromfile-26"><a href="#StringType.fromfile-26"><span class="linenos">26</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="StringType.fromfile-26"><a href="#StringType.fromfile-26"><span class="linenos">26</span></a><span class="sd">        '''</span>
 </span><span id="StringType.fromfile-27"><a href="#StringType.fromfile-27"><span class="linenos">27</span></a>        <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span>
 </span><span id="StringType.fromfile-28"><a href="#StringType.fromfile-28"><span class="linenos">28</span></a>
 </span><span id="StringType.fromfile-29"><a href="#StringType.fromfile-29"><span class="linenos">29</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fromfile</span><span class="p">(</span><span class="n">fid</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">(),</span> <span class="n">count</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -549,9 +549,9 @@
     </div>
     <a class="headerlink" href="#StringType.assign"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="StringType.assign-31"><a href="#StringType.assign-31"><span class="linenos">31</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">assign</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-</span><span id="StringType.assign-32"><a href="#StringType.assign-32"><span class="linenos">32</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="StringType.assign-32"><a href="#StringType.assign-32"><span class="linenos">32</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="StringType.assign-33"><a href="#StringType.assign-33"><span class="linenos">33</span></a><span class="sd">        Assign value to field.</span>
-</span><span id="StringType.assign-34"><a href="#StringType.assign-34"><span class="linenos">34</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="StringType.assign-34"><a href="#StringType.assign-34"><span class="linenos">34</span></a><span class="sd">        '''</span>
 </span><span id="StringType.assign-35"><a href="#StringType.assign-35"><span class="linenos">35</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">x</span>
 </span></pre></div>
 
@@ -573,11 +573,11 @@
     </div>
     <a class="headerlink" href="#StringType.value"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="StringType.value-37"><a href="#StringType.value-37"><span class="linenos">37</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="StringType.value-38"><a href="#StringType.value-38"><span class="linenos">38</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="StringType.value-38"><a href="#StringType.value-38"><span class="linenos">38</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="StringType.value-39"><a href="#StringType.value-39"><span class="linenos">39</span></a><span class="sd">        Return value as string.</span>
-</span><span id="StringType.value-40"><a href="#StringType.value-40"><span class="linenos">40</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="StringType.value-40"><a href="#StringType.value-40"><span class="linenos">40</span></a><span class="sd">        '''</span>
 </span><span id="StringType.value-41"><a href="#StringType.value-41"><span class="linenos">41</span></a>
-</span><span id="StringType.value-42"><a href="#StringType.value-42"><span class="linenos">42</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+</span><span id="StringType.value-42"><a href="#StringType.value-42"><span class="linenos">42</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">'utf-8'</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
 </span></pre></div>
 
 
@@ -599,21 +599,21 @@
     </div>
     <a class="headerlink" href="#BlankType"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="BlankType-44"><a href="#BlankType-44"><span class="linenos">44</span></a><span class="k">class</span><span class="w"> </span><span class="nc">BlankType</span><span class="p">(</span><span class="n">StringType</span><span class="p">):</span>
-</span><span id="BlankType-45"><a href="#BlankType-45"><span class="linenos">45</span></a><span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="BlankType-45"><a href="#BlankType-45"><span class="linenos">45</span></a><span class="w">    </span><span class="sd">'''</span>
 </span><span id="BlankType-46"><a href="#BlankType-46"><span class="linenos">46</span></a><span class="sd">    Class to read in void bytes.</span>
-</span><span id="BlankType-47"><a href="#BlankType-47"><span class="linenos">47</span></a><span class="sd">    &#39;&#39;&#39;</span>
+</span><span id="BlankType-47"><a href="#BlankType-47"><span class="linenos">47</span></a><span class="sd">    '''</span>
 </span><span id="BlankType-48"><a href="#BlankType-48"><span class="linenos">48</span></a>
 </span><span id="BlankType-49"><a href="#BlankType-49"><span class="linenos">49</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="BlankType-50"><a href="#BlankType-50"><span class="linenos">50</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="BlankType-50"><a href="#BlankType-50"><span class="linenos">50</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="BlankType-51"><a href="#BlankType-51"><span class="linenos">51</span></a><span class="sd">        Return numpy format string to read into.</span>
-</span><span id="BlankType-52"><a href="#BlankType-52"><span class="linenos">52</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="BlankType-52"><a href="#BlankType-52"><span class="linenos">52</span></a><span class="sd">        '''</span>
 </span><span id="BlankType-53"><a href="#BlankType-53"><span class="linenos">53</span></a>        
-</span><span id="BlankType-54"><a href="#BlankType-54"><span class="linenos">54</span></a>        <span class="k">return</span> <span class="s1">&#39;V</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+</span><span id="BlankType-54"><a href="#BlankType-54"><span class="linenos">54</span></a>        <span class="k">return</span> <span class="s1">'V</span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
 </span><span id="BlankType-55"><a href="#BlankType-55"><span class="linenos">55</span></a>
 </span><span id="BlankType-56"><a href="#BlankType-56"><span class="linenos">56</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="BlankType-57"><a href="#BlankType-57"><span class="linenos">57</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="BlankType-57"><a href="#BlankType-57"><span class="linenos">57</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="BlankType-58"><a href="#BlankType-58"><span class="linenos">58</span></a><span class="sd">        Return None for blanks.</span>
-</span><span id="BlankType-59"><a href="#BlankType-59"><span class="linenos">59</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="BlankType-59"><a href="#BlankType-59"><span class="linenos">59</span></a><span class="sd">        '''</span>
 </span><span id="BlankType-60"><a href="#BlankType-60"><span class="linenos">60</span></a>        
 </span><span id="BlankType-61"><a href="#BlankType-61"><span class="linenos">61</span></a>        <span class="k">return</span> <span class="kc">None</span>
 </span></pre></div>
@@ -635,11 +635,11 @@
     </div>
     <a class="headerlink" href="#BlankType.dtype"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="BlankType.dtype-49"><a href="#BlankType.dtype-49"><span class="linenos">49</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="BlankType.dtype-50"><a href="#BlankType.dtype-50"><span class="linenos">50</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="BlankType.dtype-50"><a href="#BlankType.dtype-50"><span class="linenos">50</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="BlankType.dtype-51"><a href="#BlankType.dtype-51"><span class="linenos">51</span></a><span class="sd">        Return numpy format string to read into.</span>
-</span><span id="BlankType.dtype-52"><a href="#BlankType.dtype-52"><span class="linenos">52</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="BlankType.dtype-52"><a href="#BlankType.dtype-52"><span class="linenos">52</span></a><span class="sd">        '''</span>
 </span><span id="BlankType.dtype-53"><a href="#BlankType.dtype-53"><span class="linenos">53</span></a>        
-</span><span id="BlankType.dtype-54"><a href="#BlankType.dtype-54"><span class="linenos">54</span></a>        <span class="k">return</span> <span class="s1">&#39;V</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+</span><span id="BlankType.dtype-54"><a href="#BlankType.dtype-54"><span class="linenos">54</span></a>        <span class="k">return</span> <span class="s1">'V</span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -660,9 +660,9 @@
     </div>
     <a class="headerlink" href="#BlankType.value"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="BlankType.value-56"><a href="#BlankType.value-56"><span class="linenos">56</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="BlankType.value-57"><a href="#BlankType.value-57"><span class="linenos">57</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="BlankType.value-57"><a href="#BlankType.value-57"><span class="linenos">57</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="BlankType.value-58"><a href="#BlankType.value-58"><span class="linenos">58</span></a><span class="sd">        Return None for blanks.</span>
-</span><span id="BlankType.value-59"><a href="#BlankType.value-59"><span class="linenos">59</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="BlankType.value-59"><a href="#BlankType.value-59"><span class="linenos">59</span></a><span class="sd">        '''</span>
 </span><span id="BlankType.value-60"><a href="#BlankType.value-60"><span class="linenos">60</span></a>        
 </span><span id="BlankType.value-61"><a href="#BlankType.value-61"><span class="linenos">61</span></a>        <span class="k">return</span> <span class="kc">None</span>
 </span></pre></div>
@@ -699,14 +699,14 @@
     </div>
     <a class="headerlink" href="#IntegerType"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="IntegerType-63"><a href="#IntegerType-63"><span class="linenos">63</span></a><span class="k">class</span><span class="w"> </span><span class="nc">IntegerType</span><span class="p">(</span><span class="n">StringType</span><span class="p">):</span>
-</span><span id="IntegerType-64"><a href="#IntegerType-64"><span class="linenos">64</span></a><span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="IntegerType-64"><a href="#IntegerType-64"><span class="linenos">64</span></a><span class="w">    </span><span class="sd">'''</span>
 </span><span id="IntegerType-65"><a href="#IntegerType-65"><span class="linenos">65</span></a><span class="sd">    Treat the string as an integer.</span>
-</span><span id="IntegerType-66"><a href="#IntegerType-66"><span class="linenos">66</span></a><span class="sd">    &#39;&#39;&#39;</span>
+</span><span id="IntegerType-66"><a href="#IntegerType-66"><span class="linenos">66</span></a><span class="sd">    '''</span>
 </span><span id="IntegerType-67"><a href="#IntegerType-67"><span class="linenos">67</span></a>
 </span><span id="IntegerType-68"><a href="#IntegerType-68"><span class="linenos">68</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="IntegerType-69"><a href="#IntegerType-69"><span class="linenos">69</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="IntegerType-69"><a href="#IntegerType-69"><span class="linenos">69</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="IntegerType-70"><a href="#IntegerType-70"><span class="linenos">70</span></a><span class="sd">        Read one integer from file.</span>
-</span><span id="IntegerType-71"><a href="#IntegerType-71"><span class="linenos">71</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="IntegerType-71"><a href="#IntegerType-71"><span class="linenos">71</span></a><span class="sd">        '''</span>
 </span><span id="IntegerType-72"><a href="#IntegerType-72"><span class="linenos">72</span></a>        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">value</span><span class="p">())</span>
 </span></pre></div>
 
@@ -727,9 +727,9 @@
     </div>
     <a class="headerlink" href="#IntegerType.value"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="IntegerType.value-68"><a href="#IntegerType.value-68"><span class="linenos">68</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="IntegerType.value-69"><a href="#IntegerType.value-69"><span class="linenos">69</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="IntegerType.value-69"><a href="#IntegerType.value-69"><span class="linenos">69</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="IntegerType.value-70"><a href="#IntegerType.value-70"><span class="linenos">70</span></a><span class="sd">        Read one integer from file.</span>
-</span><span id="IntegerType.value-71"><a href="#IntegerType.value-71"><span class="linenos">71</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="IntegerType.value-71"><a href="#IntegerType.value-71"><span class="linenos">71</span></a><span class="sd">        '''</span>
 </span><span id="IntegerType.value-72"><a href="#IntegerType.value-72"><span class="linenos">72</span></a>        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">value</span><span class="p">())</span>
 </span></pre></div>
 
@@ -766,14 +766,14 @@
     </div>
     <a class="headerlink" href="#FloatType"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="FloatType-74"><a href="#FloatType-74"><span class="linenos">74</span></a><span class="k">class</span><span class="w"> </span><span class="nc">FloatType</span><span class="p">(</span><span class="n">StringType</span><span class="p">):</span>
-</span><span id="FloatType-75"><a href="#FloatType-75"><span class="linenos">75</span></a><span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="FloatType-75"><a href="#FloatType-75"><span class="linenos">75</span></a><span class="w">    </span><span class="sd">'''</span>
 </span><span id="FloatType-76"><a href="#FloatType-76"><span class="linenos">76</span></a><span class="sd">    Treat the string as an integer.</span>
-</span><span id="FloatType-77"><a href="#FloatType-77"><span class="linenos">77</span></a><span class="sd">    &#39;&#39;&#39;</span>
+</span><span id="FloatType-77"><a href="#FloatType-77"><span class="linenos">77</span></a><span class="sd">    '''</span>
 </span><span id="FloatType-78"><a href="#FloatType-78"><span class="linenos">78</span></a>
 </span><span id="FloatType-79"><a href="#FloatType-79"><span class="linenos">79</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="FloatType-80"><a href="#FloatType-80"><span class="linenos">80</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="FloatType-80"><a href="#FloatType-80"><span class="linenos">80</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="FloatType-81"><a href="#FloatType-81"><span class="linenos">81</span></a><span class="sd">        Read one integer from file.</span>
-</span><span id="FloatType-82"><a href="#FloatType-82"><span class="linenos">82</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="FloatType-82"><a href="#FloatType-82"><span class="linenos">82</span></a><span class="sd">        '''</span>
 </span><span id="FloatType-83"><a href="#FloatType-83"><span class="linenos">83</span></a>        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">value</span><span class="p">())</span>
 </span></pre></div>
 
@@ -794,9 +794,9 @@
     </div>
     <a class="headerlink" href="#FloatType.value"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="FloatType.value-79"><a href="#FloatType.value-79"><span class="linenos">79</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="FloatType.value-80"><a href="#FloatType.value-80"><span class="linenos">80</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="FloatType.value-80"><a href="#FloatType.value-80"><span class="linenos">80</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="FloatType.value-81"><a href="#FloatType.value-81"><span class="linenos">81</span></a><span class="sd">        Read one integer from file.</span>
-</span><span id="FloatType.value-82"><a href="#FloatType.value-82"><span class="linenos">82</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="FloatType.value-82"><a href="#FloatType.value-82"><span class="linenos">82</span></a><span class="sd">        '''</span>
 </span><span id="FloatType.value-83"><a href="#FloatType.value-83"><span class="linenos">83</span></a>        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">value</span><span class="p">())</span>
 </span></pre></div>
 
@@ -833,14 +833,14 @@
     </div>
     <a class="headerlink" href="#BinaryType"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="BinaryType-85"><a href="#BinaryType-85"><span class="linenos"> 85</span></a><span class="k">class</span><span class="w"> </span><span class="nc">BinaryType</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-</span><span id="BinaryType-86"><a href="#BinaryType-86"><span class="linenos"> 86</span></a><span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="BinaryType-86"><a href="#BinaryType-86"><span class="linenos"> 86</span></a><span class="w">    </span><span class="sd">'''</span>
 </span><span id="BinaryType-87"><a href="#BinaryType-87"><span class="linenos"> 87</span></a><span class="sd">    Class to read in binary data directly.</span>
-</span><span id="BinaryType-88"><a href="#BinaryType-88"><span class="linenos"> 88</span></a><span class="sd">    &#39;&#39;&#39;</span>
+</span><span id="BinaryType-88"><a href="#BinaryType-88"><span class="linenos"> 88</span></a><span class="sd">    '''</span>
 </span><span id="BinaryType-89"><a href="#BinaryType-89"><span class="linenos"> 89</span></a>
 </span><span id="BinaryType-90"><a href="#BinaryType-90"><span class="linenos"> 90</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intype</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-</span><span id="BinaryType-91"><a href="#BinaryType-91"><span class="linenos"> 91</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="BinaryType-91"><a href="#BinaryType-91"><span class="linenos"> 91</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="BinaryType-92"><a href="#BinaryType-92"><span class="linenos"> 92</span></a><span class="sd">        Constructor takes length of string as input.</span>
-</span><span id="BinaryType-93"><a href="#BinaryType-93"><span class="linenos"> 93</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="BinaryType-93"><a href="#BinaryType-93"><span class="linenos"> 93</span></a><span class="sd">        '''</span>
 </span><span id="BinaryType-94"><a href="#BinaryType-94"><span class="linenos"> 94</span></a>        <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span>
 </span><span id="BinaryType-95"><a href="#BinaryType-95"><span class="linenos"> 95</span></a>
 </span><span id="BinaryType-96"><a href="#BinaryType-96"><span class="linenos"> 96</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">intype</span> <span class="o">=</span> <span class="n">intype</span>
@@ -849,9 +849,9 @@
 </span><span id="BinaryType-99"><a href="#BinaryType-99"><span class="linenos"> 99</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
 </span><span id="BinaryType-100"><a href="#BinaryType-100"><span class="linenos">100</span></a>
 </span><span id="BinaryType-101"><a href="#BinaryType-101"><span class="linenos">101</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="BinaryType-102"><a href="#BinaryType-102"><span class="linenos">102</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="BinaryType-102"><a href="#BinaryType-102"><span class="linenos">102</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="BinaryType-103"><a href="#BinaryType-103"><span class="linenos">103</span></a><span class="sd">        Return numpy format string to read into.</span>
-</span><span id="BinaryType-104"><a href="#BinaryType-104"><span class="linenos">104</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="BinaryType-104"><a href="#BinaryType-104"><span class="linenos">104</span></a><span class="sd">        '''</span>
 </span><span id="BinaryType-105"><a href="#BinaryType-105"><span class="linenos">105</span></a>
 </span><span id="BinaryType-106"><a href="#BinaryType-106"><span class="linenos">106</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
 </span><span id="BinaryType-107"><a href="#BinaryType-107"><span class="linenos">107</span></a>            <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intype</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span><span class="p">)</span>
@@ -859,22 +859,22 @@
 </span><span id="BinaryType-109"><a href="#BinaryType-109"><span class="linenos">109</span></a>            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">intype</span>
 </span><span id="BinaryType-110"><a href="#BinaryType-110"><span class="linenos">110</span></a>
 </span><span id="BinaryType-111"><a href="#BinaryType-111"><span class="linenos">111</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">fromfile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fid</span><span class="p">):</span>
-</span><span id="BinaryType-112"><a href="#BinaryType-112"><span class="linenos">112</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="BinaryType-112"><a href="#BinaryType-112"><span class="linenos">112</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="BinaryType-113"><a href="#BinaryType-113"><span class="linenos">113</span></a><span class="sd">        Read one entry from file into data.</span>
-</span><span id="BinaryType-114"><a href="#BinaryType-114"><span class="linenos">114</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="BinaryType-114"><a href="#BinaryType-114"><span class="linenos">114</span></a><span class="sd">        '''</span>
 </span><span id="BinaryType-115"><a href="#BinaryType-115"><span class="linenos">115</span></a>        <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span>  
 </span><span id="BinaryType-116"><a href="#BinaryType-116"><span class="linenos">116</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fromfile</span><span class="p">(</span><span class="n">fid</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">(),</span> <span class="n">count</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">count</span><span class="p">)</span>
 </span><span id="BinaryType-117"><a href="#BinaryType-117"><span class="linenos">117</span></a>
 </span><span id="BinaryType-118"><a href="#BinaryType-118"><span class="linenos">118</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">assign</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-</span><span id="BinaryType-119"><a href="#BinaryType-119"><span class="linenos">119</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="BinaryType-119"><a href="#BinaryType-119"><span class="linenos">119</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="BinaryType-120"><a href="#BinaryType-120"><span class="linenos">120</span></a><span class="sd">        Assign value to field.</span>
-</span><span id="BinaryType-121"><a href="#BinaryType-121"><span class="linenos">121</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="BinaryType-121"><a href="#BinaryType-121"><span class="linenos">121</span></a><span class="sd">        '''</span>
 </span><span id="BinaryType-122"><a href="#BinaryType-122"><span class="linenos">122</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">x</span>
 </span><span id="BinaryType-123"><a href="#BinaryType-123"><span class="linenos">123</span></a>
 </span><span id="BinaryType-124"><a href="#BinaryType-124"><span class="linenos">124</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="BinaryType-125"><a href="#BinaryType-125"><span class="linenos">125</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="BinaryType-125"><a href="#BinaryType-125"><span class="linenos">125</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="BinaryType-126"><a href="#BinaryType-126"><span class="linenos">126</span></a><span class="sd">        Return value as string.</span>
-</span><span id="BinaryType-127"><a href="#BinaryType-127"><span class="linenos">127</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="BinaryType-127"><a href="#BinaryType-127"><span class="linenos">127</span></a><span class="sd">        '''</span>
 </span><span id="BinaryType-128"><a href="#BinaryType-128"><span class="linenos">128</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
 </span><span id="BinaryType-129"><a href="#BinaryType-129"><span class="linenos">129</span></a>            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </span><span id="BinaryType-130"><a href="#BinaryType-130"><span class="linenos">130</span></a>        <span class="k">else</span><span class="p">:</span>
@@ -897,9 +897,9 @@
     </div>
     <a class="headerlink" href="#BinaryType.__init__"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="BinaryType.__init__-90"><a href="#BinaryType.__init__-90"><span class="linenos">90</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intype</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-</span><span id="BinaryType.__init__-91"><a href="#BinaryType.__init__-91"><span class="linenos">91</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="BinaryType.__init__-91"><a href="#BinaryType.__init__-91"><span class="linenos">91</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="BinaryType.__init__-92"><a href="#BinaryType.__init__-92"><span class="linenos">92</span></a><span class="sd">        Constructor takes length of string as input.</span>
-</span><span id="BinaryType.__init__-93"><a href="#BinaryType.__init__-93"><span class="linenos">93</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="BinaryType.__init__-93"><a href="#BinaryType.__init__-93"><span class="linenos">93</span></a><span class="sd">        '''</span>
 </span><span id="BinaryType.__init__-94"><a href="#BinaryType.__init__-94"><span class="linenos">94</span></a>        <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span>
 </span><span id="BinaryType.__init__-95"><a href="#BinaryType.__init__-95"><span class="linenos">95</span></a>
 </span><span id="BinaryType.__init__-96"><a href="#BinaryType.__init__-96"><span class="linenos">96</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">intype</span> <span class="o">=</span> <span class="n">intype</span>
@@ -970,9 +970,9 @@
     </div>
     <a class="headerlink" href="#BinaryType.dtype"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="BinaryType.dtype-101"><a href="#BinaryType.dtype-101"><span class="linenos">101</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="BinaryType.dtype-102"><a href="#BinaryType.dtype-102"><span class="linenos">102</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="BinaryType.dtype-102"><a href="#BinaryType.dtype-102"><span class="linenos">102</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="BinaryType.dtype-103"><a href="#BinaryType.dtype-103"><span class="linenos">103</span></a><span class="sd">        Return numpy format string to read into.</span>
-</span><span id="BinaryType.dtype-104"><a href="#BinaryType.dtype-104"><span class="linenos">104</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="BinaryType.dtype-104"><a href="#BinaryType.dtype-104"><span class="linenos">104</span></a><span class="sd">        '''</span>
 </span><span id="BinaryType.dtype-105"><a href="#BinaryType.dtype-105"><span class="linenos">105</span></a>
 </span><span id="BinaryType.dtype-106"><a href="#BinaryType.dtype-106"><span class="linenos">106</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
 </span><span id="BinaryType.dtype-107"><a href="#BinaryType.dtype-107"><span class="linenos">107</span></a>            <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intype</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span><span class="p">)</span>
@@ -998,9 +998,9 @@
     </div>
     <a class="headerlink" href="#BinaryType.fromfile"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="BinaryType.fromfile-111"><a href="#BinaryType.fromfile-111"><span class="linenos">111</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">fromfile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fid</span><span class="p">):</span>
-</span><span id="BinaryType.fromfile-112"><a href="#BinaryType.fromfile-112"><span class="linenos">112</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="BinaryType.fromfile-112"><a href="#BinaryType.fromfile-112"><span class="linenos">112</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="BinaryType.fromfile-113"><a href="#BinaryType.fromfile-113"><span class="linenos">113</span></a><span class="sd">        Read one entry from file into data.</span>
-</span><span id="BinaryType.fromfile-114"><a href="#BinaryType.fromfile-114"><span class="linenos">114</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="BinaryType.fromfile-114"><a href="#BinaryType.fromfile-114"><span class="linenos">114</span></a><span class="sd">        '''</span>
 </span><span id="BinaryType.fromfile-115"><a href="#BinaryType.fromfile-115"><span class="linenos">115</span></a>        <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span>  
 </span><span id="BinaryType.fromfile-116"><a href="#BinaryType.fromfile-116"><span class="linenos">116</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fromfile</span><span class="p">(</span><span class="n">fid</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">(),</span> <span class="n">count</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">count</span><span class="p">)</span>
 </span></pre></div>
@@ -1023,9 +1023,9 @@
     </div>
     <a class="headerlink" href="#BinaryType.assign"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="BinaryType.assign-118"><a href="#BinaryType.assign-118"><span class="linenos">118</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">assign</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-</span><span id="BinaryType.assign-119"><a href="#BinaryType.assign-119"><span class="linenos">119</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="BinaryType.assign-119"><a href="#BinaryType.assign-119"><span class="linenos">119</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="BinaryType.assign-120"><a href="#BinaryType.assign-120"><span class="linenos">120</span></a><span class="sd">        Assign value to field.</span>
-</span><span id="BinaryType.assign-121"><a href="#BinaryType.assign-121"><span class="linenos">121</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="BinaryType.assign-121"><a href="#BinaryType.assign-121"><span class="linenos">121</span></a><span class="sd">        '''</span>
 </span><span id="BinaryType.assign-122"><a href="#BinaryType.assign-122"><span class="linenos">122</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">x</span>
 </span></pre></div>
 
@@ -1047,9 +1047,9 @@
     </div>
     <a class="headerlink" href="#BinaryType.value"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="BinaryType.value-124"><a href="#BinaryType.value-124"><span class="linenos">124</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="BinaryType.value-125"><a href="#BinaryType.value-125"><span class="linenos">125</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="BinaryType.value-125"><a href="#BinaryType.value-125"><span class="linenos">125</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="BinaryType.value-126"><a href="#BinaryType.value-126"><span class="linenos">126</span></a><span class="sd">        Return value as string.</span>
-</span><span id="BinaryType.value-127"><a href="#BinaryType.value-127"><span class="linenos">127</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="BinaryType.value-127"><a href="#BinaryType.value-127"><span class="linenos">127</span></a><span class="sd">        '''</span>
 </span><span id="BinaryType.value-128"><a href="#BinaryType.value-128"><span class="linenos">128</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
 </span><span id="BinaryType.value-129"><a href="#BinaryType.value-129"><span class="linenos">129</span></a>            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </span><span id="BinaryType.value-130"><a href="#BinaryType.value-130"><span class="linenos">130</span></a>        <span class="k">else</span><span class="p">:</span>
@@ -1075,26 +1075,26 @@
     </div>
     <a class="headerlink" href="#MultiType"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="MultiType-134"><a href="#MultiType-134"><span class="linenos">134</span></a><span class="k">class</span><span class="w"> </span><span class="nc">MultiType</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-</span><span id="MultiType-135"><a href="#MultiType-135"><span class="linenos">135</span></a><span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="MultiType-135"><a href="#MultiType-135"><span class="linenos">135</span></a><span class="w">    </span><span class="sd">'''</span>
 </span><span id="MultiType-136"><a href="#MultiType-136"><span class="linenos">136</span></a><span class="sd">    Generic type.</span>
-</span><span id="MultiType-137"><a href="#MultiType-137"><span class="linenos">137</span></a><span class="sd">    &#39;&#39;&#39;</span>
+</span><span id="MultiType-137"><a href="#MultiType-137"><span class="linenos">137</span></a><span class="sd">    '''</span>
 </span><span id="MultiType-138"><a href="#MultiType-138"><span class="linenos">138</span></a>
 </span><span id="MultiType-139"><a href="#MultiType-139"><span class="linenos">139</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inlist</span><span class="p">):</span>
-</span><span id="MultiType-140"><a href="#MultiType-140"><span class="linenos">140</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="MultiType-140"><a href="#MultiType-140"><span class="linenos">140</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="MultiType-141"><a href="#MultiType-141"><span class="linenos">141</span></a><span class="sd">        Initiate type with dictionary.</span>
-</span><span id="MultiType-142"><a href="#MultiType-142"><span class="linenos">142</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="MultiType-142"><a href="#MultiType-142"><span class="linenos">142</span></a><span class="sd">        '''</span>
 </span><span id="MultiType-143"><a href="#MultiType-143"><span class="linenos">143</span></a>
 </span><span id="MultiType-144"><a href="#MultiType-144"><span class="linenos">144</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inlist</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-</span><span id="MultiType-145"><a href="#MultiType-145"><span class="linenos">145</span></a>            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Only lists are supported by CEOS parser.&#39;</span><span class="p">)</span>
+</span><span id="MultiType-145"><a href="#MultiType-145"><span class="linenos">145</span></a>            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'Only lists are supported by CEOS parser.'</span><span class="p">)</span>
 </span><span id="MultiType-146"><a href="#MultiType-146"><span class="linenos">146</span></a>
 </span><span id="MultiType-147"><a href="#MultiType-147"><span class="linenos">147</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span> <span class="o">=</span> <span class="n">inlist</span>
 </span><span id="MultiType-148"><a href="#MultiType-148"><span class="linenos">148</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
 </span><span id="MultiType-149"><a href="#MultiType-149"><span class="linenos">149</span></a>
 </span><span id="MultiType-150"><a href="#MultiType-150"><span class="linenos">150</span></a>
 </span><span id="MultiType-151"><a href="#MultiType-151"><span class="linenos">151</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="MultiType-152"><a href="#MultiType-152"><span class="linenos">152</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="MultiType-152"><a href="#MultiType-152"><span class="linenos">152</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="MultiType-153"><a href="#MultiType-153"><span class="linenos">153</span></a><span class="sd">        Return equivalent numpy dtype.</span>
-</span><span id="MultiType-154"><a href="#MultiType-154"><span class="linenos">154</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="MultiType-154"><a href="#MultiType-154"><span class="linenos">154</span></a><span class="sd">        '''</span>
 </span><span id="MultiType-155"><a href="#MultiType-155"><span class="linenos">155</span></a>        <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span> 
 </span><span id="MultiType-156"><a href="#MultiType-156"><span class="linenos">156</span></a>
 </span><span id="MultiType-157"><a href="#MultiType-157"><span class="linenos">157</span></a>        <span class="n">typelist</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1110,9 +1110,9 @@
 </span><span id="MultiType-167"><a href="#MultiType-167"><span class="linenos">167</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">indata</span>
 </span><span id="MultiType-168"><a href="#MultiType-168"><span class="linenos">168</span></a>
 </span><span id="MultiType-169"><a href="#MultiType-169"><span class="linenos">169</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">fromfile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fid</span><span class="p">):</span>
-</span><span id="MultiType-170"><a href="#MultiType-170"><span class="linenos">170</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="MultiType-170"><a href="#MultiType-170"><span class="linenos">170</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="MultiType-171"><a href="#MultiType-171"><span class="linenos">171</span></a><span class="sd">        Parse record from file.</span>
-</span><span id="MultiType-172"><a href="#MultiType-172"><span class="linenos">172</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="MultiType-172"><a href="#MultiType-172"><span class="linenos">172</span></a><span class="sd">        '''</span>
 </span><span id="MultiType-173"><a href="#MultiType-173"><span class="linenos">173</span></a>        <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span>  
 </span><span id="MultiType-174"><a href="#MultiType-174"><span class="linenos">174</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fromfile</span><span class="p">(</span><span class="n">fid</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">(),</span> <span class="n">count</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </span><span id="MultiType-175"><a href="#MultiType-175"><span class="linenos">175</span></a>       
@@ -1121,9 +1121,9 @@
 </span><span id="MultiType-178"><a href="#MultiType-178"><span class="linenos">178</span></a>                <span class="n">v</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
 </span><span id="MultiType-179"><a href="#MultiType-179"><span class="linenos">179</span></a>
 </span><span id="MultiType-180"><a href="#MultiType-180"><span class="linenos">180</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-</span><span id="MultiType-181"><a href="#MultiType-181"><span class="linenos">181</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="MultiType-181"><a href="#MultiType-181"><span class="linenos">181</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="MultiType-182"><a href="#MultiType-182"><span class="linenos">182</span></a><span class="sd">        Return parsed value.</span>
-</span><span id="MultiType-183"><a href="#MultiType-183"><span class="linenos">183</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="MultiType-183"><a href="#MultiType-183"><span class="linenos">183</span></a><span class="sd">        '''</span>
 </span><span id="MultiType-184"><a href="#MultiType-184"><span class="linenos">184</span></a>        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="p">:</span>
 </span><span id="MultiType-185"><a href="#MultiType-185"><span class="linenos">185</span></a>            <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="n">key</span><span class="p">:</span>
 </span><span id="MultiType-186"><a href="#MultiType-186"><span class="linenos">186</span></a>                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">MultiType</span><span class="p">):</span>
@@ -1131,7 +1131,7 @@
 </span><span id="MultiType-188"><a href="#MultiType-188"><span class="linenos">188</span></a>                <span class="k">else</span><span class="p">:</span>
 </span><span id="MultiType-189"><a href="#MultiType-189"><span class="linenos">189</span></a>                    <span class="k">return</span> <span class="n">v</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
 </span><span id="MultiType-190"><a href="#MultiType-190"><span class="linenos">190</span></a>
-</span><span id="MultiType-191"><a href="#MultiType-191"><span class="linenos">191</span></a>        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;MultiType record does not contain field named </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+</span><span id="MultiType-191"><a href="#MultiType-191"><span class="linenos">191</span></a>        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'MultiType record does not contain field named </span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
 </span></pre></div>
 
 
@@ -1150,12 +1150,12 @@
     </div>
     <a class="headerlink" href="#MultiType.__init__"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="MultiType.__init__-139"><a href="#MultiType.__init__-139"><span class="linenos">139</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inlist</span><span class="p">):</span>
-</span><span id="MultiType.__init__-140"><a href="#MultiType.__init__-140"><span class="linenos">140</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="MultiType.__init__-140"><a href="#MultiType.__init__-140"><span class="linenos">140</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="MultiType.__init__-141"><a href="#MultiType.__init__-141"><span class="linenos">141</span></a><span class="sd">        Initiate type with dictionary.</span>
-</span><span id="MultiType.__init__-142"><a href="#MultiType.__init__-142"><span class="linenos">142</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="MultiType.__init__-142"><a href="#MultiType.__init__-142"><span class="linenos">142</span></a><span class="sd">        '''</span>
 </span><span id="MultiType.__init__-143"><a href="#MultiType.__init__-143"><span class="linenos">143</span></a>
 </span><span id="MultiType.__init__-144"><a href="#MultiType.__init__-144"><span class="linenos">144</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inlist</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-</span><span id="MultiType.__init__-145"><a href="#MultiType.__init__-145"><span class="linenos">145</span></a>            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Only lists are supported by CEOS parser.&#39;</span><span class="p">)</span>
+</span><span id="MultiType.__init__-145"><a href="#MultiType.__init__-145"><span class="linenos">145</span></a>            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'Only lists are supported by CEOS parser.'</span><span class="p">)</span>
 </span><span id="MultiType.__init__-146"><a href="#MultiType.__init__-146"><span class="linenos">146</span></a>
 </span><span id="MultiType.__init__-147"><a href="#MultiType.__init__-147"><span class="linenos">147</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span> <span class="o">=</span> <span class="n">inlist</span>
 </span><span id="MultiType.__init__-148"><a href="#MultiType.__init__-148"><span class="linenos">148</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1201,9 +1201,9 @@
     </div>
     <a class="headerlink" href="#MultiType.dtype"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="MultiType.dtype-151"><a href="#MultiType.dtype-151"><span class="linenos">151</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="MultiType.dtype-152"><a href="#MultiType.dtype-152"><span class="linenos">152</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="MultiType.dtype-152"><a href="#MultiType.dtype-152"><span class="linenos">152</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="MultiType.dtype-153"><a href="#MultiType.dtype-153"><span class="linenos">153</span></a><span class="sd">        Return equivalent numpy dtype.</span>
-</span><span id="MultiType.dtype-154"><a href="#MultiType.dtype-154"><span class="linenos">154</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="MultiType.dtype-154"><a href="#MultiType.dtype-154"><span class="linenos">154</span></a><span class="sd">        '''</span>
 </span><span id="MultiType.dtype-155"><a href="#MultiType.dtype-155"><span class="linenos">155</span></a>        <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span> 
 </span><span id="MultiType.dtype-156"><a href="#MultiType.dtype-156"><span class="linenos">156</span></a>
 </span><span id="MultiType.dtype-157"><a href="#MultiType.dtype-157"><span class="linenos">157</span></a>        <span class="n">typelist</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1253,9 +1253,9 @@
     </div>
     <a class="headerlink" href="#MultiType.fromfile"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="MultiType.fromfile-169"><a href="#MultiType.fromfile-169"><span class="linenos">169</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">fromfile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fid</span><span class="p">):</span>
-</span><span id="MultiType.fromfile-170"><a href="#MultiType.fromfile-170"><span class="linenos">170</span></a><span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="MultiType.fromfile-170"><a href="#MultiType.fromfile-170"><span class="linenos">170</span></a><span class="w">        </span><span class="sd">'''</span>
 </span><span id="MultiType.fromfile-171"><a href="#MultiType.fromfile-171"><span class="linenos">171</span></a><span class="sd">        Parse record from file.</span>
-</span><span id="MultiType.fromfile-172"><a href="#MultiType.fromfile-172"><span class="linenos">172</span></a><span class="sd">        &#39;&#39;&#39;</span>
+</span><span id="MultiType.fromfile-172"><a href="#MultiType.fromfile-172"><span class="linenos">172</span></a><span class="sd">        '''</span>
 </span><span id="MultiType.fromfile-173"><a href="#MultiType.fromfile-173"><span class="linenos">173</span></a>        <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span>  
 </span><span id="MultiType.fromfile-174"><a href="#MultiType.fromfile-174"><span class="linenos">174</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fromfile</span><span class="p">(</span><span class="n">fid</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">(),</span> <span class="n">count</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </span><span id="MultiType.fromfile-175"><a href="#MultiType.fromfile-175"><span class="linenos">175</span></a>       

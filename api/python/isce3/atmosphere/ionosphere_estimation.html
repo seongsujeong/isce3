@@ -115,10 +115,10 @@
 </span><span id="L-4"><a href="#L-4"><span class="linenos">  4</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">isce3.signal.interpolate_by_range</span><span class="w"> </span><span class="kn">import</span> <span class="n">decimate_freq_a_array</span>
 </span><span id="L-5"><a href="#L-5"><span class="linenos">  5</span></a>
 </span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a><span class="k">class</span><span class="w"> </span><span class="nc">IonosphereEstimation</span><span class="p">:</span>
-</span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a><span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a><span class="w">    </span><span class="sd">'''</span>
 </span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a><span class="sd">    Base class used to estimate ionospheric phase screen</span>
 </span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a><span class="sd">    Not for standalone use!</span>
-</span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a><span class="sd">    &#39;&#39;&#39;</span>
+</span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a><span class="sd">    '''</span>
 </span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
 </span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a>                 <span class="n">main_center_freq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 </span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a>                 <span class="n">side_center_freq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -127,7 +127,7 @@
 </span><span id="L-16"><a href="#L-16"><span class="linenos"> 16</span></a>                 <span class="n">slant_main</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 </span><span id="L-17"><a href="#L-17"><span class="linenos"> 17</span></a>                 <span class="n">slant_side</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 </span><span id="L-18"><a href="#L-18"><span class="linenos"> 18</span></a>
-</span><span id="L-19"><a href="#L-19"><span class="linenos"> 19</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialized IonosphereEstimation Base Class</span>
+</span><span id="L-19"><a href="#L-19"><span class="linenos"> 19</span></a><span class="w">        </span><span class="sd">"""Initialized IonosphereEstimation Base Class</span>
 </span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a>
 </span><span id="L-21"><a href="#L-21"><span class="linenos"> 21</span></a><span class="sd">        Parameters</span>
 </span><span id="L-22"><a href="#L-22"><span class="linenos"> 22</span></a><span class="sd">        ----------</span>
@@ -139,17 +139,17 @@
 </span><span id="L-28"><a href="#L-28"><span class="linenos"> 28</span></a><span class="sd">            center frequency of lower sub-band of the main band [Hz]</span>
 </span><span id="L-29"><a href="#L-29"><span class="linenos"> 29</span></a><span class="sd">        high_center_freq : float</span>
 </span><span id="L-30"><a href="#L-30"><span class="linenos"> 30</span></a><span class="sd">            center frequency of upper sub-band of the main band [Hz]</span>
-</span><span id="L-31"><a href="#L-31"><span class="linenos"> 31</span></a><span class="sd">        method : {&#39;split_main_band&#39;, &#39;main_side_band&#39;,</span>
-</span><span id="L-32"><a href="#L-32"><span class="linenos"> 32</span></a><span class="sd">            &#39;main_diff_ms_band&#39;}</span>
+</span><span id="L-31"><a href="#L-31"><span class="linenos"> 31</span></a><span class="sd">        method : {'split_main_band', 'main_side_band',</span>
+</span><span id="L-32"><a href="#L-32"><span class="linenos"> 32</span></a><span class="sd">            'main_diff_ms_band'}</span>
 </span><span id="L-33"><a href="#L-33"><span class="linenos"> 33</span></a><span class="sd">            ionosphere estimation method</span>
-</span><span id="L-34"><a href="#L-34"><span class="linenos"> 34</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-34"><a href="#L-34"><span class="linenos"> 34</span></a><span class="sd">        """</span>
 </span><span id="L-35"><a href="#L-35"><span class="linenos"> 35</span></a>
-</span><span id="L-36"><a href="#L-36"><span class="linenos"> 36</span></a>        <span class="n">error_channel</span> <span class="o">=</span> <span class="n">journal</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;ionosphere.IonosphereEstimation&#39;</span><span class="p">)</span>
+</span><span id="L-36"><a href="#L-36"><span class="linenos"> 36</span></a>        <span class="n">error_channel</span> <span class="o">=</span> <span class="n">journal</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">'ionosphere.IonosphereEstimation'</span><span class="p">)</span>
 </span><span id="L-37"><a href="#L-37"><span class="linenos"> 37</span></a>
 </span><span id="L-38"><a href="#L-38"><span class="linenos"> 38</span></a>        <span class="c1"># Center frequency for frequency A is needed for all methods.</span>
 </span><span id="L-39"><a href="#L-39"><span class="linenos"> 39</span></a>        <span class="k">if</span> <span class="n">main_center_freq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="L-40"><a href="#L-40"><span class="linenos"> 40</span></a>            <span class="n">err_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Center frequency for frequency A &quot;</span>\
-</span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a>                <span class="sa">f</span><span class="s2">&quot; is needed for </span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="L-40"><a href="#L-40"><span class="linenos"> 40</span></a>            <span class="n">err_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Center frequency for frequency A "</span>\
+</span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a>                <span class="sa">f</span><span class="s2">" is needed for </span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">"</span>
 </span><span id="L-42"><a href="#L-42"><span class="linenos"> 42</span></a>            <span class="n">error_channel</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">err_str</span><span class="p">)</span>
 </span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">err_str</span><span class="p">)</span>
 </span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a>
@@ -165,7 +165,7 @@
 </span><span id="L-54"><a href="#L-54"><span class="linenos"> 54</span></a>            <span class="n">looks</span><span class="p">,</span>
 </span><span id="L-55"><a href="#L-55"><span class="linenos"> 55</span></a>            <span class="n">threshold</span><span class="p">,</span>
 </span><span id="L-56"><a href="#L-56"><span class="linenos"> 56</span></a>            <span class="n">median_filter_size</span><span class="p">):</span>
-</span><span id="L-57"><a href="#L-57"><span class="linenos"> 57</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Get mask using median filter</span>
+</span><span id="L-57"><a href="#L-57"><span class="linenos"> 57</span></a><span class="w">        </span><span class="sd">"""Get mask using median filter</span>
 </span><span id="L-58"><a href="#L-58"><span class="linenos"> 58</span></a>
 </span><span id="L-59"><a href="#L-59"><span class="linenos"> 59</span></a><span class="sd">        Parameters</span>
 </span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a><span class="sd">        ----------</span>
@@ -183,7 +183,7 @@
 </span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a><span class="sd">            connected components</span>
 </span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a><span class="sd">            1: valid pixels,</span>
 </span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a><span class="sd">            0: invalid pixels.</span>
-</span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a><span class="sd">        """</span>
 </span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a>        <span class="n">mask_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">disp</span> <span class="o">-</span> <span class="n">median_filter</span><span class="p">(</span><span class="n">disp</span><span class="p">,</span>
 </span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a>                            <span class="n">median_filter_size</span><span class="p">))</span> <span class="o">&lt;</span> <span class="n">threshold</span>
 </span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a>        <span class="n">mask_array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_single_pixels</span><span class="p">(</span><span class="n">mask_array</span><span class="p">)</span>
@@ -217,7 +217,7 @@
 </span><span id="L-106"><a href="#L-106"><span class="linenos">106</span></a>            <span class="n">low_sub_runw</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 </span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a>            <span class="n">high_sub_runw</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 </span><span id="L-108"><a href="#L-108"><span class="linenos">108</span></a>            <span class="n">diff_low_high_runw</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-</span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute unwrapping error coefficients</span>
+</span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a><span class="w">        </span><span class="sd">"""Compute unwrapping error coefficients</span>
 </span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a>
 </span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a><span class="sd">        Parameters</span>
 </span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a><span class="sd">        ----------</span>
@@ -247,7 +247,7 @@
 </span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a><span class="sd">            2D common unwrapping error coefficient array</span>
 </span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a><span class="sd">        diff_unw_coeff : numpy.ndarray</span>
 </span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a><span class="sd">            2D differential unwrapping error coefficient array</span>
-</span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a><span class="sd">        """</span>
 </span><span id="L-140"><a href="#L-140"><span class="linenos">140</span></a>        <span class="c1"># decimate coherences array of frequency A to</span>
 </span><span id="L-141"><a href="#L-141"><span class="linenos">141</span></a>        <span class="c1"># frequency B grid</span>
 </span><span id="L-142"><a href="#L-142"><span class="linenos">142</span></a>        <span class="k">if</span> <span class="n">side_runw</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -300,10 +300,10 @@
     </div>
     <a class="headerlink" href="#IonosphereEstimation"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="IonosphereEstimation-7"><a href="#IonosphereEstimation-7"><span class="linenos">  7</span></a><span class="k">class</span><span class="w"> </span><span class="nc">IonosphereEstimation</span><span class="p">:</span>
-</span><span id="IonosphereEstimation-8"><a href="#IonosphereEstimation-8"><span class="linenos">  8</span></a><span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="IonosphereEstimation-8"><a href="#IonosphereEstimation-8"><span class="linenos">  8</span></a><span class="w">    </span><span class="sd">'''</span>
 </span><span id="IonosphereEstimation-9"><a href="#IonosphereEstimation-9"><span class="linenos">  9</span></a><span class="sd">    Base class used to estimate ionospheric phase screen</span>
 </span><span id="IonosphereEstimation-10"><a href="#IonosphereEstimation-10"><span class="linenos"> 10</span></a><span class="sd">    Not for standalone use!</span>
-</span><span id="IonosphereEstimation-11"><a href="#IonosphereEstimation-11"><span class="linenos"> 11</span></a><span class="sd">    &#39;&#39;&#39;</span>
+</span><span id="IonosphereEstimation-11"><a href="#IonosphereEstimation-11"><span class="linenos"> 11</span></a><span class="sd">    '''</span>
 </span><span id="IonosphereEstimation-12"><a href="#IonosphereEstimation-12"><span class="linenos"> 12</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
 </span><span id="IonosphereEstimation-13"><a href="#IonosphereEstimation-13"><span class="linenos"> 13</span></a>                 <span class="n">main_center_freq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 </span><span id="IonosphereEstimation-14"><a href="#IonosphereEstimation-14"><span class="linenos"> 14</span></a>                 <span class="n">side_center_freq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -312,7 +312,7 @@
 </span><span id="IonosphereEstimation-17"><a href="#IonosphereEstimation-17"><span class="linenos"> 17</span></a>                 <span class="n">slant_main</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 </span><span id="IonosphereEstimation-18"><a href="#IonosphereEstimation-18"><span class="linenos"> 18</span></a>                 <span class="n">slant_side</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 </span><span id="IonosphereEstimation-19"><a href="#IonosphereEstimation-19"><span class="linenos"> 19</span></a>
-</span><span id="IonosphereEstimation-20"><a href="#IonosphereEstimation-20"><span class="linenos"> 20</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialized IonosphereEstimation Base Class</span>
+</span><span id="IonosphereEstimation-20"><a href="#IonosphereEstimation-20"><span class="linenos"> 20</span></a><span class="w">        </span><span class="sd">"""Initialized IonosphereEstimation Base Class</span>
 </span><span id="IonosphereEstimation-21"><a href="#IonosphereEstimation-21"><span class="linenos"> 21</span></a>
 </span><span id="IonosphereEstimation-22"><a href="#IonosphereEstimation-22"><span class="linenos"> 22</span></a><span class="sd">        Parameters</span>
 </span><span id="IonosphereEstimation-23"><a href="#IonosphereEstimation-23"><span class="linenos"> 23</span></a><span class="sd">        ----------</span>
@@ -324,17 +324,17 @@
 </span><span id="IonosphereEstimation-29"><a href="#IonosphereEstimation-29"><span class="linenos"> 29</span></a><span class="sd">            center frequency of lower sub-band of the main band [Hz]</span>
 </span><span id="IonosphereEstimation-30"><a href="#IonosphereEstimation-30"><span class="linenos"> 30</span></a><span class="sd">        high_center_freq : float</span>
 </span><span id="IonosphereEstimation-31"><a href="#IonosphereEstimation-31"><span class="linenos"> 31</span></a><span class="sd">            center frequency of upper sub-band of the main band [Hz]</span>
-</span><span id="IonosphereEstimation-32"><a href="#IonosphereEstimation-32"><span class="linenos"> 32</span></a><span class="sd">        method : {&#39;split_main_band&#39;, &#39;main_side_band&#39;,</span>
-</span><span id="IonosphereEstimation-33"><a href="#IonosphereEstimation-33"><span class="linenos"> 33</span></a><span class="sd">            &#39;main_diff_ms_band&#39;}</span>
+</span><span id="IonosphereEstimation-32"><a href="#IonosphereEstimation-32"><span class="linenos"> 32</span></a><span class="sd">        method : {'split_main_band', 'main_side_band',</span>
+</span><span id="IonosphereEstimation-33"><a href="#IonosphereEstimation-33"><span class="linenos"> 33</span></a><span class="sd">            'main_diff_ms_band'}</span>
 </span><span id="IonosphereEstimation-34"><a href="#IonosphereEstimation-34"><span class="linenos"> 34</span></a><span class="sd">            ionosphere estimation method</span>
-</span><span id="IonosphereEstimation-35"><a href="#IonosphereEstimation-35"><span class="linenos"> 35</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="IonosphereEstimation-35"><a href="#IonosphereEstimation-35"><span class="linenos"> 35</span></a><span class="sd">        """</span>
 </span><span id="IonosphereEstimation-36"><a href="#IonosphereEstimation-36"><span class="linenos"> 36</span></a>
-</span><span id="IonosphereEstimation-37"><a href="#IonosphereEstimation-37"><span class="linenos"> 37</span></a>        <span class="n">error_channel</span> <span class="o">=</span> <span class="n">journal</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;ionosphere.IonosphereEstimation&#39;</span><span class="p">)</span>
+</span><span id="IonosphereEstimation-37"><a href="#IonosphereEstimation-37"><span class="linenos"> 37</span></a>        <span class="n">error_channel</span> <span class="o">=</span> <span class="n">journal</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">'ionosphere.IonosphereEstimation'</span><span class="p">)</span>
 </span><span id="IonosphereEstimation-38"><a href="#IonosphereEstimation-38"><span class="linenos"> 38</span></a>
 </span><span id="IonosphereEstimation-39"><a href="#IonosphereEstimation-39"><span class="linenos"> 39</span></a>        <span class="c1"># Center frequency for frequency A is needed for all methods.</span>
 </span><span id="IonosphereEstimation-40"><a href="#IonosphereEstimation-40"><span class="linenos"> 40</span></a>        <span class="k">if</span> <span class="n">main_center_freq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="IonosphereEstimation-41"><a href="#IonosphereEstimation-41"><span class="linenos"> 41</span></a>            <span class="n">err_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Center frequency for frequency A &quot;</span>\
-</span><span id="IonosphereEstimation-42"><a href="#IonosphereEstimation-42"><span class="linenos"> 42</span></a>                <span class="sa">f</span><span class="s2">&quot; is needed for </span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="IonosphereEstimation-41"><a href="#IonosphereEstimation-41"><span class="linenos"> 41</span></a>            <span class="n">err_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Center frequency for frequency A "</span>\
+</span><span id="IonosphereEstimation-42"><a href="#IonosphereEstimation-42"><span class="linenos"> 42</span></a>                <span class="sa">f</span><span class="s2">" is needed for </span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">"</span>
 </span><span id="IonosphereEstimation-43"><a href="#IonosphereEstimation-43"><span class="linenos"> 43</span></a>            <span class="n">error_channel</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">err_str</span><span class="p">)</span>
 </span><span id="IonosphereEstimation-44"><a href="#IonosphereEstimation-44"><span class="linenos"> 44</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">err_str</span><span class="p">)</span>
 </span><span id="IonosphereEstimation-45"><a href="#IonosphereEstimation-45"><span class="linenos"> 45</span></a>
@@ -350,7 +350,7 @@
 </span><span id="IonosphereEstimation-55"><a href="#IonosphereEstimation-55"><span class="linenos"> 55</span></a>            <span class="n">looks</span><span class="p">,</span>
 </span><span id="IonosphereEstimation-56"><a href="#IonosphereEstimation-56"><span class="linenos"> 56</span></a>            <span class="n">threshold</span><span class="p">,</span>
 </span><span id="IonosphereEstimation-57"><a href="#IonosphereEstimation-57"><span class="linenos"> 57</span></a>            <span class="n">median_filter_size</span><span class="p">):</span>
-</span><span id="IonosphereEstimation-58"><a href="#IonosphereEstimation-58"><span class="linenos"> 58</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Get mask using median filter</span>
+</span><span id="IonosphereEstimation-58"><a href="#IonosphereEstimation-58"><span class="linenos"> 58</span></a><span class="w">        </span><span class="sd">"""Get mask using median filter</span>
 </span><span id="IonosphereEstimation-59"><a href="#IonosphereEstimation-59"><span class="linenos"> 59</span></a>
 </span><span id="IonosphereEstimation-60"><a href="#IonosphereEstimation-60"><span class="linenos"> 60</span></a><span class="sd">        Parameters</span>
 </span><span id="IonosphereEstimation-61"><a href="#IonosphereEstimation-61"><span class="linenos"> 61</span></a><span class="sd">        ----------</span>
@@ -368,7 +368,7 @@
 </span><span id="IonosphereEstimation-73"><a href="#IonosphereEstimation-73"><span class="linenos"> 73</span></a><span class="sd">            connected components</span>
 </span><span id="IonosphereEstimation-74"><a href="#IonosphereEstimation-74"><span class="linenos"> 74</span></a><span class="sd">            1: valid pixels,</span>
 </span><span id="IonosphereEstimation-75"><a href="#IonosphereEstimation-75"><span class="linenos"> 75</span></a><span class="sd">            0: invalid pixels.</span>
-</span><span id="IonosphereEstimation-76"><a href="#IonosphereEstimation-76"><span class="linenos"> 76</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="IonosphereEstimation-76"><a href="#IonosphereEstimation-76"><span class="linenos"> 76</span></a><span class="sd">        """</span>
 </span><span id="IonosphereEstimation-77"><a href="#IonosphereEstimation-77"><span class="linenos"> 77</span></a>        <span class="n">mask_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">disp</span> <span class="o">-</span> <span class="n">median_filter</span><span class="p">(</span><span class="n">disp</span><span class="p">,</span>
 </span><span id="IonosphereEstimation-78"><a href="#IonosphereEstimation-78"><span class="linenos"> 78</span></a>                            <span class="n">median_filter_size</span><span class="p">))</span> <span class="o">&lt;</span> <span class="n">threshold</span>
 </span><span id="IonosphereEstimation-79"><a href="#IonosphereEstimation-79"><span class="linenos"> 79</span></a>        <span class="n">mask_array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_single_pixels</span><span class="p">(</span><span class="n">mask_array</span><span class="p">)</span>
@@ -402,7 +402,7 @@
 </span><span id="IonosphereEstimation-107"><a href="#IonosphereEstimation-107"><span class="linenos">107</span></a>            <span class="n">low_sub_runw</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 </span><span id="IonosphereEstimation-108"><a href="#IonosphereEstimation-108"><span class="linenos">108</span></a>            <span class="n">high_sub_runw</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 </span><span id="IonosphereEstimation-109"><a href="#IonosphereEstimation-109"><span class="linenos">109</span></a>            <span class="n">diff_low_high_runw</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-</span><span id="IonosphereEstimation-110"><a href="#IonosphereEstimation-110"><span class="linenos">110</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute unwrapping error coefficients</span>
+</span><span id="IonosphereEstimation-110"><a href="#IonosphereEstimation-110"><span class="linenos">110</span></a><span class="w">        </span><span class="sd">"""Compute unwrapping error coefficients</span>
 </span><span id="IonosphereEstimation-111"><a href="#IonosphereEstimation-111"><span class="linenos">111</span></a>
 </span><span id="IonosphereEstimation-112"><a href="#IonosphereEstimation-112"><span class="linenos">112</span></a><span class="sd">        Parameters</span>
 </span><span id="IonosphereEstimation-113"><a href="#IonosphereEstimation-113"><span class="linenos">113</span></a><span class="sd">        ----------</span>
@@ -432,7 +432,7 @@
 </span><span id="IonosphereEstimation-137"><a href="#IonosphereEstimation-137"><span class="linenos">137</span></a><span class="sd">            2D common unwrapping error coefficient array</span>
 </span><span id="IonosphereEstimation-138"><a href="#IonosphereEstimation-138"><span class="linenos">138</span></a><span class="sd">        diff_unw_coeff : numpy.ndarray</span>
 </span><span id="IonosphereEstimation-139"><a href="#IonosphereEstimation-139"><span class="linenos">139</span></a><span class="sd">            2D differential unwrapping error coefficient array</span>
-</span><span id="IonosphereEstimation-140"><a href="#IonosphereEstimation-140"><span class="linenos">140</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="IonosphereEstimation-140"><a href="#IonosphereEstimation-140"><span class="linenos">140</span></a><span class="sd">        """</span>
 </span><span id="IonosphereEstimation-141"><a href="#IonosphereEstimation-141"><span class="linenos">141</span></a>        <span class="c1"># decimate coherences array of frequency A to</span>
 </span><span id="IonosphereEstimation-142"><a href="#IonosphereEstimation-142"><span class="linenos">142</span></a>        <span class="c1"># frequency B grid</span>
 </span><span id="IonosphereEstimation-143"><a href="#IonosphereEstimation-143"><span class="linenos">143</span></a>        <span class="k">if</span> <span class="n">side_runw</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -495,7 +495,7 @@ Not for standalone use!</p>
 </span><span id="IonosphereEstimation.__init__-17"><a href="#IonosphereEstimation.__init__-17"><span class="linenos">17</span></a>                 <span class="n">slant_main</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 </span><span id="IonosphereEstimation.__init__-18"><a href="#IonosphereEstimation.__init__-18"><span class="linenos">18</span></a>                 <span class="n">slant_side</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 </span><span id="IonosphereEstimation.__init__-19"><a href="#IonosphereEstimation.__init__-19"><span class="linenos">19</span></a>
-</span><span id="IonosphereEstimation.__init__-20"><a href="#IonosphereEstimation.__init__-20"><span class="linenos">20</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialized IonosphereEstimation Base Class</span>
+</span><span id="IonosphereEstimation.__init__-20"><a href="#IonosphereEstimation.__init__-20"><span class="linenos">20</span></a><span class="w">        </span><span class="sd">"""Initialized IonosphereEstimation Base Class</span>
 </span><span id="IonosphereEstimation.__init__-21"><a href="#IonosphereEstimation.__init__-21"><span class="linenos">21</span></a>
 </span><span id="IonosphereEstimation.__init__-22"><a href="#IonosphereEstimation.__init__-22"><span class="linenos">22</span></a><span class="sd">        Parameters</span>
 </span><span id="IonosphereEstimation.__init__-23"><a href="#IonosphereEstimation.__init__-23"><span class="linenos">23</span></a><span class="sd">        ----------</span>
@@ -507,17 +507,17 @@ Not for standalone use!</p>
 </span><span id="IonosphereEstimation.__init__-29"><a href="#IonosphereEstimation.__init__-29"><span class="linenos">29</span></a><span class="sd">            center frequency of lower sub-band of the main band [Hz]</span>
 </span><span id="IonosphereEstimation.__init__-30"><a href="#IonosphereEstimation.__init__-30"><span class="linenos">30</span></a><span class="sd">        high_center_freq : float</span>
 </span><span id="IonosphereEstimation.__init__-31"><a href="#IonosphereEstimation.__init__-31"><span class="linenos">31</span></a><span class="sd">            center frequency of upper sub-band of the main band [Hz]</span>
-</span><span id="IonosphereEstimation.__init__-32"><a href="#IonosphereEstimation.__init__-32"><span class="linenos">32</span></a><span class="sd">        method : {&#39;split_main_band&#39;, &#39;main_side_band&#39;,</span>
-</span><span id="IonosphereEstimation.__init__-33"><a href="#IonosphereEstimation.__init__-33"><span class="linenos">33</span></a><span class="sd">            &#39;main_diff_ms_band&#39;}</span>
+</span><span id="IonosphereEstimation.__init__-32"><a href="#IonosphereEstimation.__init__-32"><span class="linenos">32</span></a><span class="sd">        method : {'split_main_band', 'main_side_band',</span>
+</span><span id="IonosphereEstimation.__init__-33"><a href="#IonosphereEstimation.__init__-33"><span class="linenos">33</span></a><span class="sd">            'main_diff_ms_band'}</span>
 </span><span id="IonosphereEstimation.__init__-34"><a href="#IonosphereEstimation.__init__-34"><span class="linenos">34</span></a><span class="sd">            ionosphere estimation method</span>
-</span><span id="IonosphereEstimation.__init__-35"><a href="#IonosphereEstimation.__init__-35"><span class="linenos">35</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="IonosphereEstimation.__init__-35"><a href="#IonosphereEstimation.__init__-35"><span class="linenos">35</span></a><span class="sd">        """</span>
 </span><span id="IonosphereEstimation.__init__-36"><a href="#IonosphereEstimation.__init__-36"><span class="linenos">36</span></a>
-</span><span id="IonosphereEstimation.__init__-37"><a href="#IonosphereEstimation.__init__-37"><span class="linenos">37</span></a>        <span class="n">error_channel</span> <span class="o">=</span> <span class="n">journal</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;ionosphere.IonosphereEstimation&#39;</span><span class="p">)</span>
+</span><span id="IonosphereEstimation.__init__-37"><a href="#IonosphereEstimation.__init__-37"><span class="linenos">37</span></a>        <span class="n">error_channel</span> <span class="o">=</span> <span class="n">journal</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">'ionosphere.IonosphereEstimation'</span><span class="p">)</span>
 </span><span id="IonosphereEstimation.__init__-38"><a href="#IonosphereEstimation.__init__-38"><span class="linenos">38</span></a>
 </span><span id="IonosphereEstimation.__init__-39"><a href="#IonosphereEstimation.__init__-39"><span class="linenos">39</span></a>        <span class="c1"># Center frequency for frequency A is needed for all methods.</span>
 </span><span id="IonosphereEstimation.__init__-40"><a href="#IonosphereEstimation.__init__-40"><span class="linenos">40</span></a>        <span class="k">if</span> <span class="n">main_center_freq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="IonosphereEstimation.__init__-41"><a href="#IonosphereEstimation.__init__-41"><span class="linenos">41</span></a>            <span class="n">err_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Center frequency for frequency A &quot;</span>\
-</span><span id="IonosphereEstimation.__init__-42"><a href="#IonosphereEstimation.__init__-42"><span class="linenos">42</span></a>                <span class="sa">f</span><span class="s2">&quot; is needed for </span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="IonosphereEstimation.__init__-41"><a href="#IonosphereEstimation.__init__-41"><span class="linenos">41</span></a>            <span class="n">err_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Center frequency for frequency A "</span>\
+</span><span id="IonosphereEstimation.__init__-42"><a href="#IonosphereEstimation.__init__-42"><span class="linenos">42</span></a>                <span class="sa">f</span><span class="s2">" is needed for </span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">"</span>
 </span><span id="IonosphereEstimation.__init__-43"><a href="#IonosphereEstimation.__init__-43"><span class="linenos">43</span></a>            <span class="n">error_channel</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">err_str</span><span class="p">)</span>
 </span><span id="IonosphereEstimation.__init__-44"><a href="#IonosphereEstimation.__init__-44"><span class="linenos">44</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">err_str</span><span class="p">)</span>
 </span><span id="IonosphereEstimation.__init__-45"><a href="#IonosphereEstimation.__init__-45"><span class="linenos">45</span></a>
@@ -631,7 +631,7 @@ method : {'split_main_band', 'main_side_band',
 </span><span id="IonosphereEstimation.get_mask_median_filter-55"><a href="#IonosphereEstimation.get_mask_median_filter-55"><span class="linenos">55</span></a>            <span class="n">looks</span><span class="p">,</span>
 </span><span id="IonosphereEstimation.get_mask_median_filter-56"><a href="#IonosphereEstimation.get_mask_median_filter-56"><span class="linenos">56</span></a>            <span class="n">threshold</span><span class="p">,</span>
 </span><span id="IonosphereEstimation.get_mask_median_filter-57"><a href="#IonosphereEstimation.get_mask_median_filter-57"><span class="linenos">57</span></a>            <span class="n">median_filter_size</span><span class="p">):</span>
-</span><span id="IonosphereEstimation.get_mask_median_filter-58"><a href="#IonosphereEstimation.get_mask_median_filter-58"><span class="linenos">58</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Get mask using median filter</span>
+</span><span id="IonosphereEstimation.get_mask_median_filter-58"><a href="#IonosphereEstimation.get_mask_median_filter-58"><span class="linenos">58</span></a><span class="w">        </span><span class="sd">"""Get mask using median filter</span>
 </span><span id="IonosphereEstimation.get_mask_median_filter-59"><a href="#IonosphereEstimation.get_mask_median_filter-59"><span class="linenos">59</span></a>
 </span><span id="IonosphereEstimation.get_mask_median_filter-60"><a href="#IonosphereEstimation.get_mask_median_filter-60"><span class="linenos">60</span></a><span class="sd">        Parameters</span>
 </span><span id="IonosphereEstimation.get_mask_median_filter-61"><a href="#IonosphereEstimation.get_mask_median_filter-61"><span class="linenos">61</span></a><span class="sd">        ----------</span>
@@ -649,7 +649,7 @@ method : {'split_main_band', 'main_side_band',
 </span><span id="IonosphereEstimation.get_mask_median_filter-73"><a href="#IonosphereEstimation.get_mask_median_filter-73"><span class="linenos">73</span></a><span class="sd">            connected components</span>
 </span><span id="IonosphereEstimation.get_mask_median_filter-74"><a href="#IonosphereEstimation.get_mask_median_filter-74"><span class="linenos">74</span></a><span class="sd">            1: valid pixels,</span>
 </span><span id="IonosphereEstimation.get_mask_median_filter-75"><a href="#IonosphereEstimation.get_mask_median_filter-75"><span class="linenos">75</span></a><span class="sd">            0: invalid pixels.</span>
-</span><span id="IonosphereEstimation.get_mask_median_filter-76"><a href="#IonosphereEstimation.get_mask_median_filter-76"><span class="linenos">76</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="IonosphereEstimation.get_mask_median_filter-76"><a href="#IonosphereEstimation.get_mask_median_filter-76"><span class="linenos">76</span></a><span class="sd">        """</span>
 </span><span id="IonosphereEstimation.get_mask_median_filter-77"><a href="#IonosphereEstimation.get_mask_median_filter-77"><span class="linenos">77</span></a>        <span class="n">mask_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">disp</span> <span class="o">-</span> <span class="n">median_filter</span><span class="p">(</span><span class="n">disp</span><span class="p">,</span>
 </span><span id="IonosphereEstimation.get_mask_median_filter-78"><a href="#IonosphereEstimation.get_mask_median_filter-78"><span class="linenos">78</span></a>                            <span class="n">median_filter_size</span><span class="p">))</span> <span class="o">&lt;</span> <span class="n">threshold</span>
 </span><span id="IonosphereEstimation.get_mask_median_filter-79"><a href="#IonosphereEstimation.get_mask_median_filter-79"><span class="linenos">79</span></a>        <span class="n">mask_array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_single_pixels</span><span class="p">(</span><span class="n">mask_array</span><span class="p">)</span>
@@ -734,7 +734,7 @@ threshold : float
 </span><span id="IonosphereEstimation.compute_unwrapp_error-107"><a href="#IonosphereEstimation.compute_unwrapp_error-107"><span class="linenos">107</span></a>            <span class="n">low_sub_runw</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 </span><span id="IonosphereEstimation.compute_unwrapp_error-108"><a href="#IonosphereEstimation.compute_unwrapp_error-108"><span class="linenos">108</span></a>            <span class="n">high_sub_runw</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 </span><span id="IonosphereEstimation.compute_unwrapp_error-109"><a href="#IonosphereEstimation.compute_unwrapp_error-109"><span class="linenos">109</span></a>            <span class="n">diff_low_high_runw</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-</span><span id="IonosphereEstimation.compute_unwrapp_error-110"><a href="#IonosphereEstimation.compute_unwrapp_error-110"><span class="linenos">110</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute unwrapping error coefficients</span>
+</span><span id="IonosphereEstimation.compute_unwrapp_error-110"><a href="#IonosphereEstimation.compute_unwrapp_error-110"><span class="linenos">110</span></a><span class="w">        </span><span class="sd">"""Compute unwrapping error coefficients</span>
 </span><span id="IonosphereEstimation.compute_unwrapp_error-111"><a href="#IonosphereEstimation.compute_unwrapp_error-111"><span class="linenos">111</span></a>
 </span><span id="IonosphereEstimation.compute_unwrapp_error-112"><a href="#IonosphereEstimation.compute_unwrapp_error-112"><span class="linenos">112</span></a><span class="sd">        Parameters</span>
 </span><span id="IonosphereEstimation.compute_unwrapp_error-113"><a href="#IonosphereEstimation.compute_unwrapp_error-113"><span class="linenos">113</span></a><span class="sd">        ----------</span>
@@ -764,7 +764,7 @@ threshold : float
 </span><span id="IonosphereEstimation.compute_unwrapp_error-137"><a href="#IonosphereEstimation.compute_unwrapp_error-137"><span class="linenos">137</span></a><span class="sd">            2D common unwrapping error coefficient array</span>
 </span><span id="IonosphereEstimation.compute_unwrapp_error-138"><a href="#IonosphereEstimation.compute_unwrapp_error-138"><span class="linenos">138</span></a><span class="sd">        diff_unw_coeff : numpy.ndarray</span>
 </span><span id="IonosphereEstimation.compute_unwrapp_error-139"><a href="#IonosphereEstimation.compute_unwrapp_error-139"><span class="linenos">139</span></a><span class="sd">            2D differential unwrapping error coefficient array</span>
-</span><span id="IonosphereEstimation.compute_unwrapp_error-140"><a href="#IonosphereEstimation.compute_unwrapp_error-140"><span class="linenos">140</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="IonosphereEstimation.compute_unwrapp_error-140"><a href="#IonosphereEstimation.compute_unwrapp_error-140"><span class="linenos">140</span></a><span class="sd">        """</span>
 </span><span id="IonosphereEstimation.compute_unwrapp_error-141"><a href="#IonosphereEstimation.compute_unwrapp_error-141"><span class="linenos">141</span></a>        <span class="c1"># decimate coherences array of frequency A to</span>
 </span><span id="IonosphereEstimation.compute_unwrapp_error-142"><a href="#IonosphereEstimation.compute_unwrapp_error-142"><span class="linenos">142</span></a>        <span class="c1"># frequency B grid</span>
 </span><span id="IonosphereEstimation.compute_unwrapp_error-143"><a href="#IonosphereEstimation.compute_unwrapp_error-143"><span class="linenos">143</span></a>        <span class="k">if</span> <span class="n">side_runw</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>

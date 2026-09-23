@@ -118,16 +118,16 @@
 </span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a><span class="nd">@runtime_checkable</span>
 </span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a><span class="k">class</span><span class="w"> </span><span class="nc">DatasetReader</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
 </span><span id="L-9"><a href="#L-9"><span class="linenos"> 9</span></a>    <span class="n">dtype</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span>
-</span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;numpy.dtype : Data-type of the array&#39;s elements.&quot;&quot;&quot;</span>
+</span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a><span class="w">    </span><span class="sd">"""numpy.dtype : Data-type of the array's elements."""</span>
 </span><span id="L-11"><a href="#L-11"><span class="linenos">11</span></a>
 </span><span id="L-12"><a href="#L-12"><span class="linenos">12</span></a>    <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
-</span><span id="L-13"><a href="#L-13"><span class="linenos">13</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;tuple of int : tuple of array dimensions.&quot;&quot;&quot;</span>
+</span><span id="L-13"><a href="#L-13"><span class="linenos">13</span></a><span class="w">    </span><span class="sd">"""tuple of int : tuple of array dimensions."""</span>
 </span><span id="L-14"><a href="#L-14"><span class="linenos">14</span></a>
 </span><span id="L-15"><a href="#L-15"><span class="linenos">15</span></a>    <span class="n">ndim</span><span class="p">:</span> <span class="nb">int</span>
-</span><span id="L-16"><a href="#L-16"><span class="linenos">16</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;int : Number of array dimensions.&quot;&quot;&quot;</span>
+</span><span id="L-16"><a href="#L-16"><span class="linenos">16</span></a><span class="w">    </span><span class="sd">"""int : Number of array dimensions."""</span>
 </span><span id="L-17"><a href="#L-17"><span class="linenos">17</span></a>
 </span><span id="L-18"><a href="#L-18"><span class="linenos">18</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">slice</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-</span><span id="L-19"><a href="#L-19"><span class="linenos">19</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-19"><a href="#L-19"><span class="linenos">19</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="L-20"><a href="#L-20"><span class="linenos">20</span></a><span class="sd">        Reads a slice of the dataset and returns the list of arrays associated with it.</span>
 </span><span id="L-21"><a href="#L-21"><span class="linenos">21</span></a>
 </span><span id="L-22"><a href="#L-22"><span class="linenos">22</span></a><span class="sd">        Parameters</span>
@@ -139,23 +139,23 @@
 </span><span id="L-28"><a href="#L-28"><span class="linenos">28</span></a><span class="sd">        -------</span>
 </span><span id="L-29"><a href="#L-29"><span class="linenos">29</span></a><span class="sd">        np.ndarray</span>
 </span><span id="L-30"><a href="#L-30"><span class="linenos">30</span></a><span class="sd">            The data within that slice on the dataset.</span>
-</span><span id="L-31"><a href="#L-31"><span class="linenos">31</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-31"><a href="#L-31"><span class="linenos">31</span></a><span class="sd">        """</span>
 </span><span id="L-32"><a href="#L-32"><span class="linenos">32</span></a>        <span class="o">...</span>
 </span><span id="L-33"><a href="#L-33"><span class="linenos">33</span></a>
 </span><span id="L-34"><a href="#L-34"><span class="linenos">34</span></a>
 </span><span id="L-35"><a href="#L-35"><span class="linenos">35</span></a><span class="nd">@runtime_checkable</span>
 </span><span id="L-36"><a href="#L-36"><span class="linenos">36</span></a><span class="k">class</span><span class="w"> </span><span class="nc">DatasetWriter</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
 </span><span id="L-37"><a href="#L-37"><span class="linenos">37</span></a>    <span class="n">dtype</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span>
-</span><span id="L-38"><a href="#L-38"><span class="linenos">38</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;numpy.dtype : Data-type of the array&#39;s elements.&quot;&quot;&quot;</span>
+</span><span id="L-38"><a href="#L-38"><span class="linenos">38</span></a><span class="w">    </span><span class="sd">"""numpy.dtype : Data-type of the array's elements."""</span>
 </span><span id="L-39"><a href="#L-39"><span class="linenos">39</span></a>
 </span><span id="L-40"><a href="#L-40"><span class="linenos">40</span></a>    <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
-</span><span id="L-41"><a href="#L-41"><span class="linenos">41</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;tuple of int : tuple of array dimensions.&quot;&quot;&quot;</span>
+</span><span id="L-41"><a href="#L-41"><span class="linenos">41</span></a><span class="w">    </span><span class="sd">"""tuple of int : tuple of array dimensions."""</span>
 </span><span id="L-42"><a href="#L-42"><span class="linenos">42</span></a>
 </span><span id="L-43"><a href="#L-43"><span class="linenos">43</span></a>    <span class="n">ndim</span><span class="p">:</span> <span class="nb">int</span>
-</span><span id="L-44"><a href="#L-44"><span class="linenos">44</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;int : Number of array dimensions.&quot;&quot;&quot;</span>
+</span><span id="L-44"><a href="#L-44"><span class="linenos">44</span></a><span class="w">    </span><span class="sd">"""int : Number of array dimensions."""</span>
 </span><span id="L-45"><a href="#L-45"><span class="linenos">45</span></a>
 </span><span id="L-46"><a href="#L-46"><span class="linenos">46</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">slice</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">value</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="L-47"><a href="#L-47"><span class="linenos">47</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-47"><a href="#L-47"><span class="linenos">47</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="L-48"><a href="#L-48"><span class="linenos">48</span></a><span class="sd">        Writes the data at value to the key slice on the dataset.</span>
 </span><span id="L-49"><a href="#L-49"><span class="linenos">49</span></a>
 </span><span id="L-50"><a href="#L-50"><span class="linenos">50</span></a><span class="sd">        Parameters</span>
@@ -164,7 +164,7 @@
 </span><span id="L-53"><a href="#L-53"><span class="linenos">53</span></a><span class="sd">            The index expression describing the slice.</span>
 </span><span id="L-54"><a href="#L-54"><span class="linenos">54</span></a><span class="sd">        value : np.ndarray</span>
 </span><span id="L-55"><a href="#L-55"><span class="linenos">55</span></a><span class="sd">            The data to write.</span>
-</span><span id="L-56"><a href="#L-56"><span class="linenos">56</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-56"><a href="#L-56"><span class="linenos">56</span></a><span class="sd">        """</span>
 </span><span id="L-57"><a href="#L-57"><span class="linenos">57</span></a>        <span class="o">...</span>
 </span></pre></div>
 
@@ -185,16 +185,16 @@
             <div class="pdoc-code codehilite"><pre><span></span><span id="DatasetReader-8"><a href="#DatasetReader-8"><span class="linenos"> 8</span></a><span class="nd">@runtime_checkable</span>
 </span><span id="DatasetReader-9"><a href="#DatasetReader-9"><span class="linenos"> 9</span></a><span class="k">class</span><span class="w"> </span><span class="nc">DatasetReader</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
 </span><span id="DatasetReader-10"><a href="#DatasetReader-10"><span class="linenos">10</span></a>    <span class="n">dtype</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span>
-</span><span id="DatasetReader-11"><a href="#DatasetReader-11"><span class="linenos">11</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;numpy.dtype : Data-type of the array&#39;s elements.&quot;&quot;&quot;</span>
+</span><span id="DatasetReader-11"><a href="#DatasetReader-11"><span class="linenos">11</span></a><span class="w">    </span><span class="sd">"""numpy.dtype : Data-type of the array's elements."""</span>
 </span><span id="DatasetReader-12"><a href="#DatasetReader-12"><span class="linenos">12</span></a>
 </span><span id="DatasetReader-13"><a href="#DatasetReader-13"><span class="linenos">13</span></a>    <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
-</span><span id="DatasetReader-14"><a href="#DatasetReader-14"><span class="linenos">14</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;tuple of int : tuple of array dimensions.&quot;&quot;&quot;</span>
+</span><span id="DatasetReader-14"><a href="#DatasetReader-14"><span class="linenos">14</span></a><span class="w">    </span><span class="sd">"""tuple of int : tuple of array dimensions."""</span>
 </span><span id="DatasetReader-15"><a href="#DatasetReader-15"><span class="linenos">15</span></a>
 </span><span id="DatasetReader-16"><a href="#DatasetReader-16"><span class="linenos">16</span></a>    <span class="n">ndim</span><span class="p">:</span> <span class="nb">int</span>
-</span><span id="DatasetReader-17"><a href="#DatasetReader-17"><span class="linenos">17</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;int : Number of array dimensions.&quot;&quot;&quot;</span>
+</span><span id="DatasetReader-17"><a href="#DatasetReader-17"><span class="linenos">17</span></a><span class="w">    </span><span class="sd">"""int : Number of array dimensions."""</span>
 </span><span id="DatasetReader-18"><a href="#DatasetReader-18"><span class="linenos">18</span></a>
 </span><span id="DatasetReader-19"><a href="#DatasetReader-19"><span class="linenos">19</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">slice</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-</span><span id="DatasetReader-20"><a href="#DatasetReader-20"><span class="linenos">20</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="DatasetReader-20"><a href="#DatasetReader-20"><span class="linenos">20</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="DatasetReader-21"><a href="#DatasetReader-21"><span class="linenos">21</span></a><span class="sd">        Reads a slice of the dataset and returns the list of arrays associated with it.</span>
 </span><span id="DatasetReader-22"><a href="#DatasetReader-22"><span class="linenos">22</span></a>
 </span><span id="DatasetReader-23"><a href="#DatasetReader-23"><span class="linenos">23</span></a><span class="sd">        Parameters</span>
@@ -206,7 +206,7 @@
 </span><span id="DatasetReader-29"><a href="#DatasetReader-29"><span class="linenos">29</span></a><span class="sd">        -------</span>
 </span><span id="DatasetReader-30"><a href="#DatasetReader-30"><span class="linenos">30</span></a><span class="sd">        np.ndarray</span>
 </span><span id="DatasetReader-31"><a href="#DatasetReader-31"><span class="linenos">31</span></a><span class="sd">            The data within that slice on the dataset.</span>
-</span><span id="DatasetReader-32"><a href="#DatasetReader-32"><span class="linenos">32</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="DatasetReader-32"><a href="#DatasetReader-32"><span class="linenos">32</span></a><span class="sd">        """</span>
 </span><span id="DatasetReader-33"><a href="#DatasetReader-33"><span class="linenos">33</span></a>        <span class="o">...</span>
 </span></pre></div>
 
@@ -261,7 +261,7 @@ Protocol classes can be generic, they are defined as::</p>
 </span><span id="DatasetReader.__init__-1772"><a href="#DatasetReader.__init__-1772"><span class="linenos">1772</span></a>    <span class="bp">cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 </span><span id="DatasetReader.__init__-1773"><a href="#DatasetReader.__init__-1773"><span class="linenos">1773</span></a>
 </span><span id="DatasetReader.__init__-1774"><a href="#DatasetReader.__init__-1774"><span class="linenos">1774</span></a>    <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_is_protocol</span><span class="p">:</span>
-</span><span id="DatasetReader.__init__-1775"><a href="#DatasetReader.__init__-1775"><span class="linenos">1775</span></a>        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Protocols cannot be instantiated&#39;</span><span class="p">)</span>
+</span><span id="DatasetReader.__init__-1775"><a href="#DatasetReader.__init__-1775"><span class="linenos">1775</span></a>        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">'Protocols cannot be instantiated'</span><span class="p">)</span>
 </span><span id="DatasetReader.__init__-1776"><a href="#DatasetReader.__init__-1776"><span class="linenos">1776</span></a>
 </span><span id="DatasetReader.__init__-1777"><a href="#DatasetReader.__init__-1777"><span class="linenos">1777</span></a>    <span class="c1"># Already using a custom `__init__`. No need to calculate correct</span>
 </span><span id="DatasetReader.__init__-1778"><a href="#DatasetReader.__init__-1778"><span class="linenos">1778</span></a>    <span class="c1"># `__init__` to call. This can lead to RecursionError. See bpo-45121.</span>
@@ -271,11 +271,11 @@ Protocol classes can be generic, they are defined as::</p>
 </span><span id="DatasetReader.__init__-1782"><a href="#DatasetReader.__init__-1782"><span class="linenos">1782</span></a>    <span class="c1"># Initially, `__init__` of a protocol subclass is set to `_no_init_or_replace_init`.</span>
 </span><span id="DatasetReader.__init__-1783"><a href="#DatasetReader.__init__-1783"><span class="linenos">1783</span></a>    <span class="c1"># The first instantiation of the subclass will call `_no_init_or_replace_init` which</span>
 </span><span id="DatasetReader.__init__-1784"><a href="#DatasetReader.__init__-1784"><span class="linenos">1784</span></a>    <span class="c1"># searches for a proper new `__init__` in the MRO. The new `__init__`</span>
-</span><span id="DatasetReader.__init__-1785"><a href="#DatasetReader.__init__-1785"><span class="linenos">1785</span></a>    <span class="c1"># replaces the subclass&#39; old `__init__` (ie `_no_init_or_replace_init`). Subsequent</span>
+</span><span id="DatasetReader.__init__-1785"><a href="#DatasetReader.__init__-1785"><span class="linenos">1785</span></a>    <span class="c1"># replaces the subclass' old `__init__` (ie `_no_init_or_replace_init`). Subsequent</span>
 </span><span id="DatasetReader.__init__-1786"><a href="#DatasetReader.__init__-1786"><span class="linenos">1786</span></a>    <span class="c1"># instantiation of the protocol subclass will thus use the new</span>
 </span><span id="DatasetReader.__init__-1787"><a href="#DatasetReader.__init__-1787"><span class="linenos">1787</span></a>    <span class="c1"># `__init__` and no longer call `_no_init_or_replace_init`.</span>
 </span><span id="DatasetReader.__init__-1788"><a href="#DatasetReader.__init__-1788"><span class="linenos">1788</span></a>    <span class="k">for</span> <span class="n">base</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__mro__</span><span class="p">:</span>
-</span><span id="DatasetReader.__init__-1789"><a href="#DatasetReader.__init__-1789"><span class="linenos">1789</span></a>        <span class="n">init</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;__init__&#39;</span><span class="p">,</span> <span class="n">_no_init_or_replace_init</span><span class="p">)</span>
+</span><span id="DatasetReader.__init__-1789"><a href="#DatasetReader.__init__-1789"><span class="linenos">1789</span></a>        <span class="n">init</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'__init__'</span><span class="p">,</span> <span class="n">_no_init_or_replace_init</span><span class="p">)</span>
 </span><span id="DatasetReader.__init__-1790"><a href="#DatasetReader.__init__-1790"><span class="linenos">1790</span></a>        <span class="k">if</span> <span class="n">init</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">_no_init_or_replace_init</span><span class="p">:</span>
 </span><span id="DatasetReader.__init__-1791"><a href="#DatasetReader.__init__-1791"><span class="linenos">1791</span></a>            <span class="bp">cls</span><span class="o">.</span><span class="fm">__init__</span> <span class="o">=</span> <span class="n">init</span>
 </span><span id="DatasetReader.__init__-1792"><a href="#DatasetReader.__init__-1792"><span class="linenos">1792</span></a>            <span class="k">break</span>
@@ -345,16 +345,16 @@ Protocol classes can be generic, they are defined as::</p>
             <div class="pdoc-code codehilite"><pre><span></span><span id="DatasetWriter-36"><a href="#DatasetWriter-36"><span class="linenos">36</span></a><span class="nd">@runtime_checkable</span>
 </span><span id="DatasetWriter-37"><a href="#DatasetWriter-37"><span class="linenos">37</span></a><span class="k">class</span><span class="w"> </span><span class="nc">DatasetWriter</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
 </span><span id="DatasetWriter-38"><a href="#DatasetWriter-38"><span class="linenos">38</span></a>    <span class="n">dtype</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span>
-</span><span id="DatasetWriter-39"><a href="#DatasetWriter-39"><span class="linenos">39</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;numpy.dtype : Data-type of the array&#39;s elements.&quot;&quot;&quot;</span>
+</span><span id="DatasetWriter-39"><a href="#DatasetWriter-39"><span class="linenos">39</span></a><span class="w">    </span><span class="sd">"""numpy.dtype : Data-type of the array's elements."""</span>
 </span><span id="DatasetWriter-40"><a href="#DatasetWriter-40"><span class="linenos">40</span></a>
 </span><span id="DatasetWriter-41"><a href="#DatasetWriter-41"><span class="linenos">41</span></a>    <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
-</span><span id="DatasetWriter-42"><a href="#DatasetWriter-42"><span class="linenos">42</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;tuple of int : tuple of array dimensions.&quot;&quot;&quot;</span>
+</span><span id="DatasetWriter-42"><a href="#DatasetWriter-42"><span class="linenos">42</span></a><span class="w">    </span><span class="sd">"""tuple of int : tuple of array dimensions."""</span>
 </span><span id="DatasetWriter-43"><a href="#DatasetWriter-43"><span class="linenos">43</span></a>
 </span><span id="DatasetWriter-44"><a href="#DatasetWriter-44"><span class="linenos">44</span></a>    <span class="n">ndim</span><span class="p">:</span> <span class="nb">int</span>
-</span><span id="DatasetWriter-45"><a href="#DatasetWriter-45"><span class="linenos">45</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;int : Number of array dimensions.&quot;&quot;&quot;</span>
+</span><span id="DatasetWriter-45"><a href="#DatasetWriter-45"><span class="linenos">45</span></a><span class="w">    </span><span class="sd">"""int : Number of array dimensions."""</span>
 </span><span id="DatasetWriter-46"><a href="#DatasetWriter-46"><span class="linenos">46</span></a>
 </span><span id="DatasetWriter-47"><a href="#DatasetWriter-47"><span class="linenos">47</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">slice</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">value</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="DatasetWriter-48"><a href="#DatasetWriter-48"><span class="linenos">48</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="DatasetWriter-48"><a href="#DatasetWriter-48"><span class="linenos">48</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="DatasetWriter-49"><a href="#DatasetWriter-49"><span class="linenos">49</span></a><span class="sd">        Writes the data at value to the key slice on the dataset.</span>
 </span><span id="DatasetWriter-50"><a href="#DatasetWriter-50"><span class="linenos">50</span></a>
 </span><span id="DatasetWriter-51"><a href="#DatasetWriter-51"><span class="linenos">51</span></a><span class="sd">        Parameters</span>
@@ -363,7 +363,7 @@ Protocol classes can be generic, they are defined as::</p>
 </span><span id="DatasetWriter-54"><a href="#DatasetWriter-54"><span class="linenos">54</span></a><span class="sd">            The index expression describing the slice.</span>
 </span><span id="DatasetWriter-55"><a href="#DatasetWriter-55"><span class="linenos">55</span></a><span class="sd">        value : np.ndarray</span>
 </span><span id="DatasetWriter-56"><a href="#DatasetWriter-56"><span class="linenos">56</span></a><span class="sd">            The data to write.</span>
-</span><span id="DatasetWriter-57"><a href="#DatasetWriter-57"><span class="linenos">57</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="DatasetWriter-57"><a href="#DatasetWriter-57"><span class="linenos">57</span></a><span class="sd">        """</span>
 </span><span id="DatasetWriter-58"><a href="#DatasetWriter-58"><span class="linenos">58</span></a>        <span class="o">...</span>
 </span></pre></div>
 
@@ -418,7 +418,7 @@ Protocol classes can be generic, they are defined as::</p>
 </span><span id="DatasetWriter.__init__-1772"><a href="#DatasetWriter.__init__-1772"><span class="linenos">1772</span></a>    <span class="bp">cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 </span><span id="DatasetWriter.__init__-1773"><a href="#DatasetWriter.__init__-1773"><span class="linenos">1773</span></a>
 </span><span id="DatasetWriter.__init__-1774"><a href="#DatasetWriter.__init__-1774"><span class="linenos">1774</span></a>    <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_is_protocol</span><span class="p">:</span>
-</span><span id="DatasetWriter.__init__-1775"><a href="#DatasetWriter.__init__-1775"><span class="linenos">1775</span></a>        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Protocols cannot be instantiated&#39;</span><span class="p">)</span>
+</span><span id="DatasetWriter.__init__-1775"><a href="#DatasetWriter.__init__-1775"><span class="linenos">1775</span></a>        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">'Protocols cannot be instantiated'</span><span class="p">)</span>
 </span><span id="DatasetWriter.__init__-1776"><a href="#DatasetWriter.__init__-1776"><span class="linenos">1776</span></a>
 </span><span id="DatasetWriter.__init__-1777"><a href="#DatasetWriter.__init__-1777"><span class="linenos">1777</span></a>    <span class="c1"># Already using a custom `__init__`. No need to calculate correct</span>
 </span><span id="DatasetWriter.__init__-1778"><a href="#DatasetWriter.__init__-1778"><span class="linenos">1778</span></a>    <span class="c1"># `__init__` to call. This can lead to RecursionError. See bpo-45121.</span>
@@ -428,11 +428,11 @@ Protocol classes can be generic, they are defined as::</p>
 </span><span id="DatasetWriter.__init__-1782"><a href="#DatasetWriter.__init__-1782"><span class="linenos">1782</span></a>    <span class="c1"># Initially, `__init__` of a protocol subclass is set to `_no_init_or_replace_init`.</span>
 </span><span id="DatasetWriter.__init__-1783"><a href="#DatasetWriter.__init__-1783"><span class="linenos">1783</span></a>    <span class="c1"># The first instantiation of the subclass will call `_no_init_or_replace_init` which</span>
 </span><span id="DatasetWriter.__init__-1784"><a href="#DatasetWriter.__init__-1784"><span class="linenos">1784</span></a>    <span class="c1"># searches for a proper new `__init__` in the MRO. The new `__init__`</span>
-</span><span id="DatasetWriter.__init__-1785"><a href="#DatasetWriter.__init__-1785"><span class="linenos">1785</span></a>    <span class="c1"># replaces the subclass&#39; old `__init__` (ie `_no_init_or_replace_init`). Subsequent</span>
+</span><span id="DatasetWriter.__init__-1785"><a href="#DatasetWriter.__init__-1785"><span class="linenos">1785</span></a>    <span class="c1"># replaces the subclass' old `__init__` (ie `_no_init_or_replace_init`). Subsequent</span>
 </span><span id="DatasetWriter.__init__-1786"><a href="#DatasetWriter.__init__-1786"><span class="linenos">1786</span></a>    <span class="c1"># instantiation of the protocol subclass will thus use the new</span>
 </span><span id="DatasetWriter.__init__-1787"><a href="#DatasetWriter.__init__-1787"><span class="linenos">1787</span></a>    <span class="c1"># `__init__` and no longer call `_no_init_or_replace_init`.</span>
 </span><span id="DatasetWriter.__init__-1788"><a href="#DatasetWriter.__init__-1788"><span class="linenos">1788</span></a>    <span class="k">for</span> <span class="n">base</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__mro__</span><span class="p">:</span>
-</span><span id="DatasetWriter.__init__-1789"><a href="#DatasetWriter.__init__-1789"><span class="linenos">1789</span></a>        <span class="n">init</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;__init__&#39;</span><span class="p">,</span> <span class="n">_no_init_or_replace_init</span><span class="p">)</span>
+</span><span id="DatasetWriter.__init__-1789"><a href="#DatasetWriter.__init__-1789"><span class="linenos">1789</span></a>        <span class="n">init</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'__init__'</span><span class="p">,</span> <span class="n">_no_init_or_replace_init</span><span class="p">)</span>
 </span><span id="DatasetWriter.__init__-1790"><a href="#DatasetWriter.__init__-1790"><span class="linenos">1790</span></a>        <span class="k">if</span> <span class="n">init</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">_no_init_or_replace_init</span><span class="p">:</span>
 </span><span id="DatasetWriter.__init__-1791"><a href="#DatasetWriter.__init__-1791"><span class="linenos">1791</span></a>            <span class="bp">cls</span><span class="o">.</span><span class="fm">__init__</span> <span class="o">=</span> <span class="n">init</span>
 </span><span id="DatasetWriter.__init__-1792"><a href="#DatasetWriter.__init__-1792"><span class="linenos">1792</span></a>            <span class="k">break</span>

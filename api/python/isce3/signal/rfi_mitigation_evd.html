@@ -82,10 +82,10 @@ RFI Eigenvectors, and subsequently remove it from input raw data.</p>
 
                         <label class="view-source-button" for="mod-rfi_mitigation_evd-view-source"><span>View Source</span></label>
 
-                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos">  1</span></a><span class="sd">&quot;&quot;&quot;</span>
+                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos">  1</span></a><span class="sd">"""</span>
 </span><span id="L-2"><a href="#L-2"><span class="linenos">  2</span></a><span class="sd">Perform RFI mitigation by projecting raw data in the direction of</span>
 </span><span id="L-3"><a href="#L-3"><span class="linenos">  3</span></a><span class="sd">RFI Eigenvectors, and subsequently remove it from input raw data.</span>
-</span><span id="L-4"><a href="#L-4"><span class="linenos">  4</span></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-4"><a href="#L-4"><span class="linenos">  4</span></a><span class="sd">"""</span>
 </span><span id="L-5"><a href="#L-5"><span class="linenos">  5</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 </span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">isce3.signal.compute_evd_cpi</span><span class="w"> </span><span class="kn">import</span> <span class="n">slice_gen</span>
 </span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a>
@@ -95,11 +95,11 @@ RFI Eigenvectors, and subsequently remove it from input raw data.</p>
 </span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a>    <span class="n">rfi_flag</span><span class="p">,</span>
 </span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a>    <span class="n">raw_data_mitigated</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 </span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a><span class="p">):</span>
-</span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Radio Frequency Interference (RFI) component of the Raw data in a CPI is derived by</span>
+</span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a><span class="w">    </span><span class="sd">"""Radio Frequency Interference (RFI) component of the Raw data in a CPI is derived by</span>
 </span><span id="L-15"><a href="#L-15"><span class="linenos"> 15</span></a><span class="sd">    projecting the raw data in the directions of Eigenvectors of dominant</span>
 </span><span id="L-16"><a href="#L-16"><span class="linenos"> 16</span></a><span class="sd">    Eigenvalues (Principal Components).  RFI mitigation is performed by</span>
 </span><span id="L-17"><a href="#L-17"><span class="linenos"> 17</span></a><span class="sd">    removing RFI component of raw data from raw data. The  number of rows (pulses) </span>
-</span><span id="L-18"><a href="#L-18"><span class="linenos"> 18</span></a><span class="sd">    in the &#39;raw_data&#39; input is equal to a single CPI length.</span>
+</span><span id="L-18"><a href="#L-18"><span class="linenos"> 18</span></a><span class="sd">    in the 'raw_data' input is equal to a single CPI length.</span>
 </span><span id="L-19"><a href="#L-19"><span class="linenos"> 19</span></a>
 </span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a><span class="sd">    Parameters</span>
 </span><span id="L-21"><a href="#L-21"><span class="linenos"> 21</span></a><span class="sd">    ------------</span>
@@ -115,23 +115,23 @@ RFI Eigenvectors, and subsequently remove it from input raw data.</p>
 </span><span id="L-31"><a href="#L-31"><span class="linenos"> 31</span></a><span class="sd">        must be an array-like object supporting `multidimensional array access</span>
 </span><span id="L-32"><a href="#L-32"><span class="linenos"> 32</span></a><span class="sd">        &lt;https://numpy.org/doc/stable/user/basics.indexing.html&gt;`_.</span>
 </span><span id="L-33"><a href="#L-33"><span class="linenos"> 33</span></a><span class="sd">        The array should have the same shape and dtype as the input raw data array.</span>
-</span><span id="L-34"><a href="#L-34"><span class="linenos"> 34</span></a><span class="sd">        If None (the default), an alias will be created internally and &#39;raw_data&#39; is modified</span>
+</span><span id="L-34"><a href="#L-34"><span class="linenos"> 34</span></a><span class="sd">        If None (the default), an alias will be created internally and 'raw_data' is modified</span>
 </span><span id="L-35"><a href="#L-35"><span class="linenos"> 35</span></a><span class="sd">        in-place.</span>
-</span><span id="L-36"><a href="#L-36"><span class="linenos"> 36</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-36"><a href="#L-36"><span class="linenos"> 36</span></a><span class="sd">    """</span>
 </span><span id="L-37"><a href="#L-37"><span class="linenos"> 37</span></a>
 </span><span id="L-38"><a href="#L-38"><span class="linenos"> 38</span></a>    <span class="k">if</span> <span class="n">raw_data_mitigated</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
 </span><span id="L-39"><a href="#L-39"><span class="linenos"> 39</span></a>        <span class="n">raw_data_mitigated</span> <span class="o">=</span> <span class="n">raw_data</span>
 </span><span id="L-40"><a href="#L-40"><span class="linenos"> 40</span></a>    <span class="k">else</span><span class="p">:</span>
 </span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a>        <span class="k">if</span> <span class="n">raw_data_mitigated</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">raw_data</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
 </span><span id="L-42"><a href="#L-42"><span class="linenos"> 42</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a>                <span class="s2">&quot;Shape mismatch: output mitigated data array must have the same shape&quot;</span>
-</span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a>                <span class="s2">&quot; as the input data&quot;</span>
+</span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a>                <span class="s2">"Shape mismatch: output mitigated data array must have the same shape"</span>
+</span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a>                <span class="s2">" as the input data"</span>
 </span><span id="L-45"><a href="#L-45"><span class="linenos"> 45</span></a>            <span class="p">)</span>
 </span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a>
 </span><span id="L-47"><a href="#L-47"><span class="linenos"> 47</span></a>     <span class="c1"># Verify total number of pulses is greater than number of pulses per CPI</span>
 </span><span id="L-48"><a href="#L-48"><span class="linenos"> 48</span></a>    <span class="k">if</span> <span class="n">raw_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">eig_vec_sort</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
 </span><span id="L-49"><a href="#L-49"><span class="linenos"> 49</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span id="L-50"><a href="#L-50"><span class="linenos"> 50</span></a>            <span class="s2">&quot;Total number of pulses must be equal to CPI length.&quot;</span>
+</span><span id="L-50"><a href="#L-50"><span class="linenos"> 50</span></a>            <span class="s2">"Total number of pulses must be equal to CPI length."</span>
 </span><span id="L-51"><a href="#L-51"><span class="linenos"> 51</span></a>        <span class="p">)</span>
 </span><span id="L-52"><a href="#L-52"><span class="linenos"> 52</span></a>
 </span><span id="L-53"><a href="#L-53"><span class="linenos"> 53</span></a>    <span class="n">num_rfi</span> <span class="o">=</span> <span class="n">rfi_flag</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
@@ -153,7 +153,7 @@ RFI Eigenvectors, and subsequently remove it from input raw data.</p>
 </span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a>    <span class="n">rfi_cpi_flag_array</span><span class="p">,</span>
 </span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a>    <span class="n">raw_data_mitigated_tb</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 </span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a><span class="p">):</span>
-</span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrapper function that performs RFI mitigation of the input raw data of a </span>
+</span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a><span class="w">    </span><span class="sd">"""Wrapper function that performs RFI mitigation of the input raw data of a </span>
 </span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a><span class="sd">    Threshold Block (TB) one CPI at a time. Number of pulses or rows of raw_data_tb must</span>
 </span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a><span class="sd">    be an integer of CPI length</span>
 </span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a>
@@ -171,17 +171,17 @@ RFI Eigenvectors, and subsequently remove it from input raw data.</p>
 </span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a><span class="sd">        must be an array-like object supporting `multidimensional array access</span>
 </span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a><span class="sd">        &lt;https://numpy.org/doc/stable/user/basics.indexing.html&gt;`_.</span>
 </span><span id="L-89"><a href="#L-89"><span class="linenos"> 89</span></a><span class="sd">        The array should have the same shape and dtype as the input raw data array.</span>
-</span><span id="L-90"><a href="#L-90"><span class="linenos"> 90</span></a><span class="sd">        If None (the default), an alias will be created internally, and &#39;raw_data&#39; is modified</span>
+</span><span id="L-90"><a href="#L-90"><span class="linenos"> 90</span></a><span class="sd">        If None (the default), an alias will be created internally, and 'raw_data' is modified</span>
 </span><span id="L-91"><a href="#L-91"><span class="linenos"> 91</span></a><span class="sd">        in-place.</span>
-</span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a><span class="sd">    """</span>
 </span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a>
 </span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a>    <span class="n">num_pulses</span> <span class="o">=</span> <span class="n">raw_data_tb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a>    <span class="n">cpi_len</span> <span class="o">=</span> <span class="n">eig_vec_sort_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
 </span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a>
 </span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a>    <span class="k">if</span> <span class="n">num_pulses</span> <span class="o">%</span> <span class="n">cpi_len</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-</span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Total number of pulses must be an integer multiple of cpi_len&quot;</span><span class="p">)</span>
+</span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Total number of pulses must be an integer multiple of cpi_len"</span><span class="p">)</span>
 </span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a>
-</span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a>    <span class="c1"># Create an alias for raw_data_tb if there is no &#39;raw_data_mitigated_tb&#39; as input</span>
+</span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a>    <span class="c1"># Create an alias for raw_data_tb if there is no 'raw_data_mitigated_tb' as input</span>
 </span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a>    <span class="k">if</span> <span class="n">raw_data_mitigated_tb</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
 </span><span id="L-102"><a href="#L-102"><span class="linenos">102</span></a>        <span class="n">raw_data_mitigated_tb</span> <span class="o">=</span> <span class="n">raw_data_tb</span>
 </span><span id="L-103"><a href="#L-103"><span class="linenos">103</span></a>
@@ -214,11 +214,11 @@ RFI Eigenvectors, and subsequently remove it from input raw data.</p>
 </span><span id="rfi_mitigate_evd-12"><a href="#rfi_mitigate_evd-12"><span class="linenos">12</span></a>    <span class="n">rfi_flag</span><span class="p">,</span>
 </span><span id="rfi_mitigate_evd-13"><a href="#rfi_mitigate_evd-13"><span class="linenos">13</span></a>    <span class="n">raw_data_mitigated</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 </span><span id="rfi_mitigate_evd-14"><a href="#rfi_mitigate_evd-14"><span class="linenos">14</span></a><span class="p">):</span>
-</span><span id="rfi_mitigate_evd-15"><a href="#rfi_mitigate_evd-15"><span class="linenos">15</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Radio Frequency Interference (RFI) component of the Raw data in a CPI is derived by</span>
+</span><span id="rfi_mitigate_evd-15"><a href="#rfi_mitigate_evd-15"><span class="linenos">15</span></a><span class="w">    </span><span class="sd">"""Radio Frequency Interference (RFI) component of the Raw data in a CPI is derived by</span>
 </span><span id="rfi_mitigate_evd-16"><a href="#rfi_mitigate_evd-16"><span class="linenos">16</span></a><span class="sd">    projecting the raw data in the directions of Eigenvectors of dominant</span>
 </span><span id="rfi_mitigate_evd-17"><a href="#rfi_mitigate_evd-17"><span class="linenos">17</span></a><span class="sd">    Eigenvalues (Principal Components).  RFI mitigation is performed by</span>
 </span><span id="rfi_mitigate_evd-18"><a href="#rfi_mitigate_evd-18"><span class="linenos">18</span></a><span class="sd">    removing RFI component of raw data from raw data. The  number of rows (pulses) </span>
-</span><span id="rfi_mitigate_evd-19"><a href="#rfi_mitigate_evd-19"><span class="linenos">19</span></a><span class="sd">    in the &#39;raw_data&#39; input is equal to a single CPI length.</span>
+</span><span id="rfi_mitigate_evd-19"><a href="#rfi_mitigate_evd-19"><span class="linenos">19</span></a><span class="sd">    in the 'raw_data' input is equal to a single CPI length.</span>
 </span><span id="rfi_mitigate_evd-20"><a href="#rfi_mitigate_evd-20"><span class="linenos">20</span></a>
 </span><span id="rfi_mitigate_evd-21"><a href="#rfi_mitigate_evd-21"><span class="linenos">21</span></a><span class="sd">    Parameters</span>
 </span><span id="rfi_mitigate_evd-22"><a href="#rfi_mitigate_evd-22"><span class="linenos">22</span></a><span class="sd">    ------------</span>
@@ -234,23 +234,23 @@ RFI Eigenvectors, and subsequently remove it from input raw data.</p>
 </span><span id="rfi_mitigate_evd-32"><a href="#rfi_mitigate_evd-32"><span class="linenos">32</span></a><span class="sd">        must be an array-like object supporting `multidimensional array access</span>
 </span><span id="rfi_mitigate_evd-33"><a href="#rfi_mitigate_evd-33"><span class="linenos">33</span></a><span class="sd">        &lt;https://numpy.org/doc/stable/user/basics.indexing.html&gt;`_.</span>
 </span><span id="rfi_mitigate_evd-34"><a href="#rfi_mitigate_evd-34"><span class="linenos">34</span></a><span class="sd">        The array should have the same shape and dtype as the input raw data array.</span>
-</span><span id="rfi_mitigate_evd-35"><a href="#rfi_mitigate_evd-35"><span class="linenos">35</span></a><span class="sd">        If None (the default), an alias will be created internally and &#39;raw_data&#39; is modified</span>
+</span><span id="rfi_mitigate_evd-35"><a href="#rfi_mitigate_evd-35"><span class="linenos">35</span></a><span class="sd">        If None (the default), an alias will be created internally and 'raw_data' is modified</span>
 </span><span id="rfi_mitigate_evd-36"><a href="#rfi_mitigate_evd-36"><span class="linenos">36</span></a><span class="sd">        in-place.</span>
-</span><span id="rfi_mitigate_evd-37"><a href="#rfi_mitigate_evd-37"><span class="linenos">37</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="rfi_mitigate_evd-37"><a href="#rfi_mitigate_evd-37"><span class="linenos">37</span></a><span class="sd">    """</span>
 </span><span id="rfi_mitigate_evd-38"><a href="#rfi_mitigate_evd-38"><span class="linenos">38</span></a>
 </span><span id="rfi_mitigate_evd-39"><a href="#rfi_mitigate_evd-39"><span class="linenos">39</span></a>    <span class="k">if</span> <span class="n">raw_data_mitigated</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
 </span><span id="rfi_mitigate_evd-40"><a href="#rfi_mitigate_evd-40"><span class="linenos">40</span></a>        <span class="n">raw_data_mitigated</span> <span class="o">=</span> <span class="n">raw_data</span>
 </span><span id="rfi_mitigate_evd-41"><a href="#rfi_mitigate_evd-41"><span class="linenos">41</span></a>    <span class="k">else</span><span class="p">:</span>
 </span><span id="rfi_mitigate_evd-42"><a href="#rfi_mitigate_evd-42"><span class="linenos">42</span></a>        <span class="k">if</span> <span class="n">raw_data_mitigated</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">raw_data</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
 </span><span id="rfi_mitigate_evd-43"><a href="#rfi_mitigate_evd-43"><span class="linenos">43</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span id="rfi_mitigate_evd-44"><a href="#rfi_mitigate_evd-44"><span class="linenos">44</span></a>                <span class="s2">&quot;Shape mismatch: output mitigated data array must have the same shape&quot;</span>
-</span><span id="rfi_mitigate_evd-45"><a href="#rfi_mitigate_evd-45"><span class="linenos">45</span></a>                <span class="s2">&quot; as the input data&quot;</span>
+</span><span id="rfi_mitigate_evd-44"><a href="#rfi_mitigate_evd-44"><span class="linenos">44</span></a>                <span class="s2">"Shape mismatch: output mitigated data array must have the same shape"</span>
+</span><span id="rfi_mitigate_evd-45"><a href="#rfi_mitigate_evd-45"><span class="linenos">45</span></a>                <span class="s2">" as the input data"</span>
 </span><span id="rfi_mitigate_evd-46"><a href="#rfi_mitigate_evd-46"><span class="linenos">46</span></a>            <span class="p">)</span>
 </span><span id="rfi_mitigate_evd-47"><a href="#rfi_mitigate_evd-47"><span class="linenos">47</span></a>
 </span><span id="rfi_mitigate_evd-48"><a href="#rfi_mitigate_evd-48"><span class="linenos">48</span></a>     <span class="c1"># Verify total number of pulses is greater than number of pulses per CPI</span>
 </span><span id="rfi_mitigate_evd-49"><a href="#rfi_mitigate_evd-49"><span class="linenos">49</span></a>    <span class="k">if</span> <span class="n">raw_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">eig_vec_sort</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
 </span><span id="rfi_mitigate_evd-50"><a href="#rfi_mitigate_evd-50"><span class="linenos">50</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span id="rfi_mitigate_evd-51"><a href="#rfi_mitigate_evd-51"><span class="linenos">51</span></a>            <span class="s2">&quot;Total number of pulses must be equal to CPI length.&quot;</span>
+</span><span id="rfi_mitigate_evd-51"><a href="#rfi_mitigate_evd-51"><span class="linenos">51</span></a>            <span class="s2">"Total number of pulses must be equal to CPI length."</span>
 </span><span id="rfi_mitigate_evd-52"><a href="#rfi_mitigate_evd-52"><span class="linenos">52</span></a>        <span class="p">)</span>
 </span><span id="rfi_mitigate_evd-53"><a href="#rfi_mitigate_evd-53"><span class="linenos">53</span></a>
 </span><span id="rfi_mitigate_evd-54"><a href="#rfi_mitigate_evd-54"><span class="linenos">54</span></a>    <span class="n">num_rfi</span> <span class="o">=</span> <span class="n">rfi_flag</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
@@ -310,7 +310,7 @@ raw_data_mitigated: array-like complex [num_pulses x num_rng_samples] or None, o
 </span><span id="rfi_mitigate_tb-70"><a href="#rfi_mitigate_tb-70"><span class="linenos"> 70</span></a>    <span class="n">rfi_cpi_flag_array</span><span class="p">,</span>
 </span><span id="rfi_mitigate_tb-71"><a href="#rfi_mitigate_tb-71"><span class="linenos"> 71</span></a>    <span class="n">raw_data_mitigated_tb</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 </span><span id="rfi_mitigate_tb-72"><a href="#rfi_mitigate_tb-72"><span class="linenos"> 72</span></a><span class="p">):</span>
-</span><span id="rfi_mitigate_tb-73"><a href="#rfi_mitigate_tb-73"><span class="linenos"> 73</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrapper function that performs RFI mitigation of the input raw data of a </span>
+</span><span id="rfi_mitigate_tb-73"><a href="#rfi_mitigate_tb-73"><span class="linenos"> 73</span></a><span class="w">    </span><span class="sd">"""Wrapper function that performs RFI mitigation of the input raw data of a </span>
 </span><span id="rfi_mitigate_tb-74"><a href="#rfi_mitigate_tb-74"><span class="linenos"> 74</span></a><span class="sd">    Threshold Block (TB) one CPI at a time. Number of pulses or rows of raw_data_tb must</span>
 </span><span id="rfi_mitigate_tb-75"><a href="#rfi_mitigate_tb-75"><span class="linenos"> 75</span></a><span class="sd">    be an integer of CPI length</span>
 </span><span id="rfi_mitigate_tb-76"><a href="#rfi_mitigate_tb-76"><span class="linenos"> 76</span></a>
@@ -328,17 +328,17 @@ raw_data_mitigated: array-like complex [num_pulses x num_rng_samples] or None, o
 </span><span id="rfi_mitigate_tb-88"><a href="#rfi_mitigate_tb-88"><span class="linenos"> 88</span></a><span class="sd">        must be an array-like object supporting `multidimensional array access</span>
 </span><span id="rfi_mitigate_tb-89"><a href="#rfi_mitigate_tb-89"><span class="linenos"> 89</span></a><span class="sd">        &lt;https://numpy.org/doc/stable/user/basics.indexing.html&gt;`_.</span>
 </span><span id="rfi_mitigate_tb-90"><a href="#rfi_mitigate_tb-90"><span class="linenos"> 90</span></a><span class="sd">        The array should have the same shape and dtype as the input raw data array.</span>
-</span><span id="rfi_mitigate_tb-91"><a href="#rfi_mitigate_tb-91"><span class="linenos"> 91</span></a><span class="sd">        If None (the default), an alias will be created internally, and &#39;raw_data&#39; is modified</span>
+</span><span id="rfi_mitigate_tb-91"><a href="#rfi_mitigate_tb-91"><span class="linenos"> 91</span></a><span class="sd">        If None (the default), an alias will be created internally, and 'raw_data' is modified</span>
 </span><span id="rfi_mitigate_tb-92"><a href="#rfi_mitigate_tb-92"><span class="linenos"> 92</span></a><span class="sd">        in-place.</span>
-</span><span id="rfi_mitigate_tb-93"><a href="#rfi_mitigate_tb-93"><span class="linenos"> 93</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="rfi_mitigate_tb-93"><a href="#rfi_mitigate_tb-93"><span class="linenos"> 93</span></a><span class="sd">    """</span>
 </span><span id="rfi_mitigate_tb-94"><a href="#rfi_mitigate_tb-94"><span class="linenos"> 94</span></a>
 </span><span id="rfi_mitigate_tb-95"><a href="#rfi_mitigate_tb-95"><span class="linenos"> 95</span></a>    <span class="n">num_pulses</span> <span class="o">=</span> <span class="n">raw_data_tb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </span><span id="rfi_mitigate_tb-96"><a href="#rfi_mitigate_tb-96"><span class="linenos"> 96</span></a>    <span class="n">cpi_len</span> <span class="o">=</span> <span class="n">eig_vec_sort_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
 </span><span id="rfi_mitigate_tb-97"><a href="#rfi_mitigate_tb-97"><span class="linenos"> 97</span></a>
 </span><span id="rfi_mitigate_tb-98"><a href="#rfi_mitigate_tb-98"><span class="linenos"> 98</span></a>    <span class="k">if</span> <span class="n">num_pulses</span> <span class="o">%</span> <span class="n">cpi_len</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-</span><span id="rfi_mitigate_tb-99"><a href="#rfi_mitigate_tb-99"><span class="linenos"> 99</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Total number of pulses must be an integer multiple of cpi_len&quot;</span><span class="p">)</span>
+</span><span id="rfi_mitigate_tb-99"><a href="#rfi_mitigate_tb-99"><span class="linenos"> 99</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Total number of pulses must be an integer multiple of cpi_len"</span><span class="p">)</span>
 </span><span id="rfi_mitigate_tb-100"><a href="#rfi_mitigate_tb-100"><span class="linenos">100</span></a>
-</span><span id="rfi_mitigate_tb-101"><a href="#rfi_mitigate_tb-101"><span class="linenos">101</span></a>    <span class="c1"># Create an alias for raw_data_tb if there is no &#39;raw_data_mitigated_tb&#39; as input</span>
+</span><span id="rfi_mitigate_tb-101"><a href="#rfi_mitigate_tb-101"><span class="linenos">101</span></a>    <span class="c1"># Create an alias for raw_data_tb if there is no 'raw_data_mitigated_tb' as input</span>
 </span><span id="rfi_mitigate_tb-102"><a href="#rfi_mitigate_tb-102"><span class="linenos">102</span></a>    <span class="k">if</span> <span class="n">raw_data_mitigated_tb</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
 </span><span id="rfi_mitigate_tb-103"><a href="#rfi_mitigate_tb-103"><span class="linenos">103</span></a>        <span class="n">raw_data_mitigated_tb</span> <span class="o">=</span> <span class="n">raw_data_tb</span>
 </span><span id="rfi_mitigate_tb-104"><a href="#rfi_mitigate_tb-104"><span class="linenos">104</span></a>

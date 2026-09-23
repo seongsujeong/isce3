@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['namespaces_0',['Within namespaces',['../d4/d19/howtodoc.html#docinlinenamespace',1,'']]],
-  ['no_20input_20arguments_1',['Part of data structure declaration with no input arguments',['../d4/d19/howtodoc.html#docinlinecppzero',1,'']]],
-  ['no_20return_20values_2',['No return values',['../d4/d19/howtodoc.html#docpyfunczero',1,'']]]
+  ['many_20return_20values_0',['Many return values',['../d4/d19/howtodoc.html#docpyfuncmay',1,'']]],
+  ['multiple_20inputs_1',['With multiple inputs',['../d4/d19/howtodoc.html#docinlinecppmulti',1,'']]]
 ];

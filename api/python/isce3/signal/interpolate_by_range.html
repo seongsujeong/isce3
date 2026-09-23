@@ -86,7 +86,7 @@
 </span><span id="L-5"><a href="#L-5"><span class="linenos">  5</span></a>        <span class="n">slant_main</span><span class="p">,</span>
 </span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a>        <span class="n">slant_side</span><span class="p">,</span>
 </span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a>        <span class="n">target_runw</span><span class="p">):</span>
-</span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Decimate target_runw of main band to have same size as side band,</span>
+</span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a><span class="w">    </span><span class="sd">"""Decimate target_runw of main band to have same size as side band,</span>
 </span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a><span class="sd">    assuming slant_main and slant_side are evenly spaced.</span>
 </span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a>
 </span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a><span class="sd">    Parameters</span>
@@ -103,7 +103,7 @@
 </span><span id="L-22"><a href="#L-22"><span class="linenos"> 22</span></a><span class="sd">    -------</span>
 </span><span id="L-23"><a href="#L-23"><span class="linenos"> 23</span></a><span class="sd">    decimated_array : numpy.ndarray</span>
 </span><span id="L-24"><a href="#L-24"><span class="linenos"> 24</span></a><span class="sd">        Decimated RUNW array with width == len(slant_side).</span>
-</span><span id="L-25"><a href="#L-25"><span class="linenos"> 25</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-25"><a href="#L-25"><span class="linenos"> 25</span></a><span class="sd">    """</span>
 </span><span id="L-26"><a href="#L-26"><span class="linenos"> 26</span></a>    <span class="n">_</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">target_runw</span><span class="o">.</span><span class="n">shape</span>
 </span><span id="L-27"><a href="#L-27"><span class="linenos"> 27</span></a>
 </span><span id="L-28"><a href="#L-28"><span class="linenos"> 28</span></a>    <span class="n">first_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">slant_main</span> <span class="o">-</span> <span class="n">slant_side</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
@@ -144,7 +144,7 @@
 </span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a>        <span class="n">decimated_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span>
 </span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a>            <span class="n">decimated_array</span><span class="p">,</span>
 </span><span id="L-65"><a href="#L-65"><span class="linenos"> 65</span></a>            <span class="n">pad_width</span><span class="o">=</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="n">left_missing</span><span class="p">,</span> <span class="n">right_missing</span><span class="p">)),</span>
-</span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a>            <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;constant&quot;</span><span class="p">,</span>
+</span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a>            <span class="n">mode</span><span class="o">=</span><span class="s2">"constant"</span><span class="p">,</span>
 </span><span id="L-67"><a href="#L-67"><span class="linenos"> 67</span></a>            <span class="n">constant_values</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
 </span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a>        <span class="p">)</span>
 </span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a>
@@ -155,7 +155,7 @@
 </span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a>        <span class="n">slant_main</span><span class="p">,</span>
 </span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a>        <span class="n">slant_side</span><span class="p">,</span>
 </span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a>        <span class="n">array_side</span><span class="p">):</span>
-</span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;interpolate array that have the size of side band (frequency B)</span>
+</span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a><span class="w">    </span><span class="sd">"""interpolate array that have the size of side band (frequency B)</span>
 </span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a><span class="sd">    to have same size with main band assuming slant_main and slant_side</span>
 </span><span id="L-79"><a href="#L-79"><span class="linenos"> 79</span></a><span class="sd">    are evenly spaced</span>
 </span><span id="L-80"><a href="#L-80"><span class="linenos"> 80</span></a>
@@ -173,7 +173,7 @@
 </span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a><span class="sd">    -------</span>
 </span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a><span class="sd">    array_main : numpy.ndarray</span>
 </span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a><span class="sd">        oversampled array</span>
-</span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a><span class="sd">    """</span>
 </span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a>    <span class="n">row_side</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">array_side</span><span class="o">.</span><span class="n">shape</span>
 </span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a>    <span class="n">array_main</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">row_side</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">slant_main</span><span class="p">)])</span>
 </span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a>
@@ -203,7 +203,7 @@
 </span><span id="decimate_freq_a_array-6"><a href="#decimate_freq_a_array-6"><span class="linenos"> 6</span></a>        <span class="n">slant_main</span><span class="p">,</span>
 </span><span id="decimate_freq_a_array-7"><a href="#decimate_freq_a_array-7"><span class="linenos"> 7</span></a>        <span class="n">slant_side</span><span class="p">,</span>
 </span><span id="decimate_freq_a_array-8"><a href="#decimate_freq_a_array-8"><span class="linenos"> 8</span></a>        <span class="n">target_runw</span><span class="p">):</span>
-</span><span id="decimate_freq_a_array-9"><a href="#decimate_freq_a_array-9"><span class="linenos"> 9</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Decimate target_runw of main band to have same size as side band,</span>
+</span><span id="decimate_freq_a_array-9"><a href="#decimate_freq_a_array-9"><span class="linenos"> 9</span></a><span class="w">    </span><span class="sd">"""Decimate target_runw of main band to have same size as side band,</span>
 </span><span id="decimate_freq_a_array-10"><a href="#decimate_freq_a_array-10"><span class="linenos">10</span></a><span class="sd">    assuming slant_main and slant_side are evenly spaced.</span>
 </span><span id="decimate_freq_a_array-11"><a href="#decimate_freq_a_array-11"><span class="linenos">11</span></a>
 </span><span id="decimate_freq_a_array-12"><a href="#decimate_freq_a_array-12"><span class="linenos">12</span></a><span class="sd">    Parameters</span>
@@ -220,7 +220,7 @@
 </span><span id="decimate_freq_a_array-23"><a href="#decimate_freq_a_array-23"><span class="linenos">23</span></a><span class="sd">    -------</span>
 </span><span id="decimate_freq_a_array-24"><a href="#decimate_freq_a_array-24"><span class="linenos">24</span></a><span class="sd">    decimated_array : numpy.ndarray</span>
 </span><span id="decimate_freq_a_array-25"><a href="#decimate_freq_a_array-25"><span class="linenos">25</span></a><span class="sd">        Decimated RUNW array with width == len(slant_side).</span>
-</span><span id="decimate_freq_a_array-26"><a href="#decimate_freq_a_array-26"><span class="linenos">26</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="decimate_freq_a_array-26"><a href="#decimate_freq_a_array-26"><span class="linenos">26</span></a><span class="sd">    """</span>
 </span><span id="decimate_freq_a_array-27"><a href="#decimate_freq_a_array-27"><span class="linenos">27</span></a>    <span class="n">_</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">target_runw</span><span class="o">.</span><span class="n">shape</span>
 </span><span id="decimate_freq_a_array-28"><a href="#decimate_freq_a_array-28"><span class="linenos">28</span></a>
 </span><span id="decimate_freq_a_array-29"><a href="#decimate_freq_a_array-29"><span class="linenos">29</span></a>    <span class="n">first_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">slant_main</span> <span class="o">-</span> <span class="n">slant_side</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
@@ -261,7 +261,7 @@
 </span><span id="decimate_freq_a_array-64"><a href="#decimate_freq_a_array-64"><span class="linenos">64</span></a>        <span class="n">decimated_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span>
 </span><span id="decimate_freq_a_array-65"><a href="#decimate_freq_a_array-65"><span class="linenos">65</span></a>            <span class="n">decimated_array</span><span class="p">,</span>
 </span><span id="decimate_freq_a_array-66"><a href="#decimate_freq_a_array-66"><span class="linenos">66</span></a>            <span class="n">pad_width</span><span class="o">=</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="n">left_missing</span><span class="p">,</span> <span class="n">right_missing</span><span class="p">)),</span>
-</span><span id="decimate_freq_a_array-67"><a href="#decimate_freq_a_array-67"><span class="linenos">67</span></a>            <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;constant&quot;</span><span class="p">,</span>
+</span><span id="decimate_freq_a_array-67"><a href="#decimate_freq_a_array-67"><span class="linenos">67</span></a>            <span class="n">mode</span><span class="o">=</span><span class="s2">"constant"</span><span class="p">,</span>
 </span><span id="decimate_freq_a_array-68"><a href="#decimate_freq_a_array-68"><span class="linenos">68</span></a>            <span class="n">constant_values</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
 </span><span id="decimate_freq_a_array-69"><a href="#decimate_freq_a_array-69"><span class="linenos">69</span></a>        <span class="p">)</span>
 </span><span id="decimate_freq_a_array-70"><a href="#decimate_freq_a_array-70"><span class="linenos">70</span></a>
@@ -305,7 +305,7 @@ target_runw : numpy.ndarray
 </span><span id="interpolate_freq_b_array-75"><a href="#interpolate_freq_b_array-75"><span class="linenos"> 75</span></a>        <span class="n">slant_main</span><span class="p">,</span>
 </span><span id="interpolate_freq_b_array-76"><a href="#interpolate_freq_b_array-76"><span class="linenos"> 76</span></a>        <span class="n">slant_side</span><span class="p">,</span>
 </span><span id="interpolate_freq_b_array-77"><a href="#interpolate_freq_b_array-77"><span class="linenos"> 77</span></a>        <span class="n">array_side</span><span class="p">):</span>
-</span><span id="interpolate_freq_b_array-78"><a href="#interpolate_freq_b_array-78"><span class="linenos"> 78</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;interpolate array that have the size of side band (frequency B)</span>
+</span><span id="interpolate_freq_b_array-78"><a href="#interpolate_freq_b_array-78"><span class="linenos"> 78</span></a><span class="w">    </span><span class="sd">"""interpolate array that have the size of side band (frequency B)</span>
 </span><span id="interpolate_freq_b_array-79"><a href="#interpolate_freq_b_array-79"><span class="linenos"> 79</span></a><span class="sd">    to have same size with main band assuming slant_main and slant_side</span>
 </span><span id="interpolate_freq_b_array-80"><a href="#interpolate_freq_b_array-80"><span class="linenos"> 80</span></a><span class="sd">    are evenly spaced</span>
 </span><span id="interpolate_freq_b_array-81"><a href="#interpolate_freq_b_array-81"><span class="linenos"> 81</span></a>
@@ -323,7 +323,7 @@ target_runw : numpy.ndarray
 </span><span id="interpolate_freq_b_array-93"><a href="#interpolate_freq_b_array-93"><span class="linenos"> 93</span></a><span class="sd">    -------</span>
 </span><span id="interpolate_freq_b_array-94"><a href="#interpolate_freq_b_array-94"><span class="linenos"> 94</span></a><span class="sd">    array_main : numpy.ndarray</span>
 </span><span id="interpolate_freq_b_array-95"><a href="#interpolate_freq_b_array-95"><span class="linenos"> 95</span></a><span class="sd">        oversampled array</span>
-</span><span id="interpolate_freq_b_array-96"><a href="#interpolate_freq_b_array-96"><span class="linenos"> 96</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="interpolate_freq_b_array-96"><a href="#interpolate_freq_b_array-96"><span class="linenos"> 96</span></a><span class="sd">    """</span>
 </span><span id="interpolate_freq_b_array-97"><a href="#interpolate_freq_b_array-97"><span class="linenos"> 97</span></a>    <span class="n">row_side</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">array_side</span><span class="o">.</span><span class="n">shape</span>
 </span><span id="interpolate_freq_b_array-98"><a href="#interpolate_freq_b_array-98"><span class="linenos"> 98</span></a>    <span class="n">array_main</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">row_side</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">slant_main</span><span class="p">)])</span>
 </span><span id="interpolate_freq_b_array-99"><a href="#interpolate_freq_b_array-99"><span class="linenos"> 99</span></a>

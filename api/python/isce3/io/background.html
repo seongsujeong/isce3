@@ -138,13 +138,13 @@
 </span><span id="L-3"><a href="#L-3"><span class="linenos">  3</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">queue</span><span class="w"> </span><span class="kn">import</span> <span class="n">Queue</span><span class="p">,</span> <span class="n">Empty</span>
 </span><span id="L-4"><a href="#L-4"><span class="linenos">  4</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">threading</span><span class="w"> </span><span class="kn">import</span> <span class="n">Thread</span><span class="p">,</span> <span class="n">Event</span><span class="p">,</span> <span class="n">main_thread</span>
 </span><span id="L-5"><a href="#L-5"><span class="linenos">  5</span></a>
-</span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a><span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;isce3.io.background&quot;</span><span class="p">)</span>
+</span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a><span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">"isce3.io.background"</span><span class="p">)</span>
 </span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a>
 </span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a><span class="n">_default_timeout</span> <span class="o">=</span> <span class="mf">1.0</span>
 </span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a>
 </span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a>
 </span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a><span class="k">class</span><span class="w"> </span><span class="nc">BackgroundWorker</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
-</span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a><span class="sd">    Base class for doing work in a background thread.</span>
 </span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a>
 </span><span id="L-15"><a href="#L-15"><span class="linenos"> 15</span></a><span class="sd">    After instantiating an object, a client sends it work with the `queue_work`</span>
@@ -168,10 +168,10 @@
 </span><span id="L-33"><a href="#L-33"><span class="linenos"> 33</span></a>
 </span><span id="L-34"><a href="#L-34"><span class="linenos"> 34</span></a><span class="sd">    Notes</span>
 </span><span id="L-35"><a href="#L-35"><span class="linenos"> 35</span></a><span class="sd">    -----</span>
-</span><span id="L-36"><a href="#L-36"><span class="linenos"> 36</span></a><span class="sd">    The usual caveats about Python threading apply.  It&#39;s typically a poor</span>
+</span><span id="L-36"><a href="#L-36"><span class="linenos"> 36</span></a><span class="sd">    The usual caveats about Python threading apply.  It's typically a poor</span>
 </span><span id="L-37"><a href="#L-37"><span class="linenos"> 37</span></a><span class="sd">    choice for concurrency unless the global interpreter lock (GIL) has been</span>
 </span><span id="L-38"><a href="#L-38"><span class="linenos"> 38</span></a><span class="sd">    released, which can happen in IO calls and compiled extensions.</span>
-</span><span id="L-39"><a href="#L-39"><span class="linenos"> 39</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-39"><a href="#L-39"><span class="linenos"> 39</span></a><span class="sd">    """</span>
 </span><span id="L-40"><a href="#L-40"><span class="linenos"> 40</span></a>
 </span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_work_queue</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_results_queue</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
 </span><span id="L-42"><a href="#L-42"><span class="linenos"> 42</span></a>                 <span class="n">store_results</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">_default_timeout</span><span class="p">):</span>
@@ -184,56 +184,56 @@
 </span><span id="L-49"><a href="#L-49"><span class="linenos"> 49</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 </span><span id="L-50"><a href="#L-50"><span class="linenos"> 50</span></a>
 </span><span id="L-51"><a href="#L-51"><span class="linenos"> 51</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_consume_work_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="L-52"><a href="#L-52"><span class="linenos"> 52</span></a>        <span class="c1"># Second check is to ensure the main thread wasn&#39;t interrupted/killed,</span>
+</span><span id="L-52"><a href="#L-52"><span class="linenos"> 52</span></a>        <span class="c1"># Second check is to ensure the main thread wasn't interrupted/killed,</span>
 </span><span id="L-53"><a href="#L-53"><span class="linenos"> 53</span></a>        <span class="c1"># which would leave background workers hanging indefinitely</span>
 </span><span id="L-54"><a href="#L-54"><span class="linenos"> 54</span></a>        <span class="c1"># https://docs.python.org/3/library/threading.html#threading.main_thread</span>
 </span><span id="L-55"><a href="#L-55"><span class="linenos"> 55</span></a>        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_finished_event</span><span class="o">.</span><span class="n">is_set</span><span class="p">()</span> <span class="ow">and</span> <span class="n">main_thread</span><span class="p">()</span><span class="o">.</span><span class="n">is_alive</span><span class="p">():</span>
-</span><span id="L-56"><a href="#L-56"><span class="linenos"> 56</span></a>            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;getting work&quot;</span><span class="p">)</span>
+</span><span id="L-56"><a href="#L-56"><span class="linenos"> 56</span></a>            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"getting work"</span><span class="p">)</span>
 </span><span id="L-57"><a href="#L-57"><span class="linenos"> 57</span></a>            <span class="k">try</span><span class="p">:</span>
 </span><span id="L-58"><a href="#L-58"><span class="linenos"> 58</span></a>                <span class="n">args</span><span class="p">,</span> <span class="n">kw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_work_queue</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
 </span><span id="L-59"><a href="#L-59"><span class="linenos"> 59</span></a>            <span class="k">except</span> <span class="n">Empty</span><span class="p">:</span>
-</span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a>                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;timed out, checking if done&quot;</span><span class="p">)</span>
+</span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a>                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"timed out, checking if done"</span><span class="p">)</span>
 </span><span id="L-61"><a href="#L-61"><span class="linenos"> 61</span></a>                <span class="k">continue</span>
-</span><span id="L-62"><a href="#L-62"><span class="linenos"> 62</span></a>            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;processing&quot;</span><span class="p">)</span>
+</span><span id="L-62"><a href="#L-62"><span class="linenos"> 62</span></a>            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"processing"</span><span class="p">)</span>
 </span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a>            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
-</span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a>            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;got result&quot;</span><span class="p">)</span>
+</span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a>            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"got result"</span><span class="p">)</span>
 </span><span id="L-65"><a href="#L-65"><span class="linenos"> 65</span></a>            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">store_results</span><span class="p">:</span>
-</span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a>                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;saving result in queue&quot;</span><span class="p">)</span>
+</span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a>                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"saving result in queue"</span><span class="p">)</span>
 </span><span id="L-67"><a href="#L-67"><span class="linenos"> 67</span></a>                <span class="bp">self</span><span class="o">.</span><span class="n">_results_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 </span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_work_queue</span><span class="o">.</span><span class="n">task_done</span><span class="p">()</span>
 </span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a>
 </span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
 </span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
-</span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a><span class="sd">        User-defined task to operate in background thread.</span>
-</span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a><span class="sd">        """</span>
 </span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a>        <span class="k">pass</span>
 </span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a>
 </span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">queue_work</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
-</span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="L-79"><a href="#L-79"><span class="linenos"> 79</span></a><span class="sd">        Add a job to the work queue to be executed.  Blocks if work queue is</span>
 </span><span id="L-80"><a href="#L-80"><span class="linenos"> 80</span></a><span class="sd">        full.  Same input interface as `process`.</span>
-</span><span id="L-81"><a href="#L-81"><span class="linenos"> 81</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-81"><a href="#L-81"><span class="linenos"> 81</span></a><span class="sd">        """</span>
 </span><span id="L-82"><a href="#L-82"><span class="linenos"> 82</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_finished_event</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span>
 </span><span id="L-83"><a href="#L-83"><span class="linenos"> 83</span></a>            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-</span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a>                <span class="s2">&quot;Attempted to queue_work after notify_finished!&quot;</span><span class="p">)</span>
+</span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a>                <span class="s2">"Attempted to queue_work after notify_finished!"</span><span class="p">)</span>
 </span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_work_queue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">args</span><span class="p">,</span> <span class="n">kw</span><span class="p">))</span>
 </span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a>
 </span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="L-89"><a href="#L-89"><span class="linenos"> 89</span></a><span class="sd">        Get the least-recent value from the result queue.  Blocks until a result</span>
 </span><span id="L-90"><a href="#L-90"><span class="linenos"> 90</span></a><span class="sd">        is available.  Same output interface as `process`.</span>
-</span><span id="L-91"><a href="#L-91"><span class="linenos"> 91</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-91"><a href="#L-91"><span class="linenos"> 91</span></a><span class="sd">        """</span>
 </span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a>        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_results_queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
 </span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_results_queue</span><span class="o">.</span><span class="n">task_done</span><span class="p">()</span>
 </span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a>        <span class="k">return</span> <span class="n">result</span>
 </span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a>
 </span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">notify_finished</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a><span class="sd">        Indicate that no more work will be added to the queue and block until</span>
 </span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a><span class="sd">        all work has been processed.  If `store_results=True` also block until</span>
 </span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a><span class="sd">        all results have been retrieved.</span>
-</span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a><span class="sd">        """</span>
 </span><span id="L-102"><a href="#L-102"><span class="linenos">102</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_work_queue</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
 </span><span id="L-103"><a href="#L-103"><span class="linenos">103</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_finished_event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
 </span><span id="L-104"><a href="#L-104"><span class="linenos">104</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_results_queue</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
@@ -244,7 +244,7 @@
 </span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a>
 </span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a>
 </span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a><span class="k">class</span><span class="w"> </span><span class="nc">BackgroundWriter</span><span class="p">(</span><span class="n">BackgroundWorker</span><span class="p">):</span>
-</span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-113"><a href="#L-113"><span class="linenos">113</span></a><span class="sd">    Base class for writing data in a background thread.</span>
 </span><span id="L-114"><a href="#L-114"><span class="linenos">114</span></a>
 </span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a><span class="sd">    After instantiating an object, a client sends it data with the `queue_write`</span>
@@ -259,17 +259,17 @@
 </span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a><span class="sd">    timeout : float</span>
 </span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a><span class="sd">        Interval in seconds used to check for finished notification once write</span>
 </span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a><span class="sd">        queue is empty.</span>
-</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a><span class="sd">    """</span>
 </span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a>
 </span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nq</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">_default_timeout</span><span class="p">):</span>
 </span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">num_work_queue</span><span class="o">=</span><span class="n">nq</span><span class="p">,</span> <span class="n">store_results</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
 </span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a>
 </span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a>    <span class="c1"># rename queue_work -&gt; queue_write</span>
 </span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">queue_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
-</span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a><span class="sd">        Add data to the queue to be written.  Blocks if write queue is full.</span>
 </span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a><span class="sd">        Same interfaces as `write`.</span>
-</span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a><span class="sd">        """</span>
 </span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">queue_work</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
 </span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a>
 </span><span id="L-140"><a href="#L-140"><span class="linenos">140</span></a>    <span class="c1"># rename process -&gt; write</span>
@@ -278,20 +278,20 @@
 </span><span id="L-143"><a href="#L-143"><span class="linenos">143</span></a>
 </span><span id="L-144"><a href="#L-144"><span class="linenos">144</span></a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
 </span><span id="L-145"><a href="#L-145"><span class="linenos">145</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
-</span><span id="L-146"><a href="#L-146"><span class="linenos">146</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-146"><a href="#L-146"><span class="linenos">146</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="L-147"><a href="#L-147"><span class="linenos">147</span></a><span class="sd">        User-defined method for writing data.</span>
-</span><span id="L-148"><a href="#L-148"><span class="linenos">148</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-148"><a href="#L-148"><span class="linenos">148</span></a><span class="sd">        """</span>
 </span><span id="L-149"><a href="#L-149"><span class="linenos">149</span></a>        <span class="k">pass</span>
 </span><span id="L-150"><a href="#L-150"><span class="linenos">150</span></a>
 </span><span id="L-151"><a href="#L-151"><span class="linenos">151</span></a>
 </span><span id="L-152"><a href="#L-152"><span class="linenos">152</span></a><span class="k">class</span><span class="w"> </span><span class="nc">BackgroundReader</span><span class="p">(</span><span class="n">BackgroundWorker</span><span class="p">):</span>
-</span><span id="L-153"><a href="#L-153"><span class="linenos">153</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-153"><a href="#L-153"><span class="linenos">153</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-154"><a href="#L-154"><span class="linenos">154</span></a><span class="sd">    Base class for reading data in a background thread (pre-fetching).</span>
 </span><span id="L-155"><a href="#L-155"><span class="linenos">155</span></a>
 </span><span id="L-156"><a href="#L-156"><span class="linenos">156</span></a><span class="sd">    After instantiating an object, a client sends it data selection parameters</span>
 </span><span id="L-157"><a href="#L-157"><span class="linenos">157</span></a><span class="sd">    (slices, indices, etc.) via the `queue_read` method and retrieves the result</span>
 </span><span id="L-158"><a href="#L-158"><span class="linenos">158</span></a><span class="sd">    with the `get_data` method.  In order to get useful concurrency, that</span>
-</span><span id="L-159"><a href="#L-159"><span class="linenos">159</span></a><span class="sd">    usually means you&#39;ll want to queue the read for the next data block before</span>
+</span><span id="L-159"><a href="#L-159"><span class="linenos">159</span></a><span class="sd">    usually means you'll want to queue the read for the next data block before</span>
 </span><span id="L-160"><a href="#L-160"><span class="linenos">160</span></a><span class="sd">    starting work on the current block.  The reader remains active until</span>
 </span><span id="L-161"><a href="#L-161"><span class="linenos">161</span></a><span class="sd">    `notify_finished` is called and all blocks have been retrieved.  Subclasses</span>
 </span><span id="L-162"><a href="#L-162"><span class="linenos">162</span></a><span class="sd">    must define the `read` method.</span>
@@ -304,25 +304,25 @@
 </span><span id="L-169"><a href="#L-169"><span class="linenos">169</span></a><span class="sd">    timeout : float</span>
 </span><span id="L-170"><a href="#L-170"><span class="linenos">170</span></a><span class="sd">        Interval in seconds used to check for finished notification once write</span>
 </span><span id="L-171"><a href="#L-171"><span class="linenos">171</span></a><span class="sd">        queue is empty.</span>
-</span><span id="L-172"><a href="#L-172"><span class="linenos">172</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-172"><a href="#L-172"><span class="linenos">172</span></a><span class="sd">    """</span>
 </span><span id="L-173"><a href="#L-173"><span class="linenos">173</span></a>
 </span><span id="L-174"><a href="#L-174"><span class="linenos">174</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nq</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">_default_timeout</span><span class="p">):</span>
 </span><span id="L-175"><a href="#L-175"><span class="linenos">175</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">num_results_queue</span><span class="o">=</span><span class="n">nq</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
 </span><span id="L-176"><a href="#L-176"><span class="linenos">176</span></a>
 </span><span id="L-177"><a href="#L-177"><span class="linenos">177</span></a>    <span class="c1"># rename queue_work -&gt; queue_read</span>
 </span><span id="L-178"><a href="#L-178"><span class="linenos">178</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">queue_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
-</span><span id="L-179"><a href="#L-179"><span class="linenos">179</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-179"><a href="#L-179"><span class="linenos">179</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="L-180"><a href="#L-180"><span class="linenos">180</span></a><span class="sd">        Add selection parameters (slices, indices, etc.) to the read queue to be</span>
 </span><span id="L-181"><a href="#L-181"><span class="linenos">181</span></a><span class="sd">        processed.  Same input interface as `read`.</span>
-</span><span id="L-182"><a href="#L-182"><span class="linenos">182</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-182"><a href="#L-182"><span class="linenos">182</span></a><span class="sd">        """</span>
 </span><span id="L-183"><a href="#L-183"><span class="linenos">183</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">queue_work</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
 </span><span id="L-184"><a href="#L-184"><span class="linenos">184</span></a>
 </span><span id="L-185"><a href="#L-185"><span class="linenos">185</span></a>    <span class="c1"># rename get_result -&gt; get_data</span>
 </span><span id="L-186"><a href="#L-186"><span class="linenos">186</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="L-187"><a href="#L-187"><span class="linenos">187</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-187"><a href="#L-187"><span class="linenos">187</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="L-188"><a href="#L-188"><span class="linenos">188</span></a><span class="sd">        Retrieve the least-recently read chunk of data.  Blocks until a result</span>
 </span><span id="L-189"><a href="#L-189"><span class="linenos">189</span></a><span class="sd">        is available. Same output interface as `read`.</span>
-</span><span id="L-190"><a href="#L-190"><span class="linenos">190</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-190"><a href="#L-190"><span class="linenos">190</span></a><span class="sd">        """</span>
 </span><span id="L-191"><a href="#L-191"><span class="linenos">191</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_result</span><span class="p">()</span>
 </span><span id="L-192"><a href="#L-192"><span class="linenos">192</span></a>
 </span><span id="L-193"><a href="#L-193"><span class="linenos">193</span></a>    <span class="c1"># rename process -&gt; read</span>
@@ -331,9 +331,9 @@
 </span><span id="L-196"><a href="#L-196"><span class="linenos">196</span></a>
 </span><span id="L-197"><a href="#L-197"><span class="linenos">197</span></a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
 </span><span id="L-198"><a href="#L-198"><span class="linenos">198</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
-</span><span id="L-199"><a href="#L-199"><span class="linenos">199</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-199"><a href="#L-199"><span class="linenos">199</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="L-200"><a href="#L-200"><span class="linenos">200</span></a><span class="sd">        User-defined method for reading a chunk of data.</span>
-</span><span id="L-201"><a href="#L-201"><span class="linenos">201</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-201"><a href="#L-201"><span class="linenos">201</span></a><span class="sd">        """</span>
 </span><span id="L-202"><a href="#L-202"><span class="linenos">202</span></a>        <span class="k">pass</span>
 </span></pre></div>
 
@@ -363,7 +363,7 @@
     </div>
     <a class="headerlink" href="#BackgroundWorker"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="BackgroundWorker-12"><a href="#BackgroundWorker-12"><span class="linenos"> 12</span></a><span class="k">class</span><span class="w"> </span><span class="nc">BackgroundWorker</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
-</span><span id="BackgroundWorker-13"><a href="#BackgroundWorker-13"><span class="linenos"> 13</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="BackgroundWorker-13"><a href="#BackgroundWorker-13"><span class="linenos"> 13</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="BackgroundWorker-14"><a href="#BackgroundWorker-14"><span class="linenos"> 14</span></a><span class="sd">    Base class for doing work in a background thread.</span>
 </span><span id="BackgroundWorker-15"><a href="#BackgroundWorker-15"><span class="linenos"> 15</span></a>
 </span><span id="BackgroundWorker-16"><a href="#BackgroundWorker-16"><span class="linenos"> 16</span></a><span class="sd">    After instantiating an object, a client sends it work with the `queue_work`</span>
@@ -387,10 +387,10 @@
 </span><span id="BackgroundWorker-34"><a href="#BackgroundWorker-34"><span class="linenos"> 34</span></a>
 </span><span id="BackgroundWorker-35"><a href="#BackgroundWorker-35"><span class="linenos"> 35</span></a><span class="sd">    Notes</span>
 </span><span id="BackgroundWorker-36"><a href="#BackgroundWorker-36"><span class="linenos"> 36</span></a><span class="sd">    -----</span>
-</span><span id="BackgroundWorker-37"><a href="#BackgroundWorker-37"><span class="linenos"> 37</span></a><span class="sd">    The usual caveats about Python threading apply.  It&#39;s typically a poor</span>
+</span><span id="BackgroundWorker-37"><a href="#BackgroundWorker-37"><span class="linenos"> 37</span></a><span class="sd">    The usual caveats about Python threading apply.  It's typically a poor</span>
 </span><span id="BackgroundWorker-38"><a href="#BackgroundWorker-38"><span class="linenos"> 38</span></a><span class="sd">    choice for concurrency unless the global interpreter lock (GIL) has been</span>
 </span><span id="BackgroundWorker-39"><a href="#BackgroundWorker-39"><span class="linenos"> 39</span></a><span class="sd">    released, which can happen in IO calls and compiled extensions.</span>
-</span><span id="BackgroundWorker-40"><a href="#BackgroundWorker-40"><span class="linenos"> 40</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="BackgroundWorker-40"><a href="#BackgroundWorker-40"><span class="linenos"> 40</span></a><span class="sd">    """</span>
 </span><span id="BackgroundWorker-41"><a href="#BackgroundWorker-41"><span class="linenos"> 41</span></a>
 </span><span id="BackgroundWorker-42"><a href="#BackgroundWorker-42"><span class="linenos"> 42</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_work_queue</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_results_queue</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
 </span><span id="BackgroundWorker-43"><a href="#BackgroundWorker-43"><span class="linenos"> 43</span></a>                 <span class="n">store_results</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">_default_timeout</span><span class="p">):</span>
@@ -403,56 +403,56 @@
 </span><span id="BackgroundWorker-50"><a href="#BackgroundWorker-50"><span class="linenos"> 50</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 </span><span id="BackgroundWorker-51"><a href="#BackgroundWorker-51"><span class="linenos"> 51</span></a>
 </span><span id="BackgroundWorker-52"><a href="#BackgroundWorker-52"><span class="linenos"> 52</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_consume_work_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="BackgroundWorker-53"><a href="#BackgroundWorker-53"><span class="linenos"> 53</span></a>        <span class="c1"># Second check is to ensure the main thread wasn&#39;t interrupted/killed,</span>
+</span><span id="BackgroundWorker-53"><a href="#BackgroundWorker-53"><span class="linenos"> 53</span></a>        <span class="c1"># Second check is to ensure the main thread wasn't interrupted/killed,</span>
 </span><span id="BackgroundWorker-54"><a href="#BackgroundWorker-54"><span class="linenos"> 54</span></a>        <span class="c1"># which would leave background workers hanging indefinitely</span>
 </span><span id="BackgroundWorker-55"><a href="#BackgroundWorker-55"><span class="linenos"> 55</span></a>        <span class="c1"># https://docs.python.org/3/library/threading.html#threading.main_thread</span>
 </span><span id="BackgroundWorker-56"><a href="#BackgroundWorker-56"><span class="linenos"> 56</span></a>        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_finished_event</span><span class="o">.</span><span class="n">is_set</span><span class="p">()</span> <span class="ow">and</span> <span class="n">main_thread</span><span class="p">()</span><span class="o">.</span><span class="n">is_alive</span><span class="p">():</span>
-</span><span id="BackgroundWorker-57"><a href="#BackgroundWorker-57"><span class="linenos"> 57</span></a>            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;getting work&quot;</span><span class="p">)</span>
+</span><span id="BackgroundWorker-57"><a href="#BackgroundWorker-57"><span class="linenos"> 57</span></a>            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"getting work"</span><span class="p">)</span>
 </span><span id="BackgroundWorker-58"><a href="#BackgroundWorker-58"><span class="linenos"> 58</span></a>            <span class="k">try</span><span class="p">:</span>
 </span><span id="BackgroundWorker-59"><a href="#BackgroundWorker-59"><span class="linenos"> 59</span></a>                <span class="n">args</span><span class="p">,</span> <span class="n">kw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_work_queue</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
 </span><span id="BackgroundWorker-60"><a href="#BackgroundWorker-60"><span class="linenos"> 60</span></a>            <span class="k">except</span> <span class="n">Empty</span><span class="p">:</span>
-</span><span id="BackgroundWorker-61"><a href="#BackgroundWorker-61"><span class="linenos"> 61</span></a>                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;timed out, checking if done&quot;</span><span class="p">)</span>
+</span><span id="BackgroundWorker-61"><a href="#BackgroundWorker-61"><span class="linenos"> 61</span></a>                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"timed out, checking if done"</span><span class="p">)</span>
 </span><span id="BackgroundWorker-62"><a href="#BackgroundWorker-62"><span class="linenos"> 62</span></a>                <span class="k">continue</span>
-</span><span id="BackgroundWorker-63"><a href="#BackgroundWorker-63"><span class="linenos"> 63</span></a>            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;processing&quot;</span><span class="p">)</span>
+</span><span id="BackgroundWorker-63"><a href="#BackgroundWorker-63"><span class="linenos"> 63</span></a>            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"processing"</span><span class="p">)</span>
 </span><span id="BackgroundWorker-64"><a href="#BackgroundWorker-64"><span class="linenos"> 64</span></a>            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
-</span><span id="BackgroundWorker-65"><a href="#BackgroundWorker-65"><span class="linenos"> 65</span></a>            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;got result&quot;</span><span class="p">)</span>
+</span><span id="BackgroundWorker-65"><a href="#BackgroundWorker-65"><span class="linenos"> 65</span></a>            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"got result"</span><span class="p">)</span>
 </span><span id="BackgroundWorker-66"><a href="#BackgroundWorker-66"><span class="linenos"> 66</span></a>            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">store_results</span><span class="p">:</span>
-</span><span id="BackgroundWorker-67"><a href="#BackgroundWorker-67"><span class="linenos"> 67</span></a>                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;saving result in queue&quot;</span><span class="p">)</span>
+</span><span id="BackgroundWorker-67"><a href="#BackgroundWorker-67"><span class="linenos"> 67</span></a>                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"saving result in queue"</span><span class="p">)</span>
 </span><span id="BackgroundWorker-68"><a href="#BackgroundWorker-68"><span class="linenos"> 68</span></a>                <span class="bp">self</span><span class="o">.</span><span class="n">_results_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 </span><span id="BackgroundWorker-69"><a href="#BackgroundWorker-69"><span class="linenos"> 69</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_work_queue</span><span class="o">.</span><span class="n">task_done</span><span class="p">()</span>
 </span><span id="BackgroundWorker-70"><a href="#BackgroundWorker-70"><span class="linenos"> 70</span></a>
 </span><span id="BackgroundWorker-71"><a href="#BackgroundWorker-71"><span class="linenos"> 71</span></a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
 </span><span id="BackgroundWorker-72"><a href="#BackgroundWorker-72"><span class="linenos"> 72</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
-</span><span id="BackgroundWorker-73"><a href="#BackgroundWorker-73"><span class="linenos"> 73</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="BackgroundWorker-73"><a href="#BackgroundWorker-73"><span class="linenos"> 73</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="BackgroundWorker-74"><a href="#BackgroundWorker-74"><span class="linenos"> 74</span></a><span class="sd">        User-defined task to operate in background thread.</span>
-</span><span id="BackgroundWorker-75"><a href="#BackgroundWorker-75"><span class="linenos"> 75</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="BackgroundWorker-75"><a href="#BackgroundWorker-75"><span class="linenos"> 75</span></a><span class="sd">        """</span>
 </span><span id="BackgroundWorker-76"><a href="#BackgroundWorker-76"><span class="linenos"> 76</span></a>        <span class="k">pass</span>
 </span><span id="BackgroundWorker-77"><a href="#BackgroundWorker-77"><span class="linenos"> 77</span></a>
 </span><span id="BackgroundWorker-78"><a href="#BackgroundWorker-78"><span class="linenos"> 78</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">queue_work</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
-</span><span id="BackgroundWorker-79"><a href="#BackgroundWorker-79"><span class="linenos"> 79</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="BackgroundWorker-79"><a href="#BackgroundWorker-79"><span class="linenos"> 79</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="BackgroundWorker-80"><a href="#BackgroundWorker-80"><span class="linenos"> 80</span></a><span class="sd">        Add a job to the work queue to be executed.  Blocks if work queue is</span>
 </span><span id="BackgroundWorker-81"><a href="#BackgroundWorker-81"><span class="linenos"> 81</span></a><span class="sd">        full.  Same input interface as `process`.</span>
-</span><span id="BackgroundWorker-82"><a href="#BackgroundWorker-82"><span class="linenos"> 82</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="BackgroundWorker-82"><a href="#BackgroundWorker-82"><span class="linenos"> 82</span></a><span class="sd">        """</span>
 </span><span id="BackgroundWorker-83"><a href="#BackgroundWorker-83"><span class="linenos"> 83</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_finished_event</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span>
 </span><span id="BackgroundWorker-84"><a href="#BackgroundWorker-84"><span class="linenos"> 84</span></a>            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-</span><span id="BackgroundWorker-85"><a href="#BackgroundWorker-85"><span class="linenos"> 85</span></a>                <span class="s2">&quot;Attempted to queue_work after notify_finished!&quot;</span><span class="p">)</span>
+</span><span id="BackgroundWorker-85"><a href="#BackgroundWorker-85"><span class="linenos"> 85</span></a>                <span class="s2">"Attempted to queue_work after notify_finished!"</span><span class="p">)</span>
 </span><span id="BackgroundWorker-86"><a href="#BackgroundWorker-86"><span class="linenos"> 86</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_work_queue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">args</span><span class="p">,</span> <span class="n">kw</span><span class="p">))</span>
 </span><span id="BackgroundWorker-87"><a href="#BackgroundWorker-87"><span class="linenos"> 87</span></a>
 </span><span id="BackgroundWorker-88"><a href="#BackgroundWorker-88"><span class="linenos"> 88</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="BackgroundWorker-89"><a href="#BackgroundWorker-89"><span class="linenos"> 89</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="BackgroundWorker-89"><a href="#BackgroundWorker-89"><span class="linenos"> 89</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="BackgroundWorker-90"><a href="#BackgroundWorker-90"><span class="linenos"> 90</span></a><span class="sd">        Get the least-recent value from the result queue.  Blocks until a result</span>
 </span><span id="BackgroundWorker-91"><a href="#BackgroundWorker-91"><span class="linenos"> 91</span></a><span class="sd">        is available.  Same output interface as `process`.</span>
-</span><span id="BackgroundWorker-92"><a href="#BackgroundWorker-92"><span class="linenos"> 92</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="BackgroundWorker-92"><a href="#BackgroundWorker-92"><span class="linenos"> 92</span></a><span class="sd">        """</span>
 </span><span id="BackgroundWorker-93"><a href="#BackgroundWorker-93"><span class="linenos"> 93</span></a>        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_results_queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
 </span><span id="BackgroundWorker-94"><a href="#BackgroundWorker-94"><span class="linenos"> 94</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_results_queue</span><span class="o">.</span><span class="n">task_done</span><span class="p">()</span>
 </span><span id="BackgroundWorker-95"><a href="#BackgroundWorker-95"><span class="linenos"> 95</span></a>        <span class="k">return</span> <span class="n">result</span>
 </span><span id="BackgroundWorker-96"><a href="#BackgroundWorker-96"><span class="linenos"> 96</span></a>
 </span><span id="BackgroundWorker-97"><a href="#BackgroundWorker-97"><span class="linenos"> 97</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">notify_finished</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="BackgroundWorker-98"><a href="#BackgroundWorker-98"><span class="linenos"> 98</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="BackgroundWorker-98"><a href="#BackgroundWorker-98"><span class="linenos"> 98</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="BackgroundWorker-99"><a href="#BackgroundWorker-99"><span class="linenos"> 99</span></a><span class="sd">        Indicate that no more work will be added to the queue and block until</span>
 </span><span id="BackgroundWorker-100"><a href="#BackgroundWorker-100"><span class="linenos">100</span></a><span class="sd">        all work has been processed.  If `store_results=True` also block until</span>
 </span><span id="BackgroundWorker-101"><a href="#BackgroundWorker-101"><span class="linenos">101</span></a><span class="sd">        all results have been retrieved.</span>
-</span><span id="BackgroundWorker-102"><a href="#BackgroundWorker-102"><span class="linenos">102</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="BackgroundWorker-102"><a href="#BackgroundWorker-102"><span class="linenos">102</span></a><span class="sd">        """</span>
 </span><span id="BackgroundWorker-103"><a href="#BackgroundWorker-103"><span class="linenos">103</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_work_queue</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
 </span><span id="BackgroundWorker-104"><a href="#BackgroundWorker-104"><span class="linenos">104</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_finished_event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
 </span><span id="BackgroundWorker-105"><a href="#BackgroundWorker-105"><span class="linenos">105</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_results_queue</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
@@ -528,9 +528,9 @@ released, which can happen in IO calls and compiled extensions.</p>
     <a class="headerlink" href="#BackgroundWorker.process"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="BackgroundWorker.process-71"><a href="#BackgroundWorker.process-71"><span class="linenos">71</span></a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
 </span><span id="BackgroundWorker.process-72"><a href="#BackgroundWorker.process-72"><span class="linenos">72</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
-</span><span id="BackgroundWorker.process-73"><a href="#BackgroundWorker.process-73"><span class="linenos">73</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="BackgroundWorker.process-73"><a href="#BackgroundWorker.process-73"><span class="linenos">73</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="BackgroundWorker.process-74"><a href="#BackgroundWorker.process-74"><span class="linenos">74</span></a><span class="sd">        User-defined task to operate in background thread.</span>
-</span><span id="BackgroundWorker.process-75"><a href="#BackgroundWorker.process-75"><span class="linenos">75</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="BackgroundWorker.process-75"><a href="#BackgroundWorker.process-75"><span class="linenos">75</span></a><span class="sd">        """</span>
 </span><span id="BackgroundWorker.process-76"><a href="#BackgroundWorker.process-76"><span class="linenos">76</span></a>        <span class="k">pass</span>
 </span></pre></div>
 
@@ -552,13 +552,13 @@ released, which can happen in IO calls and compiled extensions.</p>
     </div>
     <a class="headerlink" href="#BackgroundWorker.queue_work"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="BackgroundWorker.queue_work-78"><a href="#BackgroundWorker.queue_work-78"><span class="linenos">78</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">queue_work</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
-</span><span id="BackgroundWorker.queue_work-79"><a href="#BackgroundWorker.queue_work-79"><span class="linenos">79</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="BackgroundWorker.queue_work-79"><a href="#BackgroundWorker.queue_work-79"><span class="linenos">79</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="BackgroundWorker.queue_work-80"><a href="#BackgroundWorker.queue_work-80"><span class="linenos">80</span></a><span class="sd">        Add a job to the work queue to be executed.  Blocks if work queue is</span>
 </span><span id="BackgroundWorker.queue_work-81"><a href="#BackgroundWorker.queue_work-81"><span class="linenos">81</span></a><span class="sd">        full.  Same input interface as `process`.</span>
-</span><span id="BackgroundWorker.queue_work-82"><a href="#BackgroundWorker.queue_work-82"><span class="linenos">82</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="BackgroundWorker.queue_work-82"><a href="#BackgroundWorker.queue_work-82"><span class="linenos">82</span></a><span class="sd">        """</span>
 </span><span id="BackgroundWorker.queue_work-83"><a href="#BackgroundWorker.queue_work-83"><span class="linenos">83</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_finished_event</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span>
 </span><span id="BackgroundWorker.queue_work-84"><a href="#BackgroundWorker.queue_work-84"><span class="linenos">84</span></a>            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-</span><span id="BackgroundWorker.queue_work-85"><a href="#BackgroundWorker.queue_work-85"><span class="linenos">85</span></a>                <span class="s2">&quot;Attempted to queue_work after notify_finished!&quot;</span><span class="p">)</span>
+</span><span id="BackgroundWorker.queue_work-85"><a href="#BackgroundWorker.queue_work-85"><span class="linenos">85</span></a>                <span class="s2">"Attempted to queue_work after notify_finished!"</span><span class="p">)</span>
 </span><span id="BackgroundWorker.queue_work-86"><a href="#BackgroundWorker.queue_work-86"><span class="linenos">86</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_work_queue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">args</span><span class="p">,</span> <span class="n">kw</span><span class="p">))</span>
 </span></pre></div>
 
@@ -581,10 +581,10 @@ full.  Same input interface as <code><a href="#BackgroundWorker.process">process
     </div>
     <a class="headerlink" href="#BackgroundWorker.get_result"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="BackgroundWorker.get_result-88"><a href="#BackgroundWorker.get_result-88"><span class="linenos">88</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="BackgroundWorker.get_result-89"><a href="#BackgroundWorker.get_result-89"><span class="linenos">89</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="BackgroundWorker.get_result-89"><a href="#BackgroundWorker.get_result-89"><span class="linenos">89</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="BackgroundWorker.get_result-90"><a href="#BackgroundWorker.get_result-90"><span class="linenos">90</span></a><span class="sd">        Get the least-recent value from the result queue.  Blocks until a result</span>
 </span><span id="BackgroundWorker.get_result-91"><a href="#BackgroundWorker.get_result-91"><span class="linenos">91</span></a><span class="sd">        is available.  Same output interface as `process`.</span>
-</span><span id="BackgroundWorker.get_result-92"><a href="#BackgroundWorker.get_result-92"><span class="linenos">92</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="BackgroundWorker.get_result-92"><a href="#BackgroundWorker.get_result-92"><span class="linenos">92</span></a><span class="sd">        """</span>
 </span><span id="BackgroundWorker.get_result-93"><a href="#BackgroundWorker.get_result-93"><span class="linenos">93</span></a>        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_results_queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
 </span><span id="BackgroundWorker.get_result-94"><a href="#BackgroundWorker.get_result-94"><span class="linenos">94</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_results_queue</span><span class="o">.</span><span class="n">task_done</span><span class="p">()</span>
 </span><span id="BackgroundWorker.get_result-95"><a href="#BackgroundWorker.get_result-95"><span class="linenos">95</span></a>        <span class="k">return</span> <span class="n">result</span>
@@ -609,11 +609,11 @@ is available.  Same output interface as <code><a href="#BackgroundWorker.process
     </div>
     <a class="headerlink" href="#BackgroundWorker.notify_finished"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="BackgroundWorker.notify_finished-97"><a href="#BackgroundWorker.notify_finished-97"><span class="linenos"> 97</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">notify_finished</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="BackgroundWorker.notify_finished-98"><a href="#BackgroundWorker.notify_finished-98"><span class="linenos"> 98</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="BackgroundWorker.notify_finished-98"><a href="#BackgroundWorker.notify_finished-98"><span class="linenos"> 98</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="BackgroundWorker.notify_finished-99"><a href="#BackgroundWorker.notify_finished-99"><span class="linenos"> 99</span></a><span class="sd">        Indicate that no more work will be added to the queue and block until</span>
 </span><span id="BackgroundWorker.notify_finished-100"><a href="#BackgroundWorker.notify_finished-100"><span class="linenos">100</span></a><span class="sd">        all work has been processed.  If `store_results=True` also block until</span>
 </span><span id="BackgroundWorker.notify_finished-101"><a href="#BackgroundWorker.notify_finished-101"><span class="linenos">101</span></a><span class="sd">        all results have been retrieved.</span>
-</span><span id="BackgroundWorker.notify_finished-102"><a href="#BackgroundWorker.notify_finished-102"><span class="linenos">102</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="BackgroundWorker.notify_finished-102"><a href="#BackgroundWorker.notify_finished-102"><span class="linenos">102</span></a><span class="sd">        """</span>
 </span><span id="BackgroundWorker.notify_finished-103"><a href="#BackgroundWorker.notify_finished-103"><span class="linenos">103</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_work_queue</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
 </span><span id="BackgroundWorker.notify_finished-104"><a href="#BackgroundWorker.notify_finished-104"><span class="linenos">104</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_finished_event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
 </span><span id="BackgroundWorker.notify_finished-105"><a href="#BackgroundWorker.notify_finished-105"><span class="linenos">105</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_results_queue</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
@@ -641,7 +641,7 @@ all results have been retrieved.</p>
     </div>
     <a class="headerlink" href="#BackgroundWriter"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="BackgroundWriter-112"><a href="#BackgroundWriter-112"><span class="linenos">112</span></a><span class="k">class</span><span class="w"> </span><span class="nc">BackgroundWriter</span><span class="p">(</span><span class="n">BackgroundWorker</span><span class="p">):</span>
-</span><span id="BackgroundWriter-113"><a href="#BackgroundWriter-113"><span class="linenos">113</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="BackgroundWriter-113"><a href="#BackgroundWriter-113"><span class="linenos">113</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="BackgroundWriter-114"><a href="#BackgroundWriter-114"><span class="linenos">114</span></a><span class="sd">    Base class for writing data in a background thread.</span>
 </span><span id="BackgroundWriter-115"><a href="#BackgroundWriter-115"><span class="linenos">115</span></a>
 </span><span id="BackgroundWriter-116"><a href="#BackgroundWriter-116"><span class="linenos">116</span></a><span class="sd">    After instantiating an object, a client sends it data with the `queue_write`</span>
@@ -656,17 +656,17 @@ all results have been retrieved.</p>
 </span><span id="BackgroundWriter-125"><a href="#BackgroundWriter-125"><span class="linenos">125</span></a><span class="sd">    timeout : float</span>
 </span><span id="BackgroundWriter-126"><a href="#BackgroundWriter-126"><span class="linenos">126</span></a><span class="sd">        Interval in seconds used to check for finished notification once write</span>
 </span><span id="BackgroundWriter-127"><a href="#BackgroundWriter-127"><span class="linenos">127</span></a><span class="sd">        queue is empty.</span>
-</span><span id="BackgroundWriter-128"><a href="#BackgroundWriter-128"><span class="linenos">128</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="BackgroundWriter-128"><a href="#BackgroundWriter-128"><span class="linenos">128</span></a><span class="sd">    """</span>
 </span><span id="BackgroundWriter-129"><a href="#BackgroundWriter-129"><span class="linenos">129</span></a>
 </span><span id="BackgroundWriter-130"><a href="#BackgroundWriter-130"><span class="linenos">130</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nq</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">_default_timeout</span><span class="p">):</span>
 </span><span id="BackgroundWriter-131"><a href="#BackgroundWriter-131"><span class="linenos">131</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">num_work_queue</span><span class="o">=</span><span class="n">nq</span><span class="p">,</span> <span class="n">store_results</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
 </span><span id="BackgroundWriter-132"><a href="#BackgroundWriter-132"><span class="linenos">132</span></a>
 </span><span id="BackgroundWriter-133"><a href="#BackgroundWriter-133"><span class="linenos">133</span></a>    <span class="c1"># rename queue_work -&gt; queue_write</span>
 </span><span id="BackgroundWriter-134"><a href="#BackgroundWriter-134"><span class="linenos">134</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">queue_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
-</span><span id="BackgroundWriter-135"><a href="#BackgroundWriter-135"><span class="linenos">135</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="BackgroundWriter-135"><a href="#BackgroundWriter-135"><span class="linenos">135</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="BackgroundWriter-136"><a href="#BackgroundWriter-136"><span class="linenos">136</span></a><span class="sd">        Add data to the queue to be written.  Blocks if write queue is full.</span>
 </span><span id="BackgroundWriter-137"><a href="#BackgroundWriter-137"><span class="linenos">137</span></a><span class="sd">        Same interfaces as `write`.</span>
-</span><span id="BackgroundWriter-138"><a href="#BackgroundWriter-138"><span class="linenos">138</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="BackgroundWriter-138"><a href="#BackgroundWriter-138"><span class="linenos">138</span></a><span class="sd">        """</span>
 </span><span id="BackgroundWriter-139"><a href="#BackgroundWriter-139"><span class="linenos">139</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">queue_work</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
 </span><span id="BackgroundWriter-140"><a href="#BackgroundWriter-140"><span class="linenos">140</span></a>
 </span><span id="BackgroundWriter-141"><a href="#BackgroundWriter-141"><span class="linenos">141</span></a>    <span class="c1"># rename process -&gt; write</span>
@@ -675,9 +675,9 @@ all results have been retrieved.</p>
 </span><span id="BackgroundWriter-144"><a href="#BackgroundWriter-144"><span class="linenos">144</span></a>
 </span><span id="BackgroundWriter-145"><a href="#BackgroundWriter-145"><span class="linenos">145</span></a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
 </span><span id="BackgroundWriter-146"><a href="#BackgroundWriter-146"><span class="linenos">146</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
-</span><span id="BackgroundWriter-147"><a href="#BackgroundWriter-147"><span class="linenos">147</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="BackgroundWriter-147"><a href="#BackgroundWriter-147"><span class="linenos">147</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="BackgroundWriter-148"><a href="#BackgroundWriter-148"><span class="linenos">148</span></a><span class="sd">        User-defined method for writing data.</span>
-</span><span id="BackgroundWriter-149"><a href="#BackgroundWriter-149"><span class="linenos">149</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="BackgroundWriter-149"><a href="#BackgroundWriter-149"><span class="linenos">149</span></a><span class="sd">        """</span>
 </span><span id="BackgroundWriter-150"><a href="#BackgroundWriter-150"><span class="linenos">150</span></a>        <span class="k">pass</span>
 </span></pre></div>
 
@@ -711,10 +711,10 @@ timeout : float
     </div>
     <a class="headerlink" href="#BackgroundWriter.queue_write"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="BackgroundWriter.queue_write-134"><a href="#BackgroundWriter.queue_write-134"><span class="linenos">134</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">queue_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
-</span><span id="BackgroundWriter.queue_write-135"><a href="#BackgroundWriter.queue_write-135"><span class="linenos">135</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="BackgroundWriter.queue_write-135"><a href="#BackgroundWriter.queue_write-135"><span class="linenos">135</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="BackgroundWriter.queue_write-136"><a href="#BackgroundWriter.queue_write-136"><span class="linenos">136</span></a><span class="sd">        Add data to the queue to be written.  Blocks if write queue is full.</span>
 </span><span id="BackgroundWriter.queue_write-137"><a href="#BackgroundWriter.queue_write-137"><span class="linenos">137</span></a><span class="sd">        Same interfaces as `write`.</span>
-</span><span id="BackgroundWriter.queue_write-138"><a href="#BackgroundWriter.queue_write-138"><span class="linenos">138</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="BackgroundWriter.queue_write-138"><a href="#BackgroundWriter.queue_write-138"><span class="linenos">138</span></a><span class="sd">        """</span>
 </span><span id="BackgroundWriter.queue_write-139"><a href="#BackgroundWriter.queue_write-139"><span class="linenos">139</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">queue_work</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
 </span></pre></div>
 
@@ -760,9 +760,9 @@ Same interfaces as <code><a href="#BackgroundWriter.write">write</a></code>.</p>
     <a class="headerlink" href="#BackgroundWriter.write"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="BackgroundWriter.write-145"><a href="#BackgroundWriter.write-145"><span class="linenos">145</span></a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
 </span><span id="BackgroundWriter.write-146"><a href="#BackgroundWriter.write-146"><span class="linenos">146</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
-</span><span id="BackgroundWriter.write-147"><a href="#BackgroundWriter.write-147"><span class="linenos">147</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="BackgroundWriter.write-147"><a href="#BackgroundWriter.write-147"><span class="linenos">147</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="BackgroundWriter.write-148"><a href="#BackgroundWriter.write-148"><span class="linenos">148</span></a><span class="sd">        User-defined method for writing data.</span>
-</span><span id="BackgroundWriter.write-149"><a href="#BackgroundWriter.write-149"><span class="linenos">149</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="BackgroundWriter.write-149"><a href="#BackgroundWriter.write-149"><span class="linenos">149</span></a><span class="sd">        """</span>
 </span><span id="BackgroundWriter.write-150"><a href="#BackgroundWriter.write-150"><span class="linenos">150</span></a>        <span class="k">pass</span>
 </span></pre></div>
 
@@ -798,13 +798,13 @@ Same interfaces as <code><a href="#BackgroundWriter.write">write</a></code>.</p>
     </div>
     <a class="headerlink" href="#BackgroundReader"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="BackgroundReader-153"><a href="#BackgroundReader-153"><span class="linenos">153</span></a><span class="k">class</span><span class="w"> </span><span class="nc">BackgroundReader</span><span class="p">(</span><span class="n">BackgroundWorker</span><span class="p">):</span>
-</span><span id="BackgroundReader-154"><a href="#BackgroundReader-154"><span class="linenos">154</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="BackgroundReader-154"><a href="#BackgroundReader-154"><span class="linenos">154</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="BackgroundReader-155"><a href="#BackgroundReader-155"><span class="linenos">155</span></a><span class="sd">    Base class for reading data in a background thread (pre-fetching).</span>
 </span><span id="BackgroundReader-156"><a href="#BackgroundReader-156"><span class="linenos">156</span></a>
 </span><span id="BackgroundReader-157"><a href="#BackgroundReader-157"><span class="linenos">157</span></a><span class="sd">    After instantiating an object, a client sends it data selection parameters</span>
 </span><span id="BackgroundReader-158"><a href="#BackgroundReader-158"><span class="linenos">158</span></a><span class="sd">    (slices, indices, etc.) via the `queue_read` method and retrieves the result</span>
 </span><span id="BackgroundReader-159"><a href="#BackgroundReader-159"><span class="linenos">159</span></a><span class="sd">    with the `get_data` method.  In order to get useful concurrency, that</span>
-</span><span id="BackgroundReader-160"><a href="#BackgroundReader-160"><span class="linenos">160</span></a><span class="sd">    usually means you&#39;ll want to queue the read for the next data block before</span>
+</span><span id="BackgroundReader-160"><a href="#BackgroundReader-160"><span class="linenos">160</span></a><span class="sd">    usually means you'll want to queue the read for the next data block before</span>
 </span><span id="BackgroundReader-161"><a href="#BackgroundReader-161"><span class="linenos">161</span></a><span class="sd">    starting work on the current block.  The reader remains active until</span>
 </span><span id="BackgroundReader-162"><a href="#BackgroundReader-162"><span class="linenos">162</span></a><span class="sd">    `notify_finished` is called and all blocks have been retrieved.  Subclasses</span>
 </span><span id="BackgroundReader-163"><a href="#BackgroundReader-163"><span class="linenos">163</span></a><span class="sd">    must define the `read` method.</span>
@@ -817,25 +817,25 @@ Same interfaces as <code><a href="#BackgroundWriter.write">write</a></code>.</p>
 </span><span id="BackgroundReader-170"><a href="#BackgroundReader-170"><span class="linenos">170</span></a><span class="sd">    timeout : float</span>
 </span><span id="BackgroundReader-171"><a href="#BackgroundReader-171"><span class="linenos">171</span></a><span class="sd">        Interval in seconds used to check for finished notification once write</span>
 </span><span id="BackgroundReader-172"><a href="#BackgroundReader-172"><span class="linenos">172</span></a><span class="sd">        queue is empty.</span>
-</span><span id="BackgroundReader-173"><a href="#BackgroundReader-173"><span class="linenos">173</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="BackgroundReader-173"><a href="#BackgroundReader-173"><span class="linenos">173</span></a><span class="sd">    """</span>
 </span><span id="BackgroundReader-174"><a href="#BackgroundReader-174"><span class="linenos">174</span></a>
 </span><span id="BackgroundReader-175"><a href="#BackgroundReader-175"><span class="linenos">175</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nq</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">_default_timeout</span><span class="p">):</span>
 </span><span id="BackgroundReader-176"><a href="#BackgroundReader-176"><span class="linenos">176</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">num_results_queue</span><span class="o">=</span><span class="n">nq</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
 </span><span id="BackgroundReader-177"><a href="#BackgroundReader-177"><span class="linenos">177</span></a>
 </span><span id="BackgroundReader-178"><a href="#BackgroundReader-178"><span class="linenos">178</span></a>    <span class="c1"># rename queue_work -&gt; queue_read</span>
 </span><span id="BackgroundReader-179"><a href="#BackgroundReader-179"><span class="linenos">179</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">queue_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
-</span><span id="BackgroundReader-180"><a href="#BackgroundReader-180"><span class="linenos">180</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="BackgroundReader-180"><a href="#BackgroundReader-180"><span class="linenos">180</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="BackgroundReader-181"><a href="#BackgroundReader-181"><span class="linenos">181</span></a><span class="sd">        Add selection parameters (slices, indices, etc.) to the read queue to be</span>
 </span><span id="BackgroundReader-182"><a href="#BackgroundReader-182"><span class="linenos">182</span></a><span class="sd">        processed.  Same input interface as `read`.</span>
-</span><span id="BackgroundReader-183"><a href="#BackgroundReader-183"><span class="linenos">183</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="BackgroundReader-183"><a href="#BackgroundReader-183"><span class="linenos">183</span></a><span class="sd">        """</span>
 </span><span id="BackgroundReader-184"><a href="#BackgroundReader-184"><span class="linenos">184</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">queue_work</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
 </span><span id="BackgroundReader-185"><a href="#BackgroundReader-185"><span class="linenos">185</span></a>
 </span><span id="BackgroundReader-186"><a href="#BackgroundReader-186"><span class="linenos">186</span></a>    <span class="c1"># rename get_result -&gt; get_data</span>
 </span><span id="BackgroundReader-187"><a href="#BackgroundReader-187"><span class="linenos">187</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="BackgroundReader-188"><a href="#BackgroundReader-188"><span class="linenos">188</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="BackgroundReader-188"><a href="#BackgroundReader-188"><span class="linenos">188</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="BackgroundReader-189"><a href="#BackgroundReader-189"><span class="linenos">189</span></a><span class="sd">        Retrieve the least-recently read chunk of data.  Blocks until a result</span>
 </span><span id="BackgroundReader-190"><a href="#BackgroundReader-190"><span class="linenos">190</span></a><span class="sd">        is available. Same output interface as `read`.</span>
-</span><span id="BackgroundReader-191"><a href="#BackgroundReader-191"><span class="linenos">191</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="BackgroundReader-191"><a href="#BackgroundReader-191"><span class="linenos">191</span></a><span class="sd">        """</span>
 </span><span id="BackgroundReader-192"><a href="#BackgroundReader-192"><span class="linenos">192</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_result</span><span class="p">()</span>
 </span><span id="BackgroundReader-193"><a href="#BackgroundReader-193"><span class="linenos">193</span></a>
 </span><span id="BackgroundReader-194"><a href="#BackgroundReader-194"><span class="linenos">194</span></a>    <span class="c1"># rename process -&gt; read</span>
@@ -844,9 +844,9 @@ Same interfaces as <code><a href="#BackgroundWriter.write">write</a></code>.</p>
 </span><span id="BackgroundReader-197"><a href="#BackgroundReader-197"><span class="linenos">197</span></a>
 </span><span id="BackgroundReader-198"><a href="#BackgroundReader-198"><span class="linenos">198</span></a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
 </span><span id="BackgroundReader-199"><a href="#BackgroundReader-199"><span class="linenos">199</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
-</span><span id="BackgroundReader-200"><a href="#BackgroundReader-200"><span class="linenos">200</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="BackgroundReader-200"><a href="#BackgroundReader-200"><span class="linenos">200</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="BackgroundReader-201"><a href="#BackgroundReader-201"><span class="linenos">201</span></a><span class="sd">        User-defined method for reading a chunk of data.</span>
-</span><span id="BackgroundReader-202"><a href="#BackgroundReader-202"><span class="linenos">202</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="BackgroundReader-202"><a href="#BackgroundReader-202"><span class="linenos">202</span></a><span class="sd">        """</span>
 </span><span id="BackgroundReader-203"><a href="#BackgroundReader-203"><span class="linenos">203</span></a>        <span class="k">pass</span>
 </span></pre></div>
 
@@ -884,10 +884,10 @@ timeout : float
     </div>
     <a class="headerlink" href="#BackgroundReader.queue_read"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="BackgroundReader.queue_read-179"><a href="#BackgroundReader.queue_read-179"><span class="linenos">179</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">queue_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
-</span><span id="BackgroundReader.queue_read-180"><a href="#BackgroundReader.queue_read-180"><span class="linenos">180</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="BackgroundReader.queue_read-180"><a href="#BackgroundReader.queue_read-180"><span class="linenos">180</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="BackgroundReader.queue_read-181"><a href="#BackgroundReader.queue_read-181"><span class="linenos">181</span></a><span class="sd">        Add selection parameters (slices, indices, etc.) to the read queue to be</span>
 </span><span id="BackgroundReader.queue_read-182"><a href="#BackgroundReader.queue_read-182"><span class="linenos">182</span></a><span class="sd">        processed.  Same input interface as `read`.</span>
-</span><span id="BackgroundReader.queue_read-183"><a href="#BackgroundReader.queue_read-183"><span class="linenos">183</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="BackgroundReader.queue_read-183"><a href="#BackgroundReader.queue_read-183"><span class="linenos">183</span></a><span class="sd">        """</span>
 </span><span id="BackgroundReader.queue_read-184"><a href="#BackgroundReader.queue_read-184"><span class="linenos">184</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">queue_work</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
 </span></pre></div>
 
@@ -910,10 +910,10 @@ processed.  Same input interface as <code><a href="#BackgroundReader.read">read<
     </div>
     <a class="headerlink" href="#BackgroundReader.get_data"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="BackgroundReader.get_data-187"><a href="#BackgroundReader.get_data-187"><span class="linenos">187</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="BackgroundReader.get_data-188"><a href="#BackgroundReader.get_data-188"><span class="linenos">188</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="BackgroundReader.get_data-188"><a href="#BackgroundReader.get_data-188"><span class="linenos">188</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="BackgroundReader.get_data-189"><a href="#BackgroundReader.get_data-189"><span class="linenos">189</span></a><span class="sd">        Retrieve the least-recently read chunk of data.  Blocks until a result</span>
 </span><span id="BackgroundReader.get_data-190"><a href="#BackgroundReader.get_data-190"><span class="linenos">190</span></a><span class="sd">        is available. Same output interface as `read`.</span>
-</span><span id="BackgroundReader.get_data-191"><a href="#BackgroundReader.get_data-191"><span class="linenos">191</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="BackgroundReader.get_data-191"><a href="#BackgroundReader.get_data-191"><span class="linenos">191</span></a><span class="sd">        """</span>
 </span><span id="BackgroundReader.get_data-192"><a href="#BackgroundReader.get_data-192"><span class="linenos">192</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_result</span><span class="p">()</span>
 </span></pre></div>
 
@@ -959,9 +959,9 @@ is available. Same output interface as <code><a href="#BackgroundReader.read">re
     <a class="headerlink" href="#BackgroundReader.read"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="BackgroundReader.read-198"><a href="#BackgroundReader.read-198"><span class="linenos">198</span></a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
 </span><span id="BackgroundReader.read-199"><a href="#BackgroundReader.read-199"><span class="linenos">199</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
-</span><span id="BackgroundReader.read-200"><a href="#BackgroundReader.read-200"><span class="linenos">200</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="BackgroundReader.read-200"><a href="#BackgroundReader.read-200"><span class="linenos">200</span></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="BackgroundReader.read-201"><a href="#BackgroundReader.read-201"><span class="linenos">201</span></a><span class="sd">        User-defined method for reading a chunk of data.</span>
-</span><span id="BackgroundReader.read-202"><a href="#BackgroundReader.read-202"><span class="linenos">202</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="BackgroundReader.read-202"><a href="#BackgroundReader.read-202"><span class="linenos">202</span></a><span class="sd">        """</span>
 </span><span id="BackgroundReader.read-203"><a href="#BackgroundReader.read-203"><span class="linenos">203</span></a>        <span class="k">pass</span>
 </span></pre></div>
 

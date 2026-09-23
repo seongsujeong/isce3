@@ -84,7 +84,7 @@
 </span><span id="L-3"><a href="#L-3"><span class="linenos"> 3</span></a>
 </span><span id="L-4"><a href="#L-4"><span class="linenos"> 4</span></a>
 </span><span id="L-5"><a href="#L-5"><span class="linenos"> 5</span></a><span class="k">def</span><span class="w"> </span><span class="nf">snap</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">interval</span><span class="p">,</span> <span class="n">round_func</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">):</span>
-</span><span id="L-6"><a href="#L-6"><span class="linenos"> 6</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-6"><a href="#L-6"><span class="linenos"> 6</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a><span class="sd">    Round a location to the nearest grid point.</span>
 </span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a>
 </span><span id="L-9"><a href="#L-9"><span class="linenos"> 9</span></a><span class="sd">    Parameters</span>
@@ -102,12 +102,12 @@
 </span><span id="L-21"><a href="#L-21"><span class="linenos">21</span></a><span class="sd">    xg : float</span>
 </span><span id="L-22"><a href="#L-22"><span class="linenos">22</span></a><span class="sd">        The nearest grid point to x according to the given rounding mode.</span>
 </span><span id="L-23"><a href="#L-23"><span class="linenos">23</span></a><span class="sd">        That is, `xg = interval * i` for some integer `i`.</span>
-</span><span id="L-24"><a href="#L-24"><span class="linenos">24</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-24"><a href="#L-24"><span class="linenos">24</span></a><span class="sd">    """</span>
 </span><span id="L-25"><a href="#L-25"><span class="linenos">25</span></a>    <span class="k">return</span> <span class="n">round_func</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">interval</span><span class="p">)</span> <span class="o">*</span> <span class="n">interval</span>
 </span><span id="L-26"><a href="#L-26"><span class="linenos">26</span></a>
 </span><span id="L-27"><a href="#L-27"><span class="linenos">27</span></a>
 </span><span id="L-28"><a href="#L-28"><span class="linenos">28</span></a><span class="k">def</span><span class="w"> </span><span class="nf">snap_datetime</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">interval</span><span class="p">,</span> <span class="n">round_func</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">):</span>
-</span><span id="L-29"><a href="#L-29"><span class="linenos">29</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-29"><a href="#L-29"><span class="linenos">29</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-30"><a href="#L-30"><span class="linenos">30</span></a><span class="sd">    Round a time to the nearest grid point (counted from midnight).</span>
 </span><span id="L-31"><a href="#L-31"><span class="linenos">31</span></a>
 </span><span id="L-32"><a href="#L-32"><span class="linenos">32</span></a><span class="sd">    Parameters</span>
@@ -131,7 +131,7 @@
 </span><span id="L-50"><a href="#L-50"><span class="linenos">50</span></a><span class="sd">    If there are an integer number of intervals per second (Δ⁻¹ ∈ ℤ), then the</span>
 </span><span id="L-51"><a href="#L-51"><span class="linenos">51</span></a><span class="sd">    grid is well-defined even across days since there are an integer number of</span>
 </span><span id="L-52"><a href="#L-52"><span class="linenos">52</span></a><span class="sd">    seconds in each UTC day.</span>
-</span><span id="L-53"><a href="#L-53"><span class="linenos">53</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-53"><a href="#L-53"><span class="linenos">53</span></a><span class="sd">    """</span>
 </span><span id="L-54"><a href="#L-54"><span class="linenos">54</span></a>    <span class="n">midnight</span> <span class="o">=</span> <span class="n">DateTime</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">day</span><span class="p">)</span>
 </span><span id="L-55"><a href="#L-55"><span class="linenos">55</span></a>    <span class="n">seconds</span> <span class="o">=</span> <span class="p">(</span><span class="n">t</span> <span class="o">-</span> <span class="n">midnight</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
 </span><span id="L-56"><a href="#L-56"><span class="linenos">56</span></a>    <span class="k">return</span> <span class="n">midnight</span> <span class="o">+</span> <span class="n">TimeDelta</span><span class="p">(</span><span class="n">snap</span><span class="p">(</span><span class="n">seconds</span><span class="p">,</span> <span class="n">interval</span><span class="p">,</span> <span class="n">round_func</span><span class="p">))</span>
@@ -144,14 +144,14 @@
 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">snap</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">x</span>, </span><span class="param"><span class="n">interval</span>, </span><span class="param"><span class="n">round_func</span><span class="o">=&lt;</span><span class="n">ufunc</span> <span class="s1">&#39;ceil&#39;</span><span class="o">&gt;</span></span><span class="return-annotation">):</span></span>
+        <span class="name">snap</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">x</span>, </span><span class="param"><span class="n">interval</span>, </span><span class="param"><span class="n">round_func</span><span class="o">=&lt;</span><span class="n">ufunc</span> <span class="s1">'ceil'</span><span class="o">&gt;</span></span><span class="return-annotation">):</span></span>
 
                 <label class="view-source-button" for="snap-view-source"><span>View Source</span></label>
 
     </div>
     <a class="headerlink" href="#snap"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="snap-6"><a href="#snap-6"><span class="linenos"> 6</span></a><span class="k">def</span><span class="w"> </span><span class="nf">snap</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">interval</span><span class="p">,</span> <span class="n">round_func</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">):</span>
-</span><span id="snap-7"><a href="#snap-7"><span class="linenos"> 7</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="snap-7"><a href="#snap-7"><span class="linenos"> 7</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="snap-8"><a href="#snap-8"><span class="linenos"> 8</span></a><span class="sd">    Round a location to the nearest grid point.</span>
 </span><span id="snap-9"><a href="#snap-9"><span class="linenos"> 9</span></a>
 </span><span id="snap-10"><a href="#snap-10"><span class="linenos">10</span></a><span class="sd">    Parameters</span>
@@ -169,7 +169,7 @@
 </span><span id="snap-22"><a href="#snap-22"><span class="linenos">22</span></a><span class="sd">    xg : float</span>
 </span><span id="snap-23"><a href="#snap-23"><span class="linenos">23</span></a><span class="sd">        The nearest grid point to x according to the given rounding mode.</span>
 </span><span id="snap-24"><a href="#snap-24"><span class="linenos">24</span></a><span class="sd">        That is, `xg = interval * i` for some integer `i`.</span>
-</span><span id="snap-25"><a href="#snap-25"><span class="linenos">25</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="snap-25"><a href="#snap-25"><span class="linenos">25</span></a><span class="sd">    """</span>
 </span><span id="snap-26"><a href="#snap-26"><span class="linenos">26</span></a>    <span class="k">return</span> <span class="n">round_func</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">interval</span><span class="p">)</span> <span class="o">*</span> <span class="n">interval</span>
 </span></pre></div>
 
@@ -200,14 +200,14 @@ round_func : Callable[[float], float], optional
 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">snap_datetime</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">t</span>, </span><span class="param"><span class="n">interval</span>, </span><span class="param"><span class="n">round_func</span><span class="o">=&lt;</span><span class="n">ufunc</span> <span class="s1">&#39;ceil&#39;</span><span class="o">&gt;</span></span><span class="return-annotation">):</span></span>
+        <span class="name">snap_datetime</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">t</span>, </span><span class="param"><span class="n">interval</span>, </span><span class="param"><span class="n">round_func</span><span class="o">=&lt;</span><span class="n">ufunc</span> <span class="s1">'ceil'</span><span class="o">&gt;</span></span><span class="return-annotation">):</span></span>
 
                 <label class="view-source-button" for="snap_datetime-view-source"><span>View Source</span></label>
 
     </div>
     <a class="headerlink" href="#snap_datetime"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="snap_datetime-29"><a href="#snap_datetime-29"><span class="linenos">29</span></a><span class="k">def</span><span class="w"> </span><span class="nf">snap_datetime</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">interval</span><span class="p">,</span> <span class="n">round_func</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">):</span>
-</span><span id="snap_datetime-30"><a href="#snap_datetime-30"><span class="linenos">30</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="snap_datetime-30"><a href="#snap_datetime-30"><span class="linenos">30</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="snap_datetime-31"><a href="#snap_datetime-31"><span class="linenos">31</span></a><span class="sd">    Round a time to the nearest grid point (counted from midnight).</span>
 </span><span id="snap_datetime-32"><a href="#snap_datetime-32"><span class="linenos">32</span></a>
 </span><span id="snap_datetime-33"><a href="#snap_datetime-33"><span class="linenos">33</span></a><span class="sd">    Parameters</span>
@@ -231,7 +231,7 @@ round_func : Callable[[float], float], optional
 </span><span id="snap_datetime-51"><a href="#snap_datetime-51"><span class="linenos">51</span></a><span class="sd">    If there are an integer number of intervals per second (Δ⁻¹ ∈ ℤ), then the</span>
 </span><span id="snap_datetime-52"><a href="#snap_datetime-52"><span class="linenos">52</span></a><span class="sd">    grid is well-defined even across days since there are an integer number of</span>
 </span><span id="snap_datetime-53"><a href="#snap_datetime-53"><span class="linenos">53</span></a><span class="sd">    seconds in each UTC day.</span>
-</span><span id="snap_datetime-54"><a href="#snap_datetime-54"><span class="linenos">54</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="snap_datetime-54"><a href="#snap_datetime-54"><span class="linenos">54</span></a><span class="sd">    """</span>
 </span><span id="snap_datetime-55"><a href="#snap_datetime-55"><span class="linenos">55</span></a>    <span class="n">midnight</span> <span class="o">=</span> <span class="n">DateTime</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">day</span><span class="p">)</span>
 </span><span id="snap_datetime-56"><a href="#snap_datetime-56"><span class="linenos">56</span></a>    <span class="n">seconds</span> <span class="o">=</span> <span class="p">(</span><span class="n">t</span> <span class="o">-</span> <span class="n">midnight</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
 </span><span id="snap_datetime-57"><a href="#snap_datetime-57"><span class="linenos">57</span></a>    <span class="k">return</span> <span class="n">midnight</span> <span class="o">+</span> <span class="n">TimeDelta</span><span class="p">(</span><span class="n">snap</span><span class="p">(</span><span class="n">seconds</span><span class="p">,</span> <span class="n">interval</span><span class="p">,</span> <span class="n">round_func</span><span class="p">))</span>

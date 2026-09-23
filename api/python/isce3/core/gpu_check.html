@@ -82,7 +82,7 @@
                         <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos"> 1</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">journal</span>
 </span><span id="L-2"><a href="#L-2"><span class="linenos"> 2</span></a>
 </span><span id="L-3"><a href="#L-3"><span class="linenos"> 3</span></a><span class="k">def</span><span class="w"> </span><span class="nf">cuda_device_valid</span><span class="p">(</span><span class="n">gpu_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-</span><span id="L-4"><a href="#L-4"><span class="linenos"> 4</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-4"><a href="#L-4"><span class="linenos"> 4</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-5"><a href="#L-5"><span class="linenos"> 5</span></a><span class="sd">    Validate that the requested CUDA device is supported.</span>
 </span><span id="L-6"><a href="#L-6"><span class="linenos"> 6</span></a>
 </span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a><span class="sd">    Parameters</span>
@@ -94,14 +94,14 @@
 </span><span id="L-13"><a href="#L-13"><span class="linenos">13</span></a><span class="sd">    -------</span>
 </span><span id="L-14"><a href="#L-14"><span class="linenos">14</span></a><span class="sd">    logical</span>
 </span><span id="L-15"><a href="#L-15"><span class="linenos">15</span></a><span class="sd">        Whether given device is supported</span>
-</span><span id="L-16"><a href="#L-16"><span class="linenos">16</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-16"><a href="#L-16"><span class="linenos">16</span></a><span class="sd">    """</span>
 </span><span id="L-17"><a href="#L-17"><span class="linenos">17</span></a>    <span class="kn">from</span><span class="w"> </span><span class="nn">isce3.cuda.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">min_compute_capability</span>
 </span><span id="L-18"><a href="#L-18"><span class="linenos">18</span></a>    <span class="n">device</span> <span class="o">=</span> <span class="n">Device</span><span class="p">(</span><span class="n">gpu_id</span><span class="p">)</span>
 </span><span id="L-19"><a href="#L-19"><span class="linenos">19</span></a>    <span class="k">return</span> <span class="n">device</span><span class="o">.</span><span class="n">compute_capability</span> <span class="o">&gt;=</span> <span class="n">min_compute_capability</span><span class="p">()</span>
 </span><span id="L-20"><a href="#L-20"><span class="linenos">20</span></a>
 </span><span id="L-21"><a href="#L-21"><span class="linenos">21</span></a>
 </span><span id="L-22"><a href="#L-22"><span class="linenos">22</span></a><span class="k">def</span><span class="w"> </span><span class="nf">use_gpu</span><span class="p">(</span><span class="n">gpu_requested</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">gpu_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-</span><span id="L-23"><a href="#L-23"><span class="linenos">23</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate the specified GPU processing configuration options.</span>
+</span><span id="L-23"><a href="#L-23"><span class="linenos">23</span></a><span class="w">    </span><span class="sd">"""Validate the specified GPU processing configuration options.</span>
 </span><span id="L-24"><a href="#L-24"><span class="linenos">24</span></a>
 </span><span id="L-25"><a href="#L-25"><span class="linenos">25</span></a><span class="sd">    Parameters</span>
 </span><span id="L-26"><a href="#L-26"><span class="linenos">26</span></a><span class="sd">    ----------</span>
@@ -120,11 +120,11 @@
 </span><span id="L-39"><a href="#L-39"><span class="linenos">39</span></a><span class="sd">    ValueError</span>
 </span><span id="L-40"><a href="#L-40"><span class="linenos">40</span></a><span class="sd">        If GPU processing was requested but not available or if an invalid CUDA</span>
 </span><span id="L-41"><a href="#L-41"><span class="linenos">41</span></a><span class="sd">        device was requested</span>
-</span><span id="L-42"><a href="#L-42"><span class="linenos">42</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-42"><a href="#L-42"><span class="linenos">42</span></a><span class="sd">    """</span>
 </span><span id="L-43"><a href="#L-43"><span class="linenos">43</span></a>    <span class="kn">import</span><span class="w"> </span><span class="nn">isce3</span>
 </span><span id="L-44"><a href="#L-44"><span class="linenos">44</span></a>
 </span><span id="L-45"><a href="#L-45"><span class="linenos">45</span></a>    <span class="c1"># Check if CUDA support is enabled.</span>
-</span><span id="L-46"><a href="#L-46"><span class="linenos">46</span></a>    <span class="n">cuda_available</span> <span class="o">=</span> <span class="k">lambda</span> <span class="p">:</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">isce3</span><span class="p">,</span> <span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+</span><span id="L-46"><a href="#L-46"><span class="linenos">46</span></a>    <span class="n">cuda_available</span> <span class="o">=</span> <span class="k">lambda</span> <span class="p">:</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">isce3</span><span class="p">,</span> <span class="s2">"cuda"</span><span class="p">)</span>
 </span><span id="L-47"><a href="#L-47"><span class="linenos">47</span></a>
 </span><span id="L-48"><a href="#L-48"><span class="linenos">48</span></a>    <span class="c1"># If unspecified, use GPU processing if supported. Otherwise, fall back to</span>
 </span><span id="L-49"><a href="#L-49"><span class="linenos">49</span></a>    <span class="c1"># CPU processing.</span>
@@ -134,16 +134,16 @@
 </span><span id="L-53"><a href="#L-53"><span class="linenos">53</span></a>    <span class="c1"># If GPU processing was requested, raise an error if CUDA support is not</span>
 </span><span id="L-54"><a href="#L-54"><span class="linenos">54</span></a>    <span class="c1"># available or if the specified device is not valid.</span>
 </span><span id="L-55"><a href="#L-55"><span class="linenos">55</span></a>    <span class="k">if</span> <span class="n">gpu_requested</span><span class="p">:</span>
-</span><span id="L-56"><a href="#L-56"><span class="linenos">56</span></a>        <span class="n">error_channel</span> <span class="o">=</span> <span class="n">journal</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;gpu_check.use_gpu&quot;</span><span class="p">)</span>
+</span><span id="L-56"><a href="#L-56"><span class="linenos">56</span></a>        <span class="n">error_channel</span> <span class="o">=</span> <span class="n">journal</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"gpu_check.use_gpu"</span><span class="p">)</span>
 </span><span id="L-57"><a href="#L-57"><span class="linenos">57</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">cuda_available</span><span class="p">():</span>
 </span><span id="L-58"><a href="#L-58"><span class="linenos">58</span></a>            <span class="c1"># XXX logging an error does not halt execution</span>
-</span><span id="L-59"><a href="#L-59"><span class="linenos">59</span></a>            <span class="n">errmsg</span> <span class="o">=</span> <span class="s2">&quot;GPU processing was requested but not available&quot;</span>
+</span><span id="L-59"><a href="#L-59"><span class="linenos">59</span></a>            <span class="n">errmsg</span> <span class="o">=</span> <span class="s2">"GPU processing was requested but not available"</span>
 </span><span id="L-60"><a href="#L-60"><span class="linenos">60</span></a>            <span class="n">error_channel</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">errmsg</span><span class="p">)</span>
 </span><span id="L-61"><a href="#L-61"><span class="linenos">61</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">errmsg</span><span class="p">)</span>
 </span><span id="L-62"><a href="#L-62"><span class="linenos">62</span></a>
 </span><span id="L-63"><a href="#L-63"><span class="linenos">63</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">cuda_device_valid</span><span class="p">(</span><span class="n">gpu_id</span><span class="p">):</span>
-</span><span id="L-64"><a href="#L-64"><span class="linenos">64</span></a>            <span class="n">errmsg</span> <span class="o">=</span> <span class="s2">&quot;The requested CUDA device has insufficient compute &quot;</span> \
-</span><span id="L-65"><a href="#L-65"><span class="linenos">65</span></a>                     <span class="s2">&quot;capability&quot;</span>
+</span><span id="L-64"><a href="#L-64"><span class="linenos">64</span></a>            <span class="n">errmsg</span> <span class="o">=</span> <span class="s2">"The requested CUDA device has insufficient compute "</span> \
+</span><span id="L-65"><a href="#L-65"><span class="linenos">65</span></a>                     <span class="s2">"capability"</span>
 </span><span id="L-66"><a href="#L-66"><span class="linenos">66</span></a>            <span class="n">error_channel</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">errmsg</span><span class="p">)</span>
 </span><span id="L-67"><a href="#L-67"><span class="linenos">67</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">errmsg</span><span class="p">)</span>
 </span><span id="L-68"><a href="#L-68"><span class="linenos">68</span></a>
@@ -167,7 +167,7 @@
     </div>
     <a class="headerlink" href="#cuda_device_valid"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="cuda_device_valid-4"><a href="#cuda_device_valid-4"><span class="linenos"> 4</span></a><span class="k">def</span><span class="w"> </span><span class="nf">cuda_device_valid</span><span class="p">(</span><span class="n">gpu_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-</span><span id="cuda_device_valid-5"><a href="#cuda_device_valid-5"><span class="linenos"> 5</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="cuda_device_valid-5"><a href="#cuda_device_valid-5"><span class="linenos"> 5</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="cuda_device_valid-6"><a href="#cuda_device_valid-6"><span class="linenos"> 6</span></a><span class="sd">    Validate that the requested CUDA device is supported.</span>
 </span><span id="cuda_device_valid-7"><a href="#cuda_device_valid-7"><span class="linenos"> 7</span></a>
 </span><span id="cuda_device_valid-8"><a href="#cuda_device_valid-8"><span class="linenos"> 8</span></a><span class="sd">    Parameters</span>
@@ -179,7 +179,7 @@
 </span><span id="cuda_device_valid-14"><a href="#cuda_device_valid-14"><span class="linenos">14</span></a><span class="sd">    -------</span>
 </span><span id="cuda_device_valid-15"><a href="#cuda_device_valid-15"><span class="linenos">15</span></a><span class="sd">    logical</span>
 </span><span id="cuda_device_valid-16"><a href="#cuda_device_valid-16"><span class="linenos">16</span></a><span class="sd">        Whether given device is supported</span>
-</span><span id="cuda_device_valid-17"><a href="#cuda_device_valid-17"><span class="linenos">17</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="cuda_device_valid-17"><a href="#cuda_device_valid-17"><span class="linenos">17</span></a><span class="sd">    """</span>
 </span><span id="cuda_device_valid-18"><a href="#cuda_device_valid-18"><span class="linenos">18</span></a>    <span class="kn">from</span><span class="w"> </span><span class="nn">isce3.cuda.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">min_compute_capability</span>
 </span><span id="cuda_device_valid-19"><a href="#cuda_device_valid-19"><span class="linenos">19</span></a>    <span class="n">device</span> <span class="o">=</span> <span class="n">Device</span><span class="p">(</span><span class="n">gpu_id</span><span class="p">)</span>
 </span><span id="cuda_device_valid-20"><a href="#cuda_device_valid-20"><span class="linenos">20</span></a>    <span class="k">return</span> <span class="n">device</span><span class="o">.</span><span class="n">compute_capability</span> <span class="o">&gt;=</span> <span class="n">min_compute_capability</span><span class="p">()</span>
@@ -213,7 +213,7 @@
     </div>
     <a class="headerlink" href="#use_gpu"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="use_gpu-23"><a href="#use_gpu-23"><span class="linenos">23</span></a><span class="k">def</span><span class="w"> </span><span class="nf">use_gpu</span><span class="p">(</span><span class="n">gpu_requested</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">gpu_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-</span><span id="use_gpu-24"><a href="#use_gpu-24"><span class="linenos">24</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate the specified GPU processing configuration options.</span>
+</span><span id="use_gpu-24"><a href="#use_gpu-24"><span class="linenos">24</span></a><span class="w">    </span><span class="sd">"""Validate the specified GPU processing configuration options.</span>
 </span><span id="use_gpu-25"><a href="#use_gpu-25"><span class="linenos">25</span></a>
 </span><span id="use_gpu-26"><a href="#use_gpu-26"><span class="linenos">26</span></a><span class="sd">    Parameters</span>
 </span><span id="use_gpu-27"><a href="#use_gpu-27"><span class="linenos">27</span></a><span class="sd">    ----------</span>
@@ -232,11 +232,11 @@
 </span><span id="use_gpu-40"><a href="#use_gpu-40"><span class="linenos">40</span></a><span class="sd">    ValueError</span>
 </span><span id="use_gpu-41"><a href="#use_gpu-41"><span class="linenos">41</span></a><span class="sd">        If GPU processing was requested but not available or if an invalid CUDA</span>
 </span><span id="use_gpu-42"><a href="#use_gpu-42"><span class="linenos">42</span></a><span class="sd">        device was requested</span>
-</span><span id="use_gpu-43"><a href="#use_gpu-43"><span class="linenos">43</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="use_gpu-43"><a href="#use_gpu-43"><span class="linenos">43</span></a><span class="sd">    """</span>
 </span><span id="use_gpu-44"><a href="#use_gpu-44"><span class="linenos">44</span></a>    <span class="kn">import</span><span class="w"> </span><span class="nn">isce3</span>
 </span><span id="use_gpu-45"><a href="#use_gpu-45"><span class="linenos">45</span></a>
 </span><span id="use_gpu-46"><a href="#use_gpu-46"><span class="linenos">46</span></a>    <span class="c1"># Check if CUDA support is enabled.</span>
-</span><span id="use_gpu-47"><a href="#use_gpu-47"><span class="linenos">47</span></a>    <span class="n">cuda_available</span> <span class="o">=</span> <span class="k">lambda</span> <span class="p">:</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">isce3</span><span class="p">,</span> <span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+</span><span id="use_gpu-47"><a href="#use_gpu-47"><span class="linenos">47</span></a>    <span class="n">cuda_available</span> <span class="o">=</span> <span class="k">lambda</span> <span class="p">:</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">isce3</span><span class="p">,</span> <span class="s2">"cuda"</span><span class="p">)</span>
 </span><span id="use_gpu-48"><a href="#use_gpu-48"><span class="linenos">48</span></a>
 </span><span id="use_gpu-49"><a href="#use_gpu-49"><span class="linenos">49</span></a>    <span class="c1"># If unspecified, use GPU processing if supported. Otherwise, fall back to</span>
 </span><span id="use_gpu-50"><a href="#use_gpu-50"><span class="linenos">50</span></a>    <span class="c1"># CPU processing.</span>
@@ -246,16 +246,16 @@
 </span><span id="use_gpu-54"><a href="#use_gpu-54"><span class="linenos">54</span></a>    <span class="c1"># If GPU processing was requested, raise an error if CUDA support is not</span>
 </span><span id="use_gpu-55"><a href="#use_gpu-55"><span class="linenos">55</span></a>    <span class="c1"># available or if the specified device is not valid.</span>
 </span><span id="use_gpu-56"><a href="#use_gpu-56"><span class="linenos">56</span></a>    <span class="k">if</span> <span class="n">gpu_requested</span><span class="p">:</span>
-</span><span id="use_gpu-57"><a href="#use_gpu-57"><span class="linenos">57</span></a>        <span class="n">error_channel</span> <span class="o">=</span> <span class="n">journal</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;gpu_check.use_gpu&quot;</span><span class="p">)</span>
+</span><span id="use_gpu-57"><a href="#use_gpu-57"><span class="linenos">57</span></a>        <span class="n">error_channel</span> <span class="o">=</span> <span class="n">journal</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"gpu_check.use_gpu"</span><span class="p">)</span>
 </span><span id="use_gpu-58"><a href="#use_gpu-58"><span class="linenos">58</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">cuda_available</span><span class="p">():</span>
 </span><span id="use_gpu-59"><a href="#use_gpu-59"><span class="linenos">59</span></a>            <span class="c1"># XXX logging an error does not halt execution</span>
-</span><span id="use_gpu-60"><a href="#use_gpu-60"><span class="linenos">60</span></a>            <span class="n">errmsg</span> <span class="o">=</span> <span class="s2">&quot;GPU processing was requested but not available&quot;</span>
+</span><span id="use_gpu-60"><a href="#use_gpu-60"><span class="linenos">60</span></a>            <span class="n">errmsg</span> <span class="o">=</span> <span class="s2">"GPU processing was requested but not available"</span>
 </span><span id="use_gpu-61"><a href="#use_gpu-61"><span class="linenos">61</span></a>            <span class="n">error_channel</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">errmsg</span><span class="p">)</span>
 </span><span id="use_gpu-62"><a href="#use_gpu-62"><span class="linenos">62</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">errmsg</span><span class="p">)</span>
 </span><span id="use_gpu-63"><a href="#use_gpu-63"><span class="linenos">63</span></a>
 </span><span id="use_gpu-64"><a href="#use_gpu-64"><span class="linenos">64</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">cuda_device_valid</span><span class="p">(</span><span class="n">gpu_id</span><span class="p">):</span>
-</span><span id="use_gpu-65"><a href="#use_gpu-65"><span class="linenos">65</span></a>            <span class="n">errmsg</span> <span class="o">=</span> <span class="s2">&quot;The requested CUDA device has insufficient compute &quot;</span> \
-</span><span id="use_gpu-66"><a href="#use_gpu-66"><span class="linenos">66</span></a>                     <span class="s2">&quot;capability&quot;</span>
+</span><span id="use_gpu-65"><a href="#use_gpu-65"><span class="linenos">65</span></a>            <span class="n">errmsg</span> <span class="o">=</span> <span class="s2">"The requested CUDA device has insufficient compute "</span> \
+</span><span id="use_gpu-66"><a href="#use_gpu-66"><span class="linenos">66</span></a>                     <span class="s2">"capability"</span>
 </span><span id="use_gpu-67"><a href="#use_gpu-67"><span class="linenos">67</span></a>            <span class="n">error_channel</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">errmsg</span><span class="p">)</span>
 </span><span id="use_gpu-68"><a href="#use_gpu-68"><span class="linenos">68</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">errmsg</span><span class="p">)</span>
 </span><span id="use_gpu-69"><a href="#use_gpu-69"><span class="linenos">69</span></a>

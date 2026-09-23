@@ -89,7 +89,7 @@
 </span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a>                            <span class="n">doppler_lut</span><span class="p">:</span> <span class="n">LUT2d</span><span class="p">,</span> <span class="n">rdr_grid</span><span class="p">:</span> <span class="n">RadarGridParameters</span><span class="p">,</span>
 </span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a>                            <span class="n">dem_interp</span><span class="p">:</span> <span class="n">DEMInterpolator</span><span class="p">,</span> <span class="n">ellipsoid</span><span class="p">:</span> <span class="n">Ellipsoid</span><span class="p">):</span>
 </span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a>
-</span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a><span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a><span class="w">    </span><span class="sd">'''</span>
 </span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a><span class="sd">    Compute incidence angle for given parameters</span>
 </span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a>
 </span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a><span class="sd">    Parameters</span>
@@ -113,7 +113,7 @@
 </span><span id="L-32"><a href="#L-32"><span class="linenos"> 32</span></a><span class="sd">    -------</span>
 </span><span id="L-33"><a href="#L-33"><span class="linenos"> 33</span></a><span class="sd">    float</span>
 </span><span id="L-34"><a href="#L-34"><span class="linenos"> 34</span></a><span class="sd">        Incidence angle in radians</span>
-</span><span id="L-35"><a href="#L-35"><span class="linenos"> 35</span></a><span class="sd">    &#39;&#39;&#39;</span>
+</span><span id="L-35"><a href="#L-35"><span class="linenos"> 35</span></a><span class="sd">    '''</span>
 </span><span id="L-36"><a href="#L-36"><span class="linenos"> 36</span></a>    <span class="c1"># Get satellite position at time t</span>
 </span><span id="L-37"><a href="#L-37"><span class="linenos"> 37</span></a>    <span class="n">sat_pos</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">orbit</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
 </span><span id="L-38"><a href="#L-38"><span class="linenos"> 38</span></a>
@@ -142,7 +142,7 @@
 </span><span id="L-61"><a href="#L-61"><span class="linenos"> 61</span></a><span class="k">def</span><span class="w"> </span><span class="nf">get_near_and_far_range_incidence_angles</span><span class="p">(</span><span class="n">radar_grid</span><span class="p">,</span> <span class="n">orbit</span><span class="p">,</span>
 </span><span id="L-62"><a href="#L-62"><span class="linenos"> 62</span></a>                                            <span class="n">doppler_lut</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a>                                            <span class="n">dem_interp</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-</span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a><span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a><span class="w">    </span><span class="sd">'''</span>
 </span><span id="L-65"><a href="#L-65"><span class="linenos"> 65</span></a><span class="sd">    Compute near and far range incidence angles at the mid-azimuth point of the grid.</span>
 </span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a><span class="sd">    </span>
 </span><span id="L-67"><a href="#L-67"><span class="linenos"> 67</span></a><span class="sd">    The incidence is the angle between the nadir vector and platform-to-target look vector.</span>
@@ -164,7 +164,7 @@
 </span><span id="L-83"><a href="#L-83"><span class="linenos"> 83</span></a><span class="sd">        Doppler LUT</span>
 </span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a><span class="sd">    dem_interp: isce3.geometry.DEMInterpolator, optional</span>
 </span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a><span class="sd">        DEM interpolator</span>
-</span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a><span class="sd">    &#39;&#39;&#39;</span>
+</span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a><span class="sd">    '''</span>
 </span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a>
 </span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a>    <span class="n">radar_grid_center_az_time</span> <span class="o">=</span> <span class="n">radar_grid</span><span class="o">.</span><span class="n">sensing_time</span><span class="p">(</span>
 </span><span id="L-89"><a href="#L-89"><span class="linenos"> 89</span></a>            <span class="n">radar_grid</span><span class="o">.</span><span class="n">length</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
@@ -218,7 +218,7 @@
 </span><span id="compute_incidence_angle-9"><a href="#compute_incidence_angle-9"><span class="linenos"> 9</span></a>                            <span class="n">doppler_lut</span><span class="p">:</span> <span class="n">LUT2d</span><span class="p">,</span> <span class="n">rdr_grid</span><span class="p">:</span> <span class="n">RadarGridParameters</span><span class="p">,</span>
 </span><span id="compute_incidence_angle-10"><a href="#compute_incidence_angle-10"><span class="linenos">10</span></a>                            <span class="n">dem_interp</span><span class="p">:</span> <span class="n">DEMInterpolator</span><span class="p">,</span> <span class="n">ellipsoid</span><span class="p">:</span> <span class="n">Ellipsoid</span><span class="p">):</span>
 </span><span id="compute_incidence_angle-11"><a href="#compute_incidence_angle-11"><span class="linenos">11</span></a>
-</span><span id="compute_incidence_angle-12"><a href="#compute_incidence_angle-12"><span class="linenos">12</span></a><span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="compute_incidence_angle-12"><a href="#compute_incidence_angle-12"><span class="linenos">12</span></a><span class="w">    </span><span class="sd">'''</span>
 </span><span id="compute_incidence_angle-13"><a href="#compute_incidence_angle-13"><span class="linenos">13</span></a><span class="sd">    Compute incidence angle for given parameters</span>
 </span><span id="compute_incidence_angle-14"><a href="#compute_incidence_angle-14"><span class="linenos">14</span></a>
 </span><span id="compute_incidence_angle-15"><a href="#compute_incidence_angle-15"><span class="linenos">15</span></a><span class="sd">    Parameters</span>
@@ -242,7 +242,7 @@
 </span><span id="compute_incidence_angle-33"><a href="#compute_incidence_angle-33"><span class="linenos">33</span></a><span class="sd">    -------</span>
 </span><span id="compute_incidence_angle-34"><a href="#compute_incidence_angle-34"><span class="linenos">34</span></a><span class="sd">    float</span>
 </span><span id="compute_incidence_angle-35"><a href="#compute_incidence_angle-35"><span class="linenos">35</span></a><span class="sd">        Incidence angle in radians</span>
-</span><span id="compute_incidence_angle-36"><a href="#compute_incidence_angle-36"><span class="linenos">36</span></a><span class="sd">    &#39;&#39;&#39;</span>
+</span><span id="compute_incidence_angle-36"><a href="#compute_incidence_angle-36"><span class="linenos">36</span></a><span class="sd">    '''</span>
 </span><span id="compute_incidence_angle-37"><a href="#compute_incidence_angle-37"><span class="linenos">37</span></a>    <span class="c1"># Get satellite position at time t</span>
 </span><span id="compute_incidence_angle-38"><a href="#compute_incidence_angle-38"><span class="linenos">38</span></a>    <span class="n">sat_pos</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">orbit</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
 </span><span id="compute_incidence_angle-39"><a href="#compute_incidence_angle-39"><span class="linenos">39</span></a>
@@ -310,7 +310,7 @@ ellipsoid: isce3.core.Ellipsoid
             <div class="pdoc-code codehilite"><pre><span></span><span id="get_near_and_far_range_incidence_angles-62"><a href="#get_near_and_far_range_incidence_angles-62"><span class="linenos"> 62</span></a><span class="k">def</span><span class="w"> </span><span class="nf">get_near_and_far_range_incidence_angles</span><span class="p">(</span><span class="n">radar_grid</span><span class="p">,</span> <span class="n">orbit</span><span class="p">,</span>
 </span><span id="get_near_and_far_range_incidence_angles-63"><a href="#get_near_and_far_range_incidence_angles-63"><span class="linenos"> 63</span></a>                                            <span class="n">doppler_lut</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="get_near_and_far_range_incidence_angles-64"><a href="#get_near_and_far_range_incidence_angles-64"><span class="linenos"> 64</span></a>                                            <span class="n">dem_interp</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-</span><span id="get_near_and_far_range_incidence_angles-65"><a href="#get_near_and_far_range_incidence_angles-65"><span class="linenos"> 65</span></a><span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="get_near_and_far_range_incidence_angles-65"><a href="#get_near_and_far_range_incidence_angles-65"><span class="linenos"> 65</span></a><span class="w">    </span><span class="sd">'''</span>
 </span><span id="get_near_and_far_range_incidence_angles-66"><a href="#get_near_and_far_range_incidence_angles-66"><span class="linenos"> 66</span></a><span class="sd">    Compute near and far range incidence angles at the mid-azimuth point of the grid.</span>
 </span><span id="get_near_and_far_range_incidence_angles-67"><a href="#get_near_and_far_range_incidence_angles-67"><span class="linenos"> 67</span></a><span class="sd">    </span>
 </span><span id="get_near_and_far_range_incidence_angles-68"><a href="#get_near_and_far_range_incidence_angles-68"><span class="linenos"> 68</span></a><span class="sd">    The incidence is the angle between the nadir vector and platform-to-target look vector.</span>
@@ -332,7 +332,7 @@ ellipsoid: isce3.core.Ellipsoid
 </span><span id="get_near_and_far_range_incidence_angles-84"><a href="#get_near_and_far_range_incidence_angles-84"><span class="linenos"> 84</span></a><span class="sd">        Doppler LUT</span>
 </span><span id="get_near_and_far_range_incidence_angles-85"><a href="#get_near_and_far_range_incidence_angles-85"><span class="linenos"> 85</span></a><span class="sd">    dem_interp: isce3.geometry.DEMInterpolator, optional</span>
 </span><span id="get_near_and_far_range_incidence_angles-86"><a href="#get_near_and_far_range_incidence_angles-86"><span class="linenos"> 86</span></a><span class="sd">        DEM interpolator</span>
-</span><span id="get_near_and_far_range_incidence_angles-87"><a href="#get_near_and_far_range_incidence_angles-87"><span class="linenos"> 87</span></a><span class="sd">    &#39;&#39;&#39;</span>
+</span><span id="get_near_and_far_range_incidence_angles-87"><a href="#get_near_and_far_range_incidence_angles-87"><span class="linenos"> 87</span></a><span class="sd">    '''</span>
 </span><span id="get_near_and_far_range_incidence_angles-88"><a href="#get_near_and_far_range_incidence_angles-88"><span class="linenos"> 88</span></a>
 </span><span id="get_near_and_far_range_incidence_angles-89"><a href="#get_near_and_far_range_incidence_angles-89"><span class="linenos"> 89</span></a>    <span class="n">radar_grid_center_az_time</span> <span class="o">=</span> <span class="n">radar_grid</span><span class="o">.</span><span class="n">sensing_time</span><span class="p">(</span>
 </span><span id="get_near_and_far_range_incidence_angles-90"><a href="#get_near_and_far_range_incidence_angles-90"><span class="linenos"> 90</span></a>            <span class="n">radar_grid</span><span class="o">.</span><span class="n">length</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>

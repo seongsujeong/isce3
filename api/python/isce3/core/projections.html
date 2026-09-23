@@ -77,7 +77,7 @@
                         <label class="view-source-button" for="mod-projections-view-source"><span>View Source</span></label>
 
                         <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos"> 1</span></a><span class="k">def</span><span class="w"> </span><span class="nf">is_utm</span><span class="p">(</span><span class="n">epsg</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-</span><span id="L-2"><a href="#L-2"><span class="linenos"> 2</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-2"><a href="#L-2"><span class="linenos"> 2</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-3"><a href="#L-3"><span class="linenos"> 3</span></a><span class="sd">    Check if the input EPSG code represents a UTM zone.</span>
 </span><span id="L-4"><a href="#L-4"><span class="linenos"> 4</span></a>
 </span><span id="L-5"><a href="#L-5"><span class="linenos"> 5</span></a><span class="sd">    Parameters</span>
@@ -90,7 +90,7 @@
 </span><span id="L-12"><a href="#L-12"><span class="linenos">12</span></a><span class="sd">    bool</span>
 </span><span id="L-13"><a href="#L-13"><span class="linenos">13</span></a><span class="sd">        True if the coordinate reference system represented by `epsg` is a Universal</span>
 </span><span id="L-14"><a href="#L-14"><span class="linenos">14</span></a><span class="sd">        Transverse Mercator (UTM) projection; otherwise False.</span>
-</span><span id="L-15"><a href="#L-15"><span class="linenos">15</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-15"><a href="#L-15"><span class="linenos">15</span></a><span class="sd">    """</span>
 </span><span id="L-16"><a href="#L-16"><span class="linenos">16</span></a>    <span class="k">return</span> <span class="p">(</span><span class="mi">32600</span> <span class="o">&lt;</span> <span class="n">epsg</span> <span class="o">&lt;=</span> <span class="mi">32660</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="mi">32700</span> <span class="o">&lt;</span> <span class="n">epsg</span> <span class="o">&lt;=</span> <span class="mi">32760</span><span class="p">)</span>
 </span></pre></div>
 
@@ -108,7 +108,7 @@
     </div>
     <a class="headerlink" href="#is_utm"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="is_utm-2"><a href="#is_utm-2"><span class="linenos"> 2</span></a><span class="k">def</span><span class="w"> </span><span class="nf">is_utm</span><span class="p">(</span><span class="n">epsg</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-</span><span id="is_utm-3"><a href="#is_utm-3"><span class="linenos"> 3</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="is_utm-3"><a href="#is_utm-3"><span class="linenos"> 3</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="is_utm-4"><a href="#is_utm-4"><span class="linenos"> 4</span></a><span class="sd">    Check if the input EPSG code represents a UTM zone.</span>
 </span><span id="is_utm-5"><a href="#is_utm-5"><span class="linenos"> 5</span></a>
 </span><span id="is_utm-6"><a href="#is_utm-6"><span class="linenos"> 6</span></a><span class="sd">    Parameters</span>
@@ -121,7 +121,7 @@
 </span><span id="is_utm-13"><a href="#is_utm-13"><span class="linenos">13</span></a><span class="sd">    bool</span>
 </span><span id="is_utm-14"><a href="#is_utm-14"><span class="linenos">14</span></a><span class="sd">        True if the coordinate reference system represented by `epsg` is a Universal</span>
 </span><span id="is_utm-15"><a href="#is_utm-15"><span class="linenos">15</span></a><span class="sd">        Transverse Mercator (UTM) projection; otherwise False.</span>
-</span><span id="is_utm-16"><a href="#is_utm-16"><span class="linenos">16</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="is_utm-16"><a href="#is_utm-16"><span class="linenos">16</span></a><span class="sd">    """</span>
 </span><span id="is_utm-17"><a href="#is_utm-17"><span class="linenos">17</span></a>    <span class="k">return</span> <span class="p">(</span><span class="mi">32600</span> <span class="o">&lt;</span> <span class="n">epsg</span> <span class="o">&lt;=</span> <span class="mi">32660</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="mi">32700</span> <span class="o">&lt;</span> <span class="n">epsg</span> <span class="o">&lt;=</span> <span class="mi">32760</span><span class="p">)</span>
 </span></pre></div>
 

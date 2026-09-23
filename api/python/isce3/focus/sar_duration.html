@@ -92,7 +92,7 @@
 </span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a>
 </span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a><span class="k">def</span><span class="w"> </span><span class="nf">get_radar_velocities</span><span class="p">(</span><span class="n">orbit</span><span class="p">:</span> <span class="n">Orbit</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a>                        <span class="n">ellipsoid</span><span class="p">:</span> <span class="n">Ellipsoid</span> <span class="o">=</span> <span class="n">Ellipsoid</span><span class="p">())</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-</span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a><span class="sd">    Calculate radar along-track velocity at altitude and along ground-track.</span>
 </span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a>
 </span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a><span class="sd">    Parameters</span>
@@ -115,7 +115,7 @@
 </span><span id="L-31"><a href="#L-31"><span class="linenos"> 31</span></a><span class="sd">    Notes</span>
 </span><span id="L-32"><a href="#L-32"><span class="linenos"> 32</span></a><span class="sd">    -----</span>
 </span><span id="L-33"><a href="#L-33"><span class="linenos"> 33</span></a><span class="sd">    The velocity component along the geodetic nadir is set to zero.</span>
-</span><span id="L-34"><a href="#L-34"><span class="linenos"> 34</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-34"><a href="#L-34"><span class="linenos"> 34</span></a><span class="sd">    """</span>
 </span><span id="L-35"><a href="#L-35"><span class="linenos"> 35</span></a>    <span class="n">t</span> <span class="o">=</span> <span class="n">time</span> <span class="k">if</span> <span class="n">time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">orbit</span><span class="o">.</span><span class="n">mid_time</span>
 </span><span id="L-36"><a href="#L-36"><span class="linenos"> 36</span></a>    <span class="n">pos</span><span class="p">,</span> <span class="n">vel</span> <span class="o">=</span> <span class="n">orbit</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
 </span><span id="L-37"><a href="#L-37"><span class="linenos"> 37</span></a>    <span class="n">tcn</span> <span class="o">=</span> <span class="n">isce3</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">geodetic_tcn</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">vel</span><span class="p">,</span> <span class="n">ellipsoid</span><span class="p">)</span>
@@ -129,7 +129,7 @@
 </span><span id="L-45"><a href="#L-45"><span class="linenos"> 45</span></a>
 </span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a><span class="k">def</span><span class="w"> </span><span class="nf">get_sar_duration</span><span class="p">(</span><span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">orbit</span><span class="p">:</span> <span class="n">Orbit</span><span class="p">,</span> <span class="n">ellipsoid</span><span class="p">:</span> <span class="n">Ellipsoid</span><span class="p">,</span>
 </span><span id="L-47"><a href="#L-47"><span class="linenos"> 47</span></a>                     <span class="n">azres</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-</span><span id="L-48"><a href="#L-48"><span class="linenos"> 48</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-48"><a href="#L-48"><span class="linenos"> 48</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-49"><a href="#L-49"><span class="linenos"> 49</span></a><span class="sd">    Get approximate synthetic aperture duration (coherent processing interval).</span>
 </span><span id="L-50"><a href="#L-50"><span class="linenos"> 50</span></a>
 </span><span id="L-51"><a href="#L-51"><span class="linenos"> 51</span></a><span class="sd">    Parameters</span>
@@ -147,14 +147,14 @@
 </span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a><span class="sd">    -------</span>
 </span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a><span class="sd">    cpi : float</span>
 </span><span id="L-65"><a href="#L-65"><span class="linenos"> 65</span></a><span class="sd">        Synthetic aperture duration (approximate), s</span>
-</span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a><span class="sd">    """</span>
 </span><span id="L-67"><a href="#L-67"><span class="linenos"> 67</span></a>    <span class="n">_</span><span class="p">,</span> <span class="n">vg</span> <span class="o">=</span> <span class="n">get_radar_velocities</span><span class="p">(</span><span class="n">orbit</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">ellipsoid</span><span class="p">)</span>
 </span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a>    <span class="c1"># small angle approximations and ignore window factor</span>
 </span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a>    <span class="k">return</span> <span class="n">wavelength</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">azres</span><span class="p">)</span> <span class="o">*</span> <span class="n">r</span> <span class="o">/</span> <span class="n">vg</span>
 </span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a>
 </span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a>
 </span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a><span class="k">def</span><span class="w"> </span><span class="nf">predict_azimuth_envelope</span><span class="p">(</span><span class="n">azres</span><span class="p">,</span> <span class="n">prf</span><span class="p">,</span> <span class="n">vs</span><span class="p">,</span> <span class="n">L</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">circular</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-</span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a><span class="sd">    Generate azimuth spectral envelope based on analytic antenna pattern</span>
 </span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a><span class="sd">    assuming no extra apodization.</span>
 </span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a>
@@ -180,7 +180,7 @@
 </span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a><span class="sd">        Azimuth spectral envelope (amplitude units).  Doppler centroid is in</span>
 </span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a><span class="sd">        the middle of the array, as if fftshift has been called on the baseband</span>
 </span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a><span class="sd">        spectrum.</span>
-</span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a><span class="sd">    """</span>
 </span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a>    <span class="c1"># Wavelength cancels out in arithmetic but makes formulas clearer</span>
 </span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a>    <span class="n">wvl</span> <span class="o">=</span> <span class="mf">0.24</span>
 </span><span id="L-102"><a href="#L-102"><span class="linenos">102</span></a>
@@ -224,7 +224,7 @@
     <a class="headerlink" href="#get_radar_velocities"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="get_radar_velocities-10"><a href="#get_radar_velocities-10"><span class="linenos">10</span></a><span class="k">def</span><span class="w"> </span><span class="nf">get_radar_velocities</span><span class="p">(</span><span class="n">orbit</span><span class="p">:</span> <span class="n">Orbit</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="get_radar_velocities-11"><a href="#get_radar_velocities-11"><span class="linenos">11</span></a>                        <span class="n">ellipsoid</span><span class="p">:</span> <span class="n">Ellipsoid</span> <span class="o">=</span> <span class="n">Ellipsoid</span><span class="p">())</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-</span><span id="get_radar_velocities-12"><a href="#get_radar_velocities-12"><span class="linenos">12</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="get_radar_velocities-12"><a href="#get_radar_velocities-12"><span class="linenos">12</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="get_radar_velocities-13"><a href="#get_radar_velocities-13"><span class="linenos">13</span></a><span class="sd">    Calculate radar along-track velocity at altitude and along ground-track.</span>
 </span><span id="get_radar_velocities-14"><a href="#get_radar_velocities-14"><span class="linenos">14</span></a>
 </span><span id="get_radar_velocities-15"><a href="#get_radar_velocities-15"><span class="linenos">15</span></a><span class="sd">    Parameters</span>
@@ -247,7 +247,7 @@
 </span><span id="get_radar_velocities-32"><a href="#get_radar_velocities-32"><span class="linenos">32</span></a><span class="sd">    Notes</span>
 </span><span id="get_radar_velocities-33"><a href="#get_radar_velocities-33"><span class="linenos">33</span></a><span class="sd">    -----</span>
 </span><span id="get_radar_velocities-34"><a href="#get_radar_velocities-34"><span class="linenos">34</span></a><span class="sd">    The velocity component along the geodetic nadir is set to zero.</span>
-</span><span id="get_radar_velocities-35"><a href="#get_radar_velocities-35"><span class="linenos">35</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="get_radar_velocities-35"><a href="#get_radar_velocities-35"><span class="linenos">35</span></a><span class="sd">    """</span>
 </span><span id="get_radar_velocities-36"><a href="#get_radar_velocities-36"><span class="linenos">36</span></a>    <span class="n">t</span> <span class="o">=</span> <span class="n">time</span> <span class="k">if</span> <span class="n">time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">orbit</span><span class="o">.</span><span class="n">mid_time</span>
 </span><span id="get_radar_velocities-37"><a href="#get_radar_velocities-37"><span class="linenos">37</span></a>    <span class="n">pos</span><span class="p">,</span> <span class="n">vel</span> <span class="o">=</span> <span class="n">orbit</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
 </span><span id="get_radar_velocities-38"><a href="#get_radar_velocities-38"><span class="linenos">38</span></a>    <span class="n">tcn</span> <span class="o">=</span> <span class="n">isce3</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">geodetic_tcn</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">vel</span><span class="p">,</span> <span class="n">ellipsoid</span><span class="p">)</span>
@@ -299,7 +299,7 @@ vg : float
     <a class="headerlink" href="#get_sar_duration"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="get_sar_duration-47"><a href="#get_sar_duration-47"><span class="linenos">47</span></a><span class="k">def</span><span class="w"> </span><span class="nf">get_sar_duration</span><span class="p">(</span><span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">orbit</span><span class="p">:</span> <span class="n">Orbit</span><span class="p">,</span> <span class="n">ellipsoid</span><span class="p">:</span> <span class="n">Ellipsoid</span><span class="p">,</span>
 </span><span id="get_sar_duration-48"><a href="#get_sar_duration-48"><span class="linenos">48</span></a>                     <span class="n">azres</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-</span><span id="get_sar_duration-49"><a href="#get_sar_duration-49"><span class="linenos">49</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="get_sar_duration-49"><a href="#get_sar_duration-49"><span class="linenos">49</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="get_sar_duration-50"><a href="#get_sar_duration-50"><span class="linenos">50</span></a><span class="sd">    Get approximate synthetic aperture duration (coherent processing interval).</span>
 </span><span id="get_sar_duration-51"><a href="#get_sar_duration-51"><span class="linenos">51</span></a>
 </span><span id="get_sar_duration-52"><a href="#get_sar_duration-52"><span class="linenos">52</span></a><span class="sd">    Parameters</span>
@@ -317,7 +317,7 @@ vg : float
 </span><span id="get_sar_duration-64"><a href="#get_sar_duration-64"><span class="linenos">64</span></a><span class="sd">    -------</span>
 </span><span id="get_sar_duration-65"><a href="#get_sar_duration-65"><span class="linenos">65</span></a><span class="sd">    cpi : float</span>
 </span><span id="get_sar_duration-66"><a href="#get_sar_duration-66"><span class="linenos">66</span></a><span class="sd">        Synthetic aperture duration (approximate), s</span>
-</span><span id="get_sar_duration-67"><a href="#get_sar_duration-67"><span class="linenos">67</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="get_sar_duration-67"><a href="#get_sar_duration-67"><span class="linenos">67</span></a><span class="sd">    """</span>
 </span><span id="get_sar_duration-68"><a href="#get_sar_duration-68"><span class="linenos">68</span></a>    <span class="n">_</span><span class="p">,</span> <span class="n">vg</span> <span class="o">=</span> <span class="n">get_radar_velocities</span><span class="p">(</span><span class="n">orbit</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">ellipsoid</span><span class="p">)</span>
 </span><span id="get_sar_duration-69"><a href="#get_sar_duration-69"><span class="linenos">69</span></a>    <span class="c1"># small angle approximations and ignore window factor</span>
 </span><span id="get_sar_duration-70"><a href="#get_sar_duration-70"><span class="linenos">70</span></a>    <span class="k">return</span> <span class="n">wavelength</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">azres</span><span class="p">)</span> <span class="o">*</span> <span class="n">r</span> <span class="o">/</span> <span class="n">vg</span>
@@ -357,7 +357,7 @@ azres : float
     </div>
     <a class="headerlink" href="#predict_azimuth_envelope"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="predict_azimuth_envelope-73"><a href="#predict_azimuth_envelope-73"><span class="linenos"> 73</span></a><span class="k">def</span><span class="w"> </span><span class="nf">predict_azimuth_envelope</span><span class="p">(</span><span class="n">azres</span><span class="p">,</span> <span class="n">prf</span><span class="p">,</span> <span class="n">vs</span><span class="p">,</span> <span class="n">L</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">circular</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-</span><span id="predict_azimuth_envelope-74"><a href="#predict_azimuth_envelope-74"><span class="linenos"> 74</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="predict_azimuth_envelope-74"><a href="#predict_azimuth_envelope-74"><span class="linenos"> 74</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="predict_azimuth_envelope-75"><a href="#predict_azimuth_envelope-75"><span class="linenos"> 75</span></a><span class="sd">    Generate azimuth spectral envelope based on analytic antenna pattern</span>
 </span><span id="predict_azimuth_envelope-76"><a href="#predict_azimuth_envelope-76"><span class="linenos"> 76</span></a><span class="sd">    assuming no extra apodization.</span>
 </span><span id="predict_azimuth_envelope-77"><a href="#predict_azimuth_envelope-77"><span class="linenos"> 77</span></a>
@@ -383,7 +383,7 @@ azres : float
 </span><span id="predict_azimuth_envelope-97"><a href="#predict_azimuth_envelope-97"><span class="linenos"> 97</span></a><span class="sd">        Azimuth spectral envelope (amplitude units).  Doppler centroid is in</span>
 </span><span id="predict_azimuth_envelope-98"><a href="#predict_azimuth_envelope-98"><span class="linenos"> 98</span></a><span class="sd">        the middle of the array, as if fftshift has been called on the baseband</span>
 </span><span id="predict_azimuth_envelope-99"><a href="#predict_azimuth_envelope-99"><span class="linenos"> 99</span></a><span class="sd">        spectrum.</span>
-</span><span id="predict_azimuth_envelope-100"><a href="#predict_azimuth_envelope-100"><span class="linenos">100</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="predict_azimuth_envelope-100"><a href="#predict_azimuth_envelope-100"><span class="linenos">100</span></a><span class="sd">    """</span>
 </span><span id="predict_azimuth_envelope-101"><a href="#predict_azimuth_envelope-101"><span class="linenos">101</span></a>    <span class="c1"># Wavelength cancels out in arithmetic but makes formulas clearer</span>
 </span><span id="predict_azimuth_envelope-102"><a href="#predict_azimuth_envelope-102"><span class="linenos">102</span></a>    <span class="n">wvl</span> <span class="o">=</span> <span class="mf">0.24</span>
 </span><span id="predict_azimuth_envelope-103"><a href="#predict_azimuth_envelope-103"><span class="linenos">103</span></a>

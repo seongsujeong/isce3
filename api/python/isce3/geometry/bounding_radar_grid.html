@@ -118,7 +118,7 @@
 </span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a>
 </span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a>
 </span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a><span class="k">class</span><span class="w"> </span><span class="nc">Rectangle</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
-</span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;A rectangle in (x,y) coordinate space, defined by its extents.&quot;&quot;&quot;</span>
+</span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a><span class="w">    </span><span class="sd">"""A rectangle in (x,y) coordinate space, defined by its extents."""</span>
 </span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a>
 </span><span id="L-15"><a href="#L-15"><span class="linenos"> 15</span></a>    <span class="n">xmin</span><span class="p">:</span> <span class="nb">float</span>
 </span><span id="L-16"><a href="#L-16"><span class="linenos"> 16</span></a>    <span class="n">xmax</span><span class="p">:</span> <span class="nb">float</span>
@@ -127,7 +127,7 @@
 </span><span id="L-19"><a href="#L-19"><span class="linenos"> 19</span></a>
 </span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a>
 </span><span id="L-21"><a href="#L-21"><span class="linenos"> 21</span></a><span class="k">def</span><span class="w"> </span><span class="nf">get_bounding_rectangle</span><span class="p">(</span><span class="n">pts</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Rectangle</span><span class="p">:</span>
-</span><span id="L-22"><a href="#L-22"><span class="linenos"> 22</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-22"><a href="#L-22"><span class="linenos"> 22</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-23"><a href="#L-23"><span class="linenos"> 23</span></a><span class="sd">    Get the extents of the smallest bounding box that contains a set of (x,y) points.</span>
 </span><span id="L-24"><a href="#L-24"><span class="linenos"> 24</span></a>
 </span><span id="L-25"><a href="#L-25"><span class="linenos"> 25</span></a><span class="sd">    Parameters</span>
@@ -146,7 +146,7 @@
 </span><span id="L-38"><a href="#L-38"><span class="linenos"> 38</span></a><span class="sd">    ValueError</span>
 </span><span id="L-39"><a href="#L-39"><span class="linenos"> 39</span></a><span class="sd">        If the set of points is empty or if any points have non-finite coordinate</span>
 </span><span id="L-40"><a href="#L-40"><span class="linenos"> 40</span></a><span class="sd">        values.</span>
-</span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a><span class="sd">    """</span>
 </span><span id="L-42"><a href="#L-42"><span class="linenos"> 42</span></a>    <span class="n">xmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
 </span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a>    <span class="n">xmax</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
 </span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a>    <span class="n">ymin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
@@ -154,7 +154,7 @@
 </span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a>
 </span><span id="L-47"><a href="#L-47"><span class="linenos"> 47</span></a>    <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">pts</span><span class="p">:</span>
 </span><span id="L-48"><a href="#L-48"><span class="linenos"> 48</span></a>        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
-</span><span id="L-49"><a href="#L-49"><span class="linenos"> 49</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;input points must not contain NaN values&quot;</span><span class="p">)</span>
+</span><span id="L-49"><a href="#L-49"><span class="linenos"> 49</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"input points must not contain NaN values"</span><span class="p">)</span>
 </span><span id="L-50"><a href="#L-50"><span class="linenos"> 50</span></a>
 </span><span id="L-51"><a href="#L-51"><span class="linenos"> 51</span></a>        <span class="n">xmin</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">xmin</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
 </span><span id="L-52"><a href="#L-52"><span class="linenos"> 52</span></a>        <span class="n">xmax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">xmax</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
@@ -162,7 +162,7 @@
 </span><span id="L-54"><a href="#L-54"><span class="linenos"> 54</span></a>        <span class="n">ymax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">ymax</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 </span><span id="L-55"><a href="#L-55"><span class="linenos"> 55</span></a>
 </span><span id="L-56"><a href="#L-56"><span class="linenos"> 56</span></a>    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">coord</span><span class="p">)</span> <span class="k">for</span> <span class="n">coord</span> <span class="ow">in</span> <span class="p">[</span><span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span><span class="p">]):</span>
-</span><span id="L-57"><a href="#L-57"><span class="linenos"> 57</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;bounding box has one or more unbounded extents&quot;</span><span class="p">)</span>
+</span><span id="L-57"><a href="#L-57"><span class="linenos"> 57</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"bounding box has one or more unbounded extents"</span><span class="p">)</span>
 </span><span id="L-58"><a href="#L-58"><span class="linenos"> 58</span></a>
 </span><span id="L-59"><a href="#L-59"><span class="linenos"> 59</span></a>    <span class="k">return</span> <span class="n">Rectangle</span><span class="p">(</span><span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span><span class="p">)</span>
 </span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a>
@@ -178,7 +178,7 @@
 </span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a>    <span class="n">az_margin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
 </span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a>    <span class="n">rg_margin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
 </span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">isce3</span><span class="o">.</span><span class="n">product</span><span class="o">.</span><span class="n">RadarGridParameters</span><span class="p">:</span>
-</span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a><span class="sd">    Get a radar grid that spans a set of (azimuth,range) points.</span>
 </span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a>
 </span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a><span class="sd">    Parameters</span>
@@ -190,7 +190,7 @@
 </span><span id="L-82"><a href="#L-82"><span class="linenos"> 82</span></a><span class="sd">        Azimuth time spacing of the output grid, in seconds. Must be &gt; 0.</span>
 </span><span id="L-83"><a href="#L-83"><span class="linenos"> 83</span></a><span class="sd">    rg_spacing : float</span>
 </span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a><span class="sd">        Slant range spacing of the output grid, in meters. Must be &gt; 0.</span>
-</span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a><span class="sd">    look_side : isce3.core.LookSide or {&#39;left&#39;, &#39;right&#39;}</span>
+</span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a><span class="sd">    look_side : isce3.core.LookSide or {'left', 'right'}</span>
 </span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a><span class="sd">        The look direction of the output grid (left-looking or right-looking).</span>
 </span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a><span class="sd">    wavelength : float</span>
 </span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a><span class="sd">        The radar central wavelength, in meters.</span>
@@ -212,16 +212,16 @@
 </span><span id="L-104"><a href="#L-104"><span class="linenos">104</span></a><span class="sd">    See Also</span>
 </span><span id="L-105"><a href="#L-105"><span class="linenos">105</span></a><span class="sd">    --------</span>
 </span><span id="L-106"><a href="#L-106"><span class="linenos">106</span></a><span class="sd">    get_radar_grid_containing_geo_pts</span>
-</span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a><span class="sd">    """</span>
 </span><span id="L-108"><a href="#L-108"><span class="linenos">108</span></a>    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">az_spacing</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">):</span>
-</span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">az_spacing</span><span class="si">=}</span><span class="s2">, must be &gt; 0&quot;</span><span class="p">)</span>
+</span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">az_spacing</span><span class="si">=}</span><span class="s2">, must be &gt; 0"</span><span class="p">)</span>
 </span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a>    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">rg_spacing</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">):</span>
-</span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rg_spacing</span><span class="si">=}</span><span class="s2">, must be &gt; 0&quot;</span><span class="p">)</span>
+</span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">rg_spacing</span><span class="si">=}</span><span class="s2">, must be &gt; 0"</span><span class="p">)</span>
 </span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a>
 </span><span id="L-113"><a href="#L-113"><span class="linenos">113</span></a>    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">az_margin</span> <span class="o">&gt;=</span> <span class="mf">0.0</span><span class="p">):</span>
-</span><span id="L-114"><a href="#L-114"><span class="linenos">114</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">az_margin</span><span class="si">=}</span><span class="s2">, must be &gt;= 0&quot;</span><span class="p">)</span>
+</span><span id="L-114"><a href="#L-114"><span class="linenos">114</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">az_margin</span><span class="si">=}</span><span class="s2">, must be &gt;= 0"</span><span class="p">)</span>
 </span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a>    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">rg_margin</span> <span class="o">&gt;=</span> <span class="mf">0.0</span><span class="p">):</span>
-</span><span id="L-116"><a href="#L-116"><span class="linenos">116</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rg_margin</span><span class="si">=}</span><span class="s2">, must be &gt;= 0&quot;</span><span class="p">)</span>
+</span><span id="L-116"><a href="#L-116"><span class="linenos">116</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">rg_margin</span><span class="si">=}</span><span class="s2">, must be &gt;= 0"</span><span class="p">)</span>
 </span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a>
 </span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a>    <span class="c1"># Compute the extents of the bounding box containing all of the points.</span>
 </span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a>    <span class="n">az_min</span><span class="p">,</span> <span class="n">az_max</span><span class="p">,</span> <span class="n">rg_min</span><span class="p">,</span> <span class="n">rg_max</span> <span class="o">=</span> <span class="n">get_bounding_rectangle</span><span class="p">(</span><span class="n">az_rg_pts</span><span class="p">)</span>
@@ -243,10 +243,10 @@
 </span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a>    <span class="c1"># range of the points with the desired sample spacing, plus one additional sample.</span>
 </span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a>    <span class="c1">#</span>
 </span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a>    <span class="c1"># NOTE: According to ISCE3 conventions, radar grid pixel coordinates are referenced</span>
-</span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a>    <span class="c1"># to the location of the center of the pixel, so there&#39;s a half-pixel offset between</span>
+</span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a>    <span class="c1"># to the location of the center of the pixel, so there's a half-pixel offset between</span>
 </span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a>    <span class="c1"># the coordinates of the boundary pixels and the outer extents of the radar grid</span>
 </span><span id="L-140"><a href="#L-140"><span class="linenos">140</span></a>    <span class="c1"># (see https://github-fn.jpl.nasa.gov/isce-3/isce/issues/584#issuecomment-11771.)</span>
-</span><span id="L-141"><a href="#L-141"><span class="linenos">141</span></a>    <span class="c1"># This distinction between &#39;pixels&#39; and &#39;points&#39; is not well-documented for users,</span>
+</span><span id="L-141"><a href="#L-141"><span class="linenos">141</span></a>    <span class="c1"># This distinction between 'pixels' and 'points' is not well-documented for users,</span>
 </span><span id="L-142"><a href="#L-142"><span class="linenos">142</span></a>    <span class="c1"># though, and sometimes causes confusion. We choose to ignore the half-pixel shift</span>
 </span><span id="L-143"><a href="#L-143"><span class="linenos">143</span></a>    <span class="c1"># here and simply add an extra row &amp; column to the radar grid to compensate. This</span>
 </span><span id="L-144"><a href="#L-144"><span class="linenos">144</span></a>    <span class="c1"># expansion of the radar grid is unlikely to cause harm and ensures that all points</span>
@@ -288,7 +288,7 @@
 </span><span id="L-180"><a href="#L-180"><span class="linenos">180</span></a>    <span class="n">rg_margin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
 </span><span id="L-181"><a href="#L-181"><span class="linenos">181</span></a>    <span class="n">geo2rdr_params</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="L-182"><a href="#L-182"><span class="linenos">182</span></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">isce3</span><span class="o">.</span><span class="n">product</span><span class="o">.</span><span class="n">RadarGridParameters</span><span class="p">:</span>
-</span><span id="L-183"><a href="#L-183"><span class="linenos">183</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-183"><a href="#L-183"><span class="linenos">183</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-184"><a href="#L-184"><span class="linenos">184</span></a><span class="sd">    Get a radar grid that spans a set of geocoded points.</span>
 </span><span id="L-185"><a href="#L-185"><span class="linenos">185</span></a>
 </span><span id="L-186"><a href="#L-186"><span class="linenos">186</span></a><span class="sd">    The reference epoch of the output radar grid will be the same as the input `orbit`.</span>
@@ -301,7 +301,7 @@
 </span><span id="L-193"><a href="#L-193"><span class="linenos">193</span></a><span class="sd">        (longitude,latitude,height) or (easting,northing,height). All points should be</span>
 </span><span id="L-194"><a href="#L-194"><span class="linenos">194</span></a><span class="sd">        in a single common coordinate system specified by the `proj` argument.</span>
 </span><span id="L-195"><a href="#L-195"><span class="linenos">195</span></a><span class="sd">    proj : isce3.core.ProjectionBase</span>
-</span><span id="L-196"><a href="#L-196"><span class="linenos">196</span></a><span class="sd">        A &#39;projection&#39; object representing the transformation between</span>
+</span><span id="L-196"><a href="#L-196"><span class="linenos">196</span></a><span class="sd">        A 'projection' object representing the transformation between</span>
 </span><span id="L-197"><a href="#L-197"><span class="linenos">197</span></a><span class="sd">        longitude/latitude/height (LLH) coordinates and the coordinate system of</span>
 </span><span id="L-198"><a href="#L-198"><span class="linenos">198</span></a><span class="sd">        `geo_pts`.</span>
 </span><span id="L-199"><a href="#L-199"><span class="linenos">199</span></a><span class="sd">    az_spacing : float</span>
@@ -311,7 +311,7 @@
 </span><span id="L-203"><a href="#L-203"><span class="linenos">203</span></a><span class="sd">    orbit : isce3.core.Orbit</span>
 </span><span id="L-204"><a href="#L-204"><span class="linenos">204</span></a><span class="sd">        The trajectory of the radar antenna phase center over a time interval that</span>
 </span><span id="L-205"><a href="#L-205"><span class="linenos">205</span></a><span class="sd">        includes the observation times of each point in `geo_pts`.</span>
-</span><span id="L-206"><a href="#L-206"><span class="linenos">206</span></a><span class="sd">    look_side : isce3.core.LookSide or {&#39;left&#39;, &#39;right&#39;}</span>
+</span><span id="L-206"><a href="#L-206"><span class="linenos">206</span></a><span class="sd">    look_side : isce3.core.LookSide or {'left', 'right'}</span>
 </span><span id="L-207"><a href="#L-207"><span class="linenos">207</span></a><span class="sd">        The look direction of the output grid (left-looking or right-looking).</span>
 </span><span id="L-208"><a href="#L-208"><span class="linenos">208</span></a><span class="sd">    wavelength : float</span>
 </span><span id="L-209"><a href="#L-209"><span class="linenos">209</span></a><span class="sd">        The radar central wavelength, in meters.</span>
@@ -330,13 +330,13 @@
 </span><span id="L-222"><a href="#L-222"><span class="linenos">222</span></a><span class="sd">        routine used in geo2rdr (bracketing implementation). The following keys are</span>
 </span><span id="L-223"><a href="#L-223"><span class="linenos">223</span></a><span class="sd">        supported:</span>
 </span><span id="L-224"><a href="#L-224"><span class="linenos">224</span></a>
-</span><span id="L-225"><a href="#L-225"><span class="linenos">225</span></a><span class="sd">        &#39;tol_aztime&#39;:</span>
+</span><span id="L-225"><a href="#L-225"><span class="linenos">225</span></a><span class="sd">        'tol_aztime':</span>
 </span><span id="L-226"><a href="#L-226"><span class="linenos">226</span></a><span class="sd">          Azimuth time convergence tolerance, in seconds. Defaults to 1e-7.</span>
 </span><span id="L-227"><a href="#L-227"><span class="linenos">227</span></a>
-</span><span id="L-228"><a href="#L-228"><span class="linenos">228</span></a><span class="sd">        &#39;time_start&#39;:</span>
+</span><span id="L-228"><a href="#L-228"><span class="linenos">228</span></a><span class="sd">        'time_start':</span>
 </span><span id="L-229"><a href="#L-229"><span class="linenos">229</span></a><span class="sd">          Start of search interval, in seconds. Defaults to ``orbit.start_time``.</span>
 </span><span id="L-230"><a href="#L-230"><span class="linenos">230</span></a>
-</span><span id="L-231"><a href="#L-231"><span class="linenos">231</span></a><span class="sd">        &#39;time_end&#39;:</span>
+</span><span id="L-231"><a href="#L-231"><span class="linenos">231</span></a><span class="sd">        'time_end':</span>
 </span><span id="L-232"><a href="#L-232"><span class="linenos">232</span></a><span class="sd">          End of search interval, in seconds. Defaults to ``orbit.end_time``.</span>
 </span><span id="L-233"><a href="#L-233"><span class="linenos">233</span></a>
 </span><span id="L-234"><a href="#L-234"><span class="linenos">234</span></a><span class="sd">    Returns</span>
@@ -347,7 +347,7 @@
 </span><span id="L-239"><a href="#L-239"><span class="linenos">239</span></a><span class="sd">    See Also</span>
 </span><span id="L-240"><a href="#L-240"><span class="linenos">240</span></a><span class="sd">    --------</span>
 </span><span id="L-241"><a href="#L-241"><span class="linenos">241</span></a><span class="sd">    get_radar_grid_containing_az_rg_pts</span>
-</span><span id="L-242"><a href="#L-242"><span class="linenos">242</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-242"><a href="#L-242"><span class="linenos">242</span></a><span class="sd">    """</span>
 </span><span id="L-243"><a href="#L-243"><span class="linenos">243</span></a>    <span class="k">if</span> <span class="n">geo2rdr_params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
 </span><span id="L-244"><a href="#L-244"><span class="linenos">244</span></a>        <span class="n">geo2rdr_params</span> <span class="o">=</span> <span class="p">{}</span>
 </span><span id="L-245"><a href="#L-245"><span class="linenos">245</span></a>
@@ -396,7 +396,7 @@
 </span><span id="L-288"><a href="#L-288"><span class="linenos">288</span></a>    <span class="n">rg_margin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
 </span><span id="L-289"><a href="#L-289"><span class="linenos">289</span></a>    <span class="n">geo2rdr_params</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="L-290"><a href="#L-290"><span class="linenos">290</span></a><span class="p">):</span>
-</span><span id="L-291"><a href="#L-291"><span class="linenos">291</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-291"><a href="#L-291"><span class="linenos">291</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-292"><a href="#L-292"><span class="linenos">292</span></a><span class="sd">    Get a radar grid that spans an input geocoded grid over a specified height range.</span>
 </span><span id="L-293"><a href="#L-293"><span class="linenos">293</span></a>
 </span><span id="L-294"><a href="#L-294"><span class="linenos">294</span></a><span class="sd">    The output radar grid is constructed such that it contains points sampled along each</span>
@@ -415,7 +415,7 @@
 </span><span id="L-307"><a href="#L-307"><span class="linenos">307</span></a><span class="sd">        The trajectory of the radar antenna phase center over a time interval that</span>
 </span><span id="L-308"><a href="#L-308"><span class="linenos">308</span></a><span class="sd">        includes the observation times of each point in `geo_grid` at each height</span>
 </span><span id="L-309"><a href="#L-309"><span class="linenos">309</span></a><span class="sd">        between `min_height` and `max_height`.</span>
-</span><span id="L-310"><a href="#L-310"><span class="linenos">310</span></a><span class="sd">    look_side : isce3.core.LookSide or {&#39;left&#39;, &#39;right&#39;}</span>
+</span><span id="L-310"><a href="#L-310"><span class="linenos">310</span></a><span class="sd">    look_side : isce3.core.LookSide or {'left', 'right'}</span>
 </span><span id="L-311"><a href="#L-311"><span class="linenos">311</span></a><span class="sd">        The look direction of the output grid (left-looking or right-looking).</span>
 </span><span id="L-312"><a href="#L-312"><span class="linenos">312</span></a><span class="sd">    wavelength : float</span>
 </span><span id="L-313"><a href="#L-313"><span class="linenos">313</span></a><span class="sd">        The radar central wavelength, in meters.</span>
@@ -447,13 +447,13 @@
 </span><span id="L-339"><a href="#L-339"><span class="linenos">339</span></a><span class="sd">        routine used in geo2rdr (bracketing implementation). The following keys are</span>
 </span><span id="L-340"><a href="#L-340"><span class="linenos">340</span></a><span class="sd">        supported:</span>
 </span><span id="L-341"><a href="#L-341"><span class="linenos">341</span></a>
-</span><span id="L-342"><a href="#L-342"><span class="linenos">342</span></a><span class="sd">        &#39;tol_aztime&#39;:</span>
+</span><span id="L-342"><a href="#L-342"><span class="linenos">342</span></a><span class="sd">        'tol_aztime':</span>
 </span><span id="L-343"><a href="#L-343"><span class="linenos">343</span></a><span class="sd">          Azimuth time convergence tolerance, in seconds. Defaults to 1e-7.</span>
 </span><span id="L-344"><a href="#L-344"><span class="linenos">344</span></a>
-</span><span id="L-345"><a href="#L-345"><span class="linenos">345</span></a><span class="sd">        &#39;time_start&#39;:</span>
+</span><span id="L-345"><a href="#L-345"><span class="linenos">345</span></a><span class="sd">        'time_start':</span>
 </span><span id="L-346"><a href="#L-346"><span class="linenos">346</span></a><span class="sd">          Start of search interval, in seconds. Defaults to ``orbit.start_time``.</span>
 </span><span id="L-347"><a href="#L-347"><span class="linenos">347</span></a>
-</span><span id="L-348"><a href="#L-348"><span class="linenos">348</span></a><span class="sd">        &#39;time_end&#39;:</span>
+</span><span id="L-348"><a href="#L-348"><span class="linenos">348</span></a><span class="sd">        'time_end':</span>
 </span><span id="L-349"><a href="#L-349"><span class="linenos">349</span></a><span class="sd">          End of search interval, in seconds. Defaults to ``orbit.end_time``.</span>
 </span><span id="L-350"><a href="#L-350"><span class="linenos">350</span></a>
 </span><span id="L-351"><a href="#L-351"><span class="linenos">351</span></a><span class="sd">    Returns</span>
@@ -464,18 +464,18 @@
 </span><span id="L-356"><a href="#L-356"><span class="linenos">356</span></a><span class="sd">    See Also</span>
 </span><span id="L-357"><a href="#L-357"><span class="linenos">357</span></a><span class="sd">    --------</span>
 </span><span id="L-358"><a href="#L-358"><span class="linenos">358</span></a><span class="sd">    get_geo_perimeter_wkt</span>
-</span><span id="L-359"><a href="#L-359"><span class="linenos">359</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-359"><a href="#L-359"><span class="linenos">359</span></a><span class="sd">    """</span>
 </span><span id="L-360"><a href="#L-360"><span class="linenos">360</span></a>    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">max_height</span> <span class="o">&gt;=</span> <span class="n">min_height</span><span class="p">):</span>
 </span><span id="L-361"><a href="#L-361"><span class="linenos">361</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span id="L-362"><a href="#L-362"><span class="linenos">362</span></a>            <span class="sa">f</span><span class="s2">&quot;max_height must be &gt;= min_height, got </span><span class="si">{</span><span class="n">max_height</span><span class="si">=}</span><span class="s2"> and </span><span class="si">{</span><span class="n">min_height</span><span class="si">=}</span><span class="s2">&quot;</span>
+</span><span id="L-362"><a href="#L-362"><span class="linenos">362</span></a>            <span class="sa">f</span><span class="s2">"max_height must be &gt;= min_height, got </span><span class="si">{</span><span class="n">max_height</span><span class="si">=}</span><span class="s2"> and </span><span class="si">{</span><span class="n">min_height</span><span class="si">=}</span><span class="s2">"</span>
 </span><span id="L-363"><a href="#L-363"><span class="linenos">363</span></a>        <span class="p">)</span>
 </span><span id="L-364"><a href="#L-364"><span class="linenos">364</span></a>
 </span><span id="L-365"><a href="#L-365"><span class="linenos">365</span></a>    <span class="k">if</span> <span class="n">pts_per_edge</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
-</span><span id="L-366"><a href="#L-366"><span class="linenos">366</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pts_per_edge</span><span class="si">=}</span><span class="s2">, must be &gt;= 2&quot;</span><span class="p">)</span>
+</span><span id="L-366"><a href="#L-366"><span class="linenos">366</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">pts_per_edge</span><span class="si">=}</span><span class="s2">, must be &gt;= 2"</span><span class="p">)</span>
 </span><span id="L-367"><a href="#L-367"><span class="linenos">367</span></a>
 </span><span id="L-368"><a href="#L-368"><span class="linenos">368</span></a>    <span class="c1"># NOTE: geo2rdr is not an affine transformation, so the set of points within</span>
 </span><span id="L-369"><a href="#L-369"><span class="linenos">369</span></a>    <span class="c1"># `geo_grid` is, in general, not a convex set when transformed to (azimuth,range)</span>
-</span><span id="L-370"><a href="#L-370"><span class="linenos">370</span></a>    <span class="c1"># coordinate space. Therefore, it&#39;s not sufficient to just compute the smallest</span>
+</span><span id="L-370"><a href="#L-370"><span class="linenos">370</span></a>    <span class="c1"># coordinate space. Therefore, it's not sufficient to just compute the smallest</span>
 </span><span id="L-371"><a href="#L-371"><span class="linenos">371</span></a>    <span class="c1"># radar grid that contains the four corners of `geo_grid` -- we need to ensure that</span>
 </span><span id="L-372"><a href="#L-372"><span class="linenos">372</span></a>    <span class="c1"># the entire perimeter of `geo_grid` is contained within the output radar grid.</span>
 </span><span id="L-373"><a href="#L-373"><span class="linenos">373</span></a>    <span class="c1"># As a concession to computational feasibility, we sample a finite number of points</span>
@@ -537,7 +537,7 @@
     </div>
     <a class="headerlink" href="#Rectangle"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="Rectangle-13"><a href="#Rectangle-13"><span class="linenos">13</span></a><span class="k">class</span><span class="w"> </span><span class="nc">Rectangle</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
-</span><span id="Rectangle-14"><a href="#Rectangle-14"><span class="linenos">14</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;A rectangle in (x,y) coordinate space, defined by its extents.&quot;&quot;&quot;</span>
+</span><span id="Rectangle-14"><a href="#Rectangle-14"><span class="linenos">14</span></a><span class="w">    </span><span class="sd">"""A rectangle in (x,y) coordinate space, defined by its extents."""</span>
 </span><span id="Rectangle-15"><a href="#Rectangle-15"><span class="linenos">15</span></a>
 </span><span id="Rectangle-16"><a href="#Rectangle-16"><span class="linenos">16</span></a>    <span class="n">xmin</span><span class="p">:</span> <span class="nb">float</span>
 </span><span id="Rectangle-17"><a href="#Rectangle-17"><span class="linenos">17</span></a>    <span class="n">xmax</span><span class="p">:</span> <span class="nb">float</span>
@@ -629,7 +629,7 @@
     </div>
     <a class="headerlink" href="#get_bounding_rectangle"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="get_bounding_rectangle-22"><a href="#get_bounding_rectangle-22"><span class="linenos">22</span></a><span class="k">def</span><span class="w"> </span><span class="nf">get_bounding_rectangle</span><span class="p">(</span><span class="n">pts</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Rectangle</span><span class="p">:</span>
-</span><span id="get_bounding_rectangle-23"><a href="#get_bounding_rectangle-23"><span class="linenos">23</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="get_bounding_rectangle-23"><a href="#get_bounding_rectangle-23"><span class="linenos">23</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="get_bounding_rectangle-24"><a href="#get_bounding_rectangle-24"><span class="linenos">24</span></a><span class="sd">    Get the extents of the smallest bounding box that contains a set of (x,y) points.</span>
 </span><span id="get_bounding_rectangle-25"><a href="#get_bounding_rectangle-25"><span class="linenos">25</span></a>
 </span><span id="get_bounding_rectangle-26"><a href="#get_bounding_rectangle-26"><span class="linenos">26</span></a><span class="sd">    Parameters</span>
@@ -648,7 +648,7 @@
 </span><span id="get_bounding_rectangle-39"><a href="#get_bounding_rectangle-39"><span class="linenos">39</span></a><span class="sd">    ValueError</span>
 </span><span id="get_bounding_rectangle-40"><a href="#get_bounding_rectangle-40"><span class="linenos">40</span></a><span class="sd">        If the set of points is empty or if any points have non-finite coordinate</span>
 </span><span id="get_bounding_rectangle-41"><a href="#get_bounding_rectangle-41"><span class="linenos">41</span></a><span class="sd">        values.</span>
-</span><span id="get_bounding_rectangle-42"><a href="#get_bounding_rectangle-42"><span class="linenos">42</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="get_bounding_rectangle-42"><a href="#get_bounding_rectangle-42"><span class="linenos">42</span></a><span class="sd">    """</span>
 </span><span id="get_bounding_rectangle-43"><a href="#get_bounding_rectangle-43"><span class="linenos">43</span></a>    <span class="n">xmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
 </span><span id="get_bounding_rectangle-44"><a href="#get_bounding_rectangle-44"><span class="linenos">44</span></a>    <span class="n">xmax</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
 </span><span id="get_bounding_rectangle-45"><a href="#get_bounding_rectangle-45"><span class="linenos">45</span></a>    <span class="n">ymin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
@@ -656,7 +656,7 @@
 </span><span id="get_bounding_rectangle-47"><a href="#get_bounding_rectangle-47"><span class="linenos">47</span></a>
 </span><span id="get_bounding_rectangle-48"><a href="#get_bounding_rectangle-48"><span class="linenos">48</span></a>    <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">pts</span><span class="p">:</span>
 </span><span id="get_bounding_rectangle-49"><a href="#get_bounding_rectangle-49"><span class="linenos">49</span></a>        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
-</span><span id="get_bounding_rectangle-50"><a href="#get_bounding_rectangle-50"><span class="linenos">50</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;input points must not contain NaN values&quot;</span><span class="p">)</span>
+</span><span id="get_bounding_rectangle-50"><a href="#get_bounding_rectangle-50"><span class="linenos">50</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"input points must not contain NaN values"</span><span class="p">)</span>
 </span><span id="get_bounding_rectangle-51"><a href="#get_bounding_rectangle-51"><span class="linenos">51</span></a>
 </span><span id="get_bounding_rectangle-52"><a href="#get_bounding_rectangle-52"><span class="linenos">52</span></a>        <span class="n">xmin</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">xmin</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
 </span><span id="get_bounding_rectangle-53"><a href="#get_bounding_rectangle-53"><span class="linenos">53</span></a>        <span class="n">xmax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">xmax</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
@@ -664,7 +664,7 @@
 </span><span id="get_bounding_rectangle-55"><a href="#get_bounding_rectangle-55"><span class="linenos">55</span></a>        <span class="n">ymax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">ymax</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 </span><span id="get_bounding_rectangle-56"><a href="#get_bounding_rectangle-56"><span class="linenos">56</span></a>
 </span><span id="get_bounding_rectangle-57"><a href="#get_bounding_rectangle-57"><span class="linenos">57</span></a>    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">coord</span><span class="p">)</span> <span class="k">for</span> <span class="n">coord</span> <span class="ow">in</span> <span class="p">[</span><span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span><span class="p">]):</span>
-</span><span id="get_bounding_rectangle-58"><a href="#get_bounding_rectangle-58"><span class="linenos">58</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;bounding box has one or more unbounded extents&quot;</span><span class="p">)</span>
+</span><span id="get_bounding_rectangle-58"><a href="#get_bounding_rectangle-58"><span class="linenos">58</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"bounding box has one or more unbounded extents"</span><span class="p">)</span>
 </span><span id="get_bounding_rectangle-59"><a href="#get_bounding_rectangle-59"><span class="linenos">59</span></a>
 </span><span id="get_bounding_rectangle-60"><a href="#get_bounding_rectangle-60"><span class="linenos">60</span></a>    <span class="k">return</span> <span class="n">Rectangle</span><span class="p">(</span><span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span><span class="p">)</span>
 </span></pre></div>
@@ -714,7 +714,7 @@
 </span><span id="get_radar_grid_containing_az_rg_pts-71"><a href="#get_radar_grid_containing_az_rg_pts-71"><span class="linenos"> 71</span></a>    <span class="n">az_margin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
 </span><span id="get_radar_grid_containing_az_rg_pts-72"><a href="#get_radar_grid_containing_az_rg_pts-72"><span class="linenos"> 72</span></a>    <span class="n">rg_margin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
 </span><span id="get_radar_grid_containing_az_rg_pts-73"><a href="#get_radar_grid_containing_az_rg_pts-73"><span class="linenos"> 73</span></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">isce3</span><span class="o">.</span><span class="n">product</span><span class="o">.</span><span class="n">RadarGridParameters</span><span class="p">:</span>
-</span><span id="get_radar_grid_containing_az_rg_pts-74"><a href="#get_radar_grid_containing_az_rg_pts-74"><span class="linenos"> 74</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="get_radar_grid_containing_az_rg_pts-74"><a href="#get_radar_grid_containing_az_rg_pts-74"><span class="linenos"> 74</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="get_radar_grid_containing_az_rg_pts-75"><a href="#get_radar_grid_containing_az_rg_pts-75"><span class="linenos"> 75</span></a><span class="sd">    Get a radar grid that spans a set of (azimuth,range) points.</span>
 </span><span id="get_radar_grid_containing_az_rg_pts-76"><a href="#get_radar_grid_containing_az_rg_pts-76"><span class="linenos"> 76</span></a>
 </span><span id="get_radar_grid_containing_az_rg_pts-77"><a href="#get_radar_grid_containing_az_rg_pts-77"><span class="linenos"> 77</span></a><span class="sd">    Parameters</span>
@@ -726,7 +726,7 @@
 </span><span id="get_radar_grid_containing_az_rg_pts-83"><a href="#get_radar_grid_containing_az_rg_pts-83"><span class="linenos"> 83</span></a><span class="sd">        Azimuth time spacing of the output grid, in seconds. Must be &gt; 0.</span>
 </span><span id="get_radar_grid_containing_az_rg_pts-84"><a href="#get_radar_grid_containing_az_rg_pts-84"><span class="linenos"> 84</span></a><span class="sd">    rg_spacing : float</span>
 </span><span id="get_radar_grid_containing_az_rg_pts-85"><a href="#get_radar_grid_containing_az_rg_pts-85"><span class="linenos"> 85</span></a><span class="sd">        Slant range spacing of the output grid, in meters. Must be &gt; 0.</span>
-</span><span id="get_radar_grid_containing_az_rg_pts-86"><a href="#get_radar_grid_containing_az_rg_pts-86"><span class="linenos"> 86</span></a><span class="sd">    look_side : isce3.core.LookSide or {&#39;left&#39;, &#39;right&#39;}</span>
+</span><span id="get_radar_grid_containing_az_rg_pts-86"><a href="#get_radar_grid_containing_az_rg_pts-86"><span class="linenos"> 86</span></a><span class="sd">    look_side : isce3.core.LookSide or {'left', 'right'}</span>
 </span><span id="get_radar_grid_containing_az_rg_pts-87"><a href="#get_radar_grid_containing_az_rg_pts-87"><span class="linenos"> 87</span></a><span class="sd">        The look direction of the output grid (left-looking or right-looking).</span>
 </span><span id="get_radar_grid_containing_az_rg_pts-88"><a href="#get_radar_grid_containing_az_rg_pts-88"><span class="linenos"> 88</span></a><span class="sd">    wavelength : float</span>
 </span><span id="get_radar_grid_containing_az_rg_pts-89"><a href="#get_radar_grid_containing_az_rg_pts-89"><span class="linenos"> 89</span></a><span class="sd">        The radar central wavelength, in meters.</span>
@@ -748,16 +748,16 @@
 </span><span id="get_radar_grid_containing_az_rg_pts-105"><a href="#get_radar_grid_containing_az_rg_pts-105"><span class="linenos">105</span></a><span class="sd">    See Also</span>
 </span><span id="get_radar_grid_containing_az_rg_pts-106"><a href="#get_radar_grid_containing_az_rg_pts-106"><span class="linenos">106</span></a><span class="sd">    --------</span>
 </span><span id="get_radar_grid_containing_az_rg_pts-107"><a href="#get_radar_grid_containing_az_rg_pts-107"><span class="linenos">107</span></a><span class="sd">    get_radar_grid_containing_geo_pts</span>
-</span><span id="get_radar_grid_containing_az_rg_pts-108"><a href="#get_radar_grid_containing_az_rg_pts-108"><span class="linenos">108</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="get_radar_grid_containing_az_rg_pts-108"><a href="#get_radar_grid_containing_az_rg_pts-108"><span class="linenos">108</span></a><span class="sd">    """</span>
 </span><span id="get_radar_grid_containing_az_rg_pts-109"><a href="#get_radar_grid_containing_az_rg_pts-109"><span class="linenos">109</span></a>    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">az_spacing</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">):</span>
-</span><span id="get_radar_grid_containing_az_rg_pts-110"><a href="#get_radar_grid_containing_az_rg_pts-110"><span class="linenos">110</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">az_spacing</span><span class="si">=}</span><span class="s2">, must be &gt; 0&quot;</span><span class="p">)</span>
+</span><span id="get_radar_grid_containing_az_rg_pts-110"><a href="#get_radar_grid_containing_az_rg_pts-110"><span class="linenos">110</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">az_spacing</span><span class="si">=}</span><span class="s2">, must be &gt; 0"</span><span class="p">)</span>
 </span><span id="get_radar_grid_containing_az_rg_pts-111"><a href="#get_radar_grid_containing_az_rg_pts-111"><span class="linenos">111</span></a>    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">rg_spacing</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">):</span>
-</span><span id="get_radar_grid_containing_az_rg_pts-112"><a href="#get_radar_grid_containing_az_rg_pts-112"><span class="linenos">112</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rg_spacing</span><span class="si">=}</span><span class="s2">, must be &gt; 0&quot;</span><span class="p">)</span>
+</span><span id="get_radar_grid_containing_az_rg_pts-112"><a href="#get_radar_grid_containing_az_rg_pts-112"><span class="linenos">112</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">rg_spacing</span><span class="si">=}</span><span class="s2">, must be &gt; 0"</span><span class="p">)</span>
 </span><span id="get_radar_grid_containing_az_rg_pts-113"><a href="#get_radar_grid_containing_az_rg_pts-113"><span class="linenos">113</span></a>
 </span><span id="get_radar_grid_containing_az_rg_pts-114"><a href="#get_radar_grid_containing_az_rg_pts-114"><span class="linenos">114</span></a>    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">az_margin</span> <span class="o">&gt;=</span> <span class="mf">0.0</span><span class="p">):</span>
-</span><span id="get_radar_grid_containing_az_rg_pts-115"><a href="#get_radar_grid_containing_az_rg_pts-115"><span class="linenos">115</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">az_margin</span><span class="si">=}</span><span class="s2">, must be &gt;= 0&quot;</span><span class="p">)</span>
+</span><span id="get_radar_grid_containing_az_rg_pts-115"><a href="#get_radar_grid_containing_az_rg_pts-115"><span class="linenos">115</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">az_margin</span><span class="si">=}</span><span class="s2">, must be &gt;= 0"</span><span class="p">)</span>
 </span><span id="get_radar_grid_containing_az_rg_pts-116"><a href="#get_radar_grid_containing_az_rg_pts-116"><span class="linenos">116</span></a>    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">rg_margin</span> <span class="o">&gt;=</span> <span class="mf">0.0</span><span class="p">):</span>
-</span><span id="get_radar_grid_containing_az_rg_pts-117"><a href="#get_radar_grid_containing_az_rg_pts-117"><span class="linenos">117</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rg_margin</span><span class="si">=}</span><span class="s2">, must be &gt;= 0&quot;</span><span class="p">)</span>
+</span><span id="get_radar_grid_containing_az_rg_pts-117"><a href="#get_radar_grid_containing_az_rg_pts-117"><span class="linenos">117</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">rg_margin</span><span class="si">=}</span><span class="s2">, must be &gt;= 0"</span><span class="p">)</span>
 </span><span id="get_radar_grid_containing_az_rg_pts-118"><a href="#get_radar_grid_containing_az_rg_pts-118"><span class="linenos">118</span></a>
 </span><span id="get_radar_grid_containing_az_rg_pts-119"><a href="#get_radar_grid_containing_az_rg_pts-119"><span class="linenos">119</span></a>    <span class="c1"># Compute the extents of the bounding box containing all of the points.</span>
 </span><span id="get_radar_grid_containing_az_rg_pts-120"><a href="#get_radar_grid_containing_az_rg_pts-120"><span class="linenos">120</span></a>    <span class="n">az_min</span><span class="p">,</span> <span class="n">az_max</span><span class="p">,</span> <span class="n">rg_min</span><span class="p">,</span> <span class="n">rg_max</span> <span class="o">=</span> <span class="n">get_bounding_rectangle</span><span class="p">(</span><span class="n">az_rg_pts</span><span class="p">)</span>
@@ -779,10 +779,10 @@
 </span><span id="get_radar_grid_containing_az_rg_pts-136"><a href="#get_radar_grid_containing_az_rg_pts-136"><span class="linenos">136</span></a>    <span class="c1"># range of the points with the desired sample spacing, plus one additional sample.</span>
 </span><span id="get_radar_grid_containing_az_rg_pts-137"><a href="#get_radar_grid_containing_az_rg_pts-137"><span class="linenos">137</span></a>    <span class="c1">#</span>
 </span><span id="get_radar_grid_containing_az_rg_pts-138"><a href="#get_radar_grid_containing_az_rg_pts-138"><span class="linenos">138</span></a>    <span class="c1"># NOTE: According to ISCE3 conventions, radar grid pixel coordinates are referenced</span>
-</span><span id="get_radar_grid_containing_az_rg_pts-139"><a href="#get_radar_grid_containing_az_rg_pts-139"><span class="linenos">139</span></a>    <span class="c1"># to the location of the center of the pixel, so there&#39;s a half-pixel offset between</span>
+</span><span id="get_radar_grid_containing_az_rg_pts-139"><a href="#get_radar_grid_containing_az_rg_pts-139"><span class="linenos">139</span></a>    <span class="c1"># to the location of the center of the pixel, so there's a half-pixel offset between</span>
 </span><span id="get_radar_grid_containing_az_rg_pts-140"><a href="#get_radar_grid_containing_az_rg_pts-140"><span class="linenos">140</span></a>    <span class="c1"># the coordinates of the boundary pixels and the outer extents of the radar grid</span>
 </span><span id="get_radar_grid_containing_az_rg_pts-141"><a href="#get_radar_grid_containing_az_rg_pts-141"><span class="linenos">141</span></a>    <span class="c1"># (see https://github-fn.jpl.nasa.gov/isce-3/isce/issues/584#issuecomment-11771.)</span>
-</span><span id="get_radar_grid_containing_az_rg_pts-142"><a href="#get_radar_grid_containing_az_rg_pts-142"><span class="linenos">142</span></a>    <span class="c1"># This distinction between &#39;pixels&#39; and &#39;points&#39; is not well-documented for users,</span>
+</span><span id="get_radar_grid_containing_az_rg_pts-142"><a href="#get_radar_grid_containing_az_rg_pts-142"><span class="linenos">142</span></a>    <span class="c1"># This distinction between 'pixels' and 'points' is not well-documented for users,</span>
 </span><span id="get_radar_grid_containing_az_rg_pts-143"><a href="#get_radar_grid_containing_az_rg_pts-143"><span class="linenos">143</span></a>    <span class="c1"># though, and sometimes causes confusion. We choose to ignore the half-pixel shift</span>
 </span><span id="get_radar_grid_containing_az_rg_pts-144"><a href="#get_radar_grid_containing_az_rg_pts-144"><span class="linenos">144</span></a>    <span class="c1"># here and simply add an extra row &amp; column to the radar grid to compensate. This</span>
 </span><span id="get_radar_grid_containing_az_rg_pts-145"><a href="#get_radar_grid_containing_az_rg_pts-145"><span class="linenos">145</span></a>    <span class="c1"># expansion of the radar grid is unlikely to cause harm and ensures that all points</span>
@@ -873,7 +873,7 @@ rg_margin : float, optional
 </span><span id="get_radar_grid_containing_geo_pts-181"><a href="#get_radar_grid_containing_geo_pts-181"><span class="linenos">181</span></a>    <span class="n">rg_margin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
 </span><span id="get_radar_grid_containing_geo_pts-182"><a href="#get_radar_grid_containing_geo_pts-182"><span class="linenos">182</span></a>    <span class="n">geo2rdr_params</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="get_radar_grid_containing_geo_pts-183"><a href="#get_radar_grid_containing_geo_pts-183"><span class="linenos">183</span></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">isce3</span><span class="o">.</span><span class="n">product</span><span class="o">.</span><span class="n">RadarGridParameters</span><span class="p">:</span>
-</span><span id="get_radar_grid_containing_geo_pts-184"><a href="#get_radar_grid_containing_geo_pts-184"><span class="linenos">184</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="get_radar_grid_containing_geo_pts-184"><a href="#get_radar_grid_containing_geo_pts-184"><span class="linenos">184</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="get_radar_grid_containing_geo_pts-185"><a href="#get_radar_grid_containing_geo_pts-185"><span class="linenos">185</span></a><span class="sd">    Get a radar grid that spans a set of geocoded points.</span>
 </span><span id="get_radar_grid_containing_geo_pts-186"><a href="#get_radar_grid_containing_geo_pts-186"><span class="linenos">186</span></a>
 </span><span id="get_radar_grid_containing_geo_pts-187"><a href="#get_radar_grid_containing_geo_pts-187"><span class="linenos">187</span></a><span class="sd">    The reference epoch of the output radar grid will be the same as the input `orbit`.</span>
@@ -886,7 +886,7 @@ rg_margin : float, optional
 </span><span id="get_radar_grid_containing_geo_pts-194"><a href="#get_radar_grid_containing_geo_pts-194"><span class="linenos">194</span></a><span class="sd">        (longitude,latitude,height) or (easting,northing,height). All points should be</span>
 </span><span id="get_radar_grid_containing_geo_pts-195"><a href="#get_radar_grid_containing_geo_pts-195"><span class="linenos">195</span></a><span class="sd">        in a single common coordinate system specified by the `proj` argument.</span>
 </span><span id="get_radar_grid_containing_geo_pts-196"><a href="#get_radar_grid_containing_geo_pts-196"><span class="linenos">196</span></a><span class="sd">    proj : isce3.core.ProjectionBase</span>
-</span><span id="get_radar_grid_containing_geo_pts-197"><a href="#get_radar_grid_containing_geo_pts-197"><span class="linenos">197</span></a><span class="sd">        A &#39;projection&#39; object representing the transformation between</span>
+</span><span id="get_radar_grid_containing_geo_pts-197"><a href="#get_radar_grid_containing_geo_pts-197"><span class="linenos">197</span></a><span class="sd">        A 'projection' object representing the transformation between</span>
 </span><span id="get_radar_grid_containing_geo_pts-198"><a href="#get_radar_grid_containing_geo_pts-198"><span class="linenos">198</span></a><span class="sd">        longitude/latitude/height (LLH) coordinates and the coordinate system of</span>
 </span><span id="get_radar_grid_containing_geo_pts-199"><a href="#get_radar_grid_containing_geo_pts-199"><span class="linenos">199</span></a><span class="sd">        `geo_pts`.</span>
 </span><span id="get_radar_grid_containing_geo_pts-200"><a href="#get_radar_grid_containing_geo_pts-200"><span class="linenos">200</span></a><span class="sd">    az_spacing : float</span>
@@ -896,7 +896,7 @@ rg_margin : float, optional
 </span><span id="get_radar_grid_containing_geo_pts-204"><a href="#get_radar_grid_containing_geo_pts-204"><span class="linenos">204</span></a><span class="sd">    orbit : isce3.core.Orbit</span>
 </span><span id="get_radar_grid_containing_geo_pts-205"><a href="#get_radar_grid_containing_geo_pts-205"><span class="linenos">205</span></a><span class="sd">        The trajectory of the radar antenna phase center over a time interval that</span>
 </span><span id="get_radar_grid_containing_geo_pts-206"><a href="#get_radar_grid_containing_geo_pts-206"><span class="linenos">206</span></a><span class="sd">        includes the observation times of each point in `geo_pts`.</span>
-</span><span id="get_radar_grid_containing_geo_pts-207"><a href="#get_radar_grid_containing_geo_pts-207"><span class="linenos">207</span></a><span class="sd">    look_side : isce3.core.LookSide or {&#39;left&#39;, &#39;right&#39;}</span>
+</span><span id="get_radar_grid_containing_geo_pts-207"><a href="#get_radar_grid_containing_geo_pts-207"><span class="linenos">207</span></a><span class="sd">    look_side : isce3.core.LookSide or {'left', 'right'}</span>
 </span><span id="get_radar_grid_containing_geo_pts-208"><a href="#get_radar_grid_containing_geo_pts-208"><span class="linenos">208</span></a><span class="sd">        The look direction of the output grid (left-looking or right-looking).</span>
 </span><span id="get_radar_grid_containing_geo_pts-209"><a href="#get_radar_grid_containing_geo_pts-209"><span class="linenos">209</span></a><span class="sd">    wavelength : float</span>
 </span><span id="get_radar_grid_containing_geo_pts-210"><a href="#get_radar_grid_containing_geo_pts-210"><span class="linenos">210</span></a><span class="sd">        The radar central wavelength, in meters.</span>
@@ -915,13 +915,13 @@ rg_margin : float, optional
 </span><span id="get_radar_grid_containing_geo_pts-223"><a href="#get_radar_grid_containing_geo_pts-223"><span class="linenos">223</span></a><span class="sd">        routine used in geo2rdr (bracketing implementation). The following keys are</span>
 </span><span id="get_radar_grid_containing_geo_pts-224"><a href="#get_radar_grid_containing_geo_pts-224"><span class="linenos">224</span></a><span class="sd">        supported:</span>
 </span><span id="get_radar_grid_containing_geo_pts-225"><a href="#get_radar_grid_containing_geo_pts-225"><span class="linenos">225</span></a>
-</span><span id="get_radar_grid_containing_geo_pts-226"><a href="#get_radar_grid_containing_geo_pts-226"><span class="linenos">226</span></a><span class="sd">        &#39;tol_aztime&#39;:</span>
+</span><span id="get_radar_grid_containing_geo_pts-226"><a href="#get_radar_grid_containing_geo_pts-226"><span class="linenos">226</span></a><span class="sd">        'tol_aztime':</span>
 </span><span id="get_radar_grid_containing_geo_pts-227"><a href="#get_radar_grid_containing_geo_pts-227"><span class="linenos">227</span></a><span class="sd">          Azimuth time convergence tolerance, in seconds. Defaults to 1e-7.</span>
 </span><span id="get_radar_grid_containing_geo_pts-228"><a href="#get_radar_grid_containing_geo_pts-228"><span class="linenos">228</span></a>
-</span><span id="get_radar_grid_containing_geo_pts-229"><a href="#get_radar_grid_containing_geo_pts-229"><span class="linenos">229</span></a><span class="sd">        &#39;time_start&#39;:</span>
+</span><span id="get_radar_grid_containing_geo_pts-229"><a href="#get_radar_grid_containing_geo_pts-229"><span class="linenos">229</span></a><span class="sd">        'time_start':</span>
 </span><span id="get_radar_grid_containing_geo_pts-230"><a href="#get_radar_grid_containing_geo_pts-230"><span class="linenos">230</span></a><span class="sd">          Start of search interval, in seconds. Defaults to ``orbit.start_time``.</span>
 </span><span id="get_radar_grid_containing_geo_pts-231"><a href="#get_radar_grid_containing_geo_pts-231"><span class="linenos">231</span></a>
-</span><span id="get_radar_grid_containing_geo_pts-232"><a href="#get_radar_grid_containing_geo_pts-232"><span class="linenos">232</span></a><span class="sd">        &#39;time_end&#39;:</span>
+</span><span id="get_radar_grid_containing_geo_pts-232"><a href="#get_radar_grid_containing_geo_pts-232"><span class="linenos">232</span></a><span class="sd">        'time_end':</span>
 </span><span id="get_radar_grid_containing_geo_pts-233"><a href="#get_radar_grid_containing_geo_pts-233"><span class="linenos">233</span></a><span class="sd">          End of search interval, in seconds. Defaults to ``orbit.end_time``.</span>
 </span><span id="get_radar_grid_containing_geo_pts-234"><a href="#get_radar_grid_containing_geo_pts-234"><span class="linenos">234</span></a>
 </span><span id="get_radar_grid_containing_geo_pts-235"><a href="#get_radar_grid_containing_geo_pts-235"><span class="linenos">235</span></a><span class="sd">    Returns</span>
@@ -932,7 +932,7 @@ rg_margin : float, optional
 </span><span id="get_radar_grid_containing_geo_pts-240"><a href="#get_radar_grid_containing_geo_pts-240"><span class="linenos">240</span></a><span class="sd">    See Also</span>
 </span><span id="get_radar_grid_containing_geo_pts-241"><a href="#get_radar_grid_containing_geo_pts-241"><span class="linenos">241</span></a><span class="sd">    --------</span>
 </span><span id="get_radar_grid_containing_geo_pts-242"><a href="#get_radar_grid_containing_geo_pts-242"><span class="linenos">242</span></a><span class="sd">    get_radar_grid_containing_az_rg_pts</span>
-</span><span id="get_radar_grid_containing_geo_pts-243"><a href="#get_radar_grid_containing_geo_pts-243"><span class="linenos">243</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="get_radar_grid_containing_geo_pts-243"><a href="#get_radar_grid_containing_geo_pts-243"><span class="linenos">243</span></a><span class="sd">    """</span>
 </span><span id="get_radar_grid_containing_geo_pts-244"><a href="#get_radar_grid_containing_geo_pts-244"><span class="linenos">244</span></a>    <span class="k">if</span> <span class="n">geo2rdr_params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
 </span><span id="get_radar_grid_containing_geo_pts-245"><a href="#get_radar_grid_containing_geo_pts-245"><span class="linenos">245</span></a>        <span class="n">geo2rdr_params</span> <span class="o">=</span> <span class="p">{}</span>
 </span><span id="get_radar_grid_containing_geo_pts-246"><a href="#get_radar_grid_containing_geo_pts-246"><span class="linenos">246</span></a>
@@ -1056,7 +1056,7 @@ geo2rdr_params : dict or None, optional
 </span><span id="get_bounding_radar_grid-289"><a href="#get_bounding_radar_grid-289"><span class="linenos">289</span></a>    <span class="n">rg_margin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
 </span><span id="get_bounding_radar_grid-290"><a href="#get_bounding_radar_grid-290"><span class="linenos">290</span></a>    <span class="n">geo2rdr_params</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="get_bounding_radar_grid-291"><a href="#get_bounding_radar_grid-291"><span class="linenos">291</span></a><span class="p">):</span>
-</span><span id="get_bounding_radar_grid-292"><a href="#get_bounding_radar_grid-292"><span class="linenos">292</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="get_bounding_radar_grid-292"><a href="#get_bounding_radar_grid-292"><span class="linenos">292</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="get_bounding_radar_grid-293"><a href="#get_bounding_radar_grid-293"><span class="linenos">293</span></a><span class="sd">    Get a radar grid that spans an input geocoded grid over a specified height range.</span>
 </span><span id="get_bounding_radar_grid-294"><a href="#get_bounding_radar_grid-294"><span class="linenos">294</span></a>
 </span><span id="get_bounding_radar_grid-295"><a href="#get_bounding_radar_grid-295"><span class="linenos">295</span></a><span class="sd">    The output radar grid is constructed such that it contains points sampled along each</span>
@@ -1075,7 +1075,7 @@ geo2rdr_params : dict or None, optional
 </span><span id="get_bounding_radar_grid-308"><a href="#get_bounding_radar_grid-308"><span class="linenos">308</span></a><span class="sd">        The trajectory of the radar antenna phase center over a time interval that</span>
 </span><span id="get_bounding_radar_grid-309"><a href="#get_bounding_radar_grid-309"><span class="linenos">309</span></a><span class="sd">        includes the observation times of each point in `geo_grid` at each height</span>
 </span><span id="get_bounding_radar_grid-310"><a href="#get_bounding_radar_grid-310"><span class="linenos">310</span></a><span class="sd">        between `min_height` and `max_height`.</span>
-</span><span id="get_bounding_radar_grid-311"><a href="#get_bounding_radar_grid-311"><span class="linenos">311</span></a><span class="sd">    look_side : isce3.core.LookSide or {&#39;left&#39;, &#39;right&#39;}</span>
+</span><span id="get_bounding_radar_grid-311"><a href="#get_bounding_radar_grid-311"><span class="linenos">311</span></a><span class="sd">    look_side : isce3.core.LookSide or {'left', 'right'}</span>
 </span><span id="get_bounding_radar_grid-312"><a href="#get_bounding_radar_grid-312"><span class="linenos">312</span></a><span class="sd">        The look direction of the output grid (left-looking or right-looking).</span>
 </span><span id="get_bounding_radar_grid-313"><a href="#get_bounding_radar_grid-313"><span class="linenos">313</span></a><span class="sd">    wavelength : float</span>
 </span><span id="get_bounding_radar_grid-314"><a href="#get_bounding_radar_grid-314"><span class="linenos">314</span></a><span class="sd">        The radar central wavelength, in meters.</span>
@@ -1107,13 +1107,13 @@ geo2rdr_params : dict or None, optional
 </span><span id="get_bounding_radar_grid-340"><a href="#get_bounding_radar_grid-340"><span class="linenos">340</span></a><span class="sd">        routine used in geo2rdr (bracketing implementation). The following keys are</span>
 </span><span id="get_bounding_radar_grid-341"><a href="#get_bounding_radar_grid-341"><span class="linenos">341</span></a><span class="sd">        supported:</span>
 </span><span id="get_bounding_radar_grid-342"><a href="#get_bounding_radar_grid-342"><span class="linenos">342</span></a>
-</span><span id="get_bounding_radar_grid-343"><a href="#get_bounding_radar_grid-343"><span class="linenos">343</span></a><span class="sd">        &#39;tol_aztime&#39;:</span>
+</span><span id="get_bounding_radar_grid-343"><a href="#get_bounding_radar_grid-343"><span class="linenos">343</span></a><span class="sd">        'tol_aztime':</span>
 </span><span id="get_bounding_radar_grid-344"><a href="#get_bounding_radar_grid-344"><span class="linenos">344</span></a><span class="sd">          Azimuth time convergence tolerance, in seconds. Defaults to 1e-7.</span>
 </span><span id="get_bounding_radar_grid-345"><a href="#get_bounding_radar_grid-345"><span class="linenos">345</span></a>
-</span><span id="get_bounding_radar_grid-346"><a href="#get_bounding_radar_grid-346"><span class="linenos">346</span></a><span class="sd">        &#39;time_start&#39;:</span>
+</span><span id="get_bounding_radar_grid-346"><a href="#get_bounding_radar_grid-346"><span class="linenos">346</span></a><span class="sd">        'time_start':</span>
 </span><span id="get_bounding_radar_grid-347"><a href="#get_bounding_radar_grid-347"><span class="linenos">347</span></a><span class="sd">          Start of search interval, in seconds. Defaults to ``orbit.start_time``.</span>
 </span><span id="get_bounding_radar_grid-348"><a href="#get_bounding_radar_grid-348"><span class="linenos">348</span></a>
-</span><span id="get_bounding_radar_grid-349"><a href="#get_bounding_radar_grid-349"><span class="linenos">349</span></a><span class="sd">        &#39;time_end&#39;:</span>
+</span><span id="get_bounding_radar_grid-349"><a href="#get_bounding_radar_grid-349"><span class="linenos">349</span></a><span class="sd">        'time_end':</span>
 </span><span id="get_bounding_radar_grid-350"><a href="#get_bounding_radar_grid-350"><span class="linenos">350</span></a><span class="sd">          End of search interval, in seconds. Defaults to ``orbit.end_time``.</span>
 </span><span id="get_bounding_radar_grid-351"><a href="#get_bounding_radar_grid-351"><span class="linenos">351</span></a>
 </span><span id="get_bounding_radar_grid-352"><a href="#get_bounding_radar_grid-352"><span class="linenos">352</span></a><span class="sd">    Returns</span>
@@ -1124,18 +1124,18 @@ geo2rdr_params : dict or None, optional
 </span><span id="get_bounding_radar_grid-357"><a href="#get_bounding_radar_grid-357"><span class="linenos">357</span></a><span class="sd">    See Also</span>
 </span><span id="get_bounding_radar_grid-358"><a href="#get_bounding_radar_grid-358"><span class="linenos">358</span></a><span class="sd">    --------</span>
 </span><span id="get_bounding_radar_grid-359"><a href="#get_bounding_radar_grid-359"><span class="linenos">359</span></a><span class="sd">    get_geo_perimeter_wkt</span>
-</span><span id="get_bounding_radar_grid-360"><a href="#get_bounding_radar_grid-360"><span class="linenos">360</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="get_bounding_radar_grid-360"><a href="#get_bounding_radar_grid-360"><span class="linenos">360</span></a><span class="sd">    """</span>
 </span><span id="get_bounding_radar_grid-361"><a href="#get_bounding_radar_grid-361"><span class="linenos">361</span></a>    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">max_height</span> <span class="o">&gt;=</span> <span class="n">min_height</span><span class="p">):</span>
 </span><span id="get_bounding_radar_grid-362"><a href="#get_bounding_radar_grid-362"><span class="linenos">362</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span id="get_bounding_radar_grid-363"><a href="#get_bounding_radar_grid-363"><span class="linenos">363</span></a>            <span class="sa">f</span><span class="s2">&quot;max_height must be &gt;= min_height, got </span><span class="si">{</span><span class="n">max_height</span><span class="si">=}</span><span class="s2"> and </span><span class="si">{</span><span class="n">min_height</span><span class="si">=}</span><span class="s2">&quot;</span>
+</span><span id="get_bounding_radar_grid-363"><a href="#get_bounding_radar_grid-363"><span class="linenos">363</span></a>            <span class="sa">f</span><span class="s2">"max_height must be &gt;= min_height, got </span><span class="si">{</span><span class="n">max_height</span><span class="si">=}</span><span class="s2"> and </span><span class="si">{</span><span class="n">min_height</span><span class="si">=}</span><span class="s2">"</span>
 </span><span id="get_bounding_radar_grid-364"><a href="#get_bounding_radar_grid-364"><span class="linenos">364</span></a>        <span class="p">)</span>
 </span><span id="get_bounding_radar_grid-365"><a href="#get_bounding_radar_grid-365"><span class="linenos">365</span></a>
 </span><span id="get_bounding_radar_grid-366"><a href="#get_bounding_radar_grid-366"><span class="linenos">366</span></a>    <span class="k">if</span> <span class="n">pts_per_edge</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
-</span><span id="get_bounding_radar_grid-367"><a href="#get_bounding_radar_grid-367"><span class="linenos">367</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pts_per_edge</span><span class="si">=}</span><span class="s2">, must be &gt;= 2&quot;</span><span class="p">)</span>
+</span><span id="get_bounding_radar_grid-367"><a href="#get_bounding_radar_grid-367"><span class="linenos">367</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">pts_per_edge</span><span class="si">=}</span><span class="s2">, must be &gt;= 2"</span><span class="p">)</span>
 </span><span id="get_bounding_radar_grid-368"><a href="#get_bounding_radar_grid-368"><span class="linenos">368</span></a>
 </span><span id="get_bounding_radar_grid-369"><a href="#get_bounding_radar_grid-369"><span class="linenos">369</span></a>    <span class="c1"># NOTE: geo2rdr is not an affine transformation, so the set of points within</span>
 </span><span id="get_bounding_radar_grid-370"><a href="#get_bounding_radar_grid-370"><span class="linenos">370</span></a>    <span class="c1"># `geo_grid` is, in general, not a convex set when transformed to (azimuth,range)</span>
-</span><span id="get_bounding_radar_grid-371"><a href="#get_bounding_radar_grid-371"><span class="linenos">371</span></a>    <span class="c1"># coordinate space. Therefore, it&#39;s not sufficient to just compute the smallest</span>
+</span><span id="get_bounding_radar_grid-371"><a href="#get_bounding_radar_grid-371"><span class="linenos">371</span></a>    <span class="c1"># coordinate space. Therefore, it's not sufficient to just compute the smallest</span>
 </span><span id="get_bounding_radar_grid-372"><a href="#get_bounding_radar_grid-372"><span class="linenos">372</span></a>    <span class="c1"># radar grid that contains the four corners of `geo_grid` -- we need to ensure that</span>
 </span><span id="get_bounding_radar_grid-373"><a href="#get_bounding_radar_grid-373"><span class="linenos">373</span></a>    <span class="c1"># the entire perimeter of `geo_grid` is contained within the output radar grid.</span>
 </span><span id="get_bounding_radar_grid-374"><a href="#get_bounding_radar_grid-374"><span class="linenos">374</span></a>    <span class="c1"># As a concession to computational feasibility, we sample a finite number of points</span>

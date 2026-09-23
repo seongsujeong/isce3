@@ -91,20 +91,20 @@ in antenna frame.</p>
 
                         <label class="view-source-button" for="mod-pol_imbalance-view-source"><span>View Source</span></label>
 
-                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos"> 1</span></a><span class="sd">&quot;&quot;&quot;</span>
+                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos"> 1</span></a><span class="sd">"""</span>
 </span><span id="L-2"><a href="#L-2"><span class="linenos"> 2</span></a><span class="sd">Functions and Classes for Polarimetric imabalance ratio of Antennas expressed</span>
 </span><span id="L-3"><a href="#L-3"><span class="linenos"> 3</span></a><span class="sd">in antenna frame.</span>
-</span><span id="L-4"><a href="#L-4"><span class="linenos"> 4</span></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-4"><a href="#L-4"><span class="linenos"> 4</span></a><span class="sd">"""</span>
 </span><span id="L-5"><a href="#L-5"><span class="linenos"> 5</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
 </span><span id="L-6"><a href="#L-6"><span class="linenos"> 6</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="n">interp1d</span>
 </span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a>
 </span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a>
 </span><span id="L-9"><a href="#L-9"><span class="linenos"> 9</span></a><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a><span class="k">class</span><span class="w"> </span><span class="nc">PolImbalanceRatioAnt</span><span class="p">:</span>
-</span><span id="L-11"><a href="#L-11"><span class="linenos">11</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-11"><a href="#L-11"><span class="linenos">11</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-12"><a href="#L-12"><span class="linenos">12</span></a><span class="sd">    Transmit (TX) and Receive (RX) polarimetric channel ratio in elevation (EL)</span>
 </span><span id="L-13"><a href="#L-13"><span class="linenos">13</span></a><span class="sd">    direction expressed in antenna frame.</span>
-</span><span id="L-14"><a href="#L-14"><span class="linenos">14</span></a><span class="sd">    Pol imabalnce is defined as a complex ratio of &quot;V co-pol&quot; to &quot;H co-pol&quot;.</span>
+</span><span id="L-14"><a href="#L-14"><span class="linenos">14</span></a><span class="sd">    Pol imabalnce is defined as a complex ratio of "V co-pol" to "H co-pol".</span>
 </span><span id="L-15"><a href="#L-15"><span class="linenos">15</span></a>
 </span><span id="L-16"><a href="#L-16"><span class="linenos">16</span></a><span class="sd">    Attributes</span>
 </span><span id="L-17"><a href="#L-17"><span class="linenos">17</span></a><span class="sd">    ----------</span>
@@ -116,7 +116,7 @@ in antenna frame.</p>
 </span><span id="L-23"><a href="#L-23"><span class="linenos">23</span></a><span class="sd">        Complex polarimetric ratio (linear) on RX side extracted from V/H</span>
 </span><span id="L-24"><a href="#L-24"><span class="linenos">24</span></a><span class="sd">        RX EL-cut antenna co-pol patterns as a function of EL angles in (rad).</span>
 </span><span id="L-25"><a href="#L-25"><span class="linenos">25</span></a>
-</span><span id="L-26"><a href="#L-26"><span class="linenos">26</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-26"><a href="#L-26"><span class="linenos">26</span></a><span class="sd">    """</span>
 </span><span id="L-27"><a href="#L-27"><span class="linenos">27</span></a>    <span class="n">tx_pol_ratio</span><span class="p">:</span> <span class="n">interp1d</span>
 </span><span id="L-28"><a href="#L-28"><span class="linenos">28</span></a>    <span class="n">rx_pol_ratio</span><span class="p">:</span> <span class="n">interp1d</span>
 </span></pre></div>
@@ -137,10 +137,10 @@ in antenna frame.</p>
     <a class="headerlink" href="#PolImbalanceRatioAnt"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="PolImbalanceRatioAnt-10"><a href="#PolImbalanceRatioAnt-10"><span class="linenos">10</span></a><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span id="PolImbalanceRatioAnt-11"><a href="#PolImbalanceRatioAnt-11"><span class="linenos">11</span></a><span class="k">class</span><span class="w"> </span><span class="nc">PolImbalanceRatioAnt</span><span class="p">:</span>
-</span><span id="PolImbalanceRatioAnt-12"><a href="#PolImbalanceRatioAnt-12"><span class="linenos">12</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="PolImbalanceRatioAnt-12"><a href="#PolImbalanceRatioAnt-12"><span class="linenos">12</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="PolImbalanceRatioAnt-13"><a href="#PolImbalanceRatioAnt-13"><span class="linenos">13</span></a><span class="sd">    Transmit (TX) and Receive (RX) polarimetric channel ratio in elevation (EL)</span>
 </span><span id="PolImbalanceRatioAnt-14"><a href="#PolImbalanceRatioAnt-14"><span class="linenos">14</span></a><span class="sd">    direction expressed in antenna frame.</span>
-</span><span id="PolImbalanceRatioAnt-15"><a href="#PolImbalanceRatioAnt-15"><span class="linenos">15</span></a><span class="sd">    Pol imabalnce is defined as a complex ratio of &quot;V co-pol&quot; to &quot;H co-pol&quot;.</span>
+</span><span id="PolImbalanceRatioAnt-15"><a href="#PolImbalanceRatioAnt-15"><span class="linenos">15</span></a><span class="sd">    Pol imabalnce is defined as a complex ratio of "V co-pol" to "H co-pol".</span>
 </span><span id="PolImbalanceRatioAnt-16"><a href="#PolImbalanceRatioAnt-16"><span class="linenos">16</span></a>
 </span><span id="PolImbalanceRatioAnt-17"><a href="#PolImbalanceRatioAnt-17"><span class="linenos">17</span></a><span class="sd">    Attributes</span>
 </span><span id="PolImbalanceRatioAnt-18"><a href="#PolImbalanceRatioAnt-18"><span class="linenos">18</span></a><span class="sd">    ----------</span>
@@ -152,7 +152,7 @@ in antenna frame.</p>
 </span><span id="PolImbalanceRatioAnt-24"><a href="#PolImbalanceRatioAnt-24"><span class="linenos">24</span></a><span class="sd">        Complex polarimetric ratio (linear) on RX side extracted from V/H</span>
 </span><span id="PolImbalanceRatioAnt-25"><a href="#PolImbalanceRatioAnt-25"><span class="linenos">25</span></a><span class="sd">        RX EL-cut antenna co-pol patterns as a function of EL angles in (rad).</span>
 </span><span id="PolImbalanceRatioAnt-26"><a href="#PolImbalanceRatioAnt-26"><span class="linenos">26</span></a>
-</span><span id="PolImbalanceRatioAnt-27"><a href="#PolImbalanceRatioAnt-27"><span class="linenos">27</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="PolImbalanceRatioAnt-27"><a href="#PolImbalanceRatioAnt-27"><span class="linenos">27</span></a><span class="sd">    """</span>
 </span><span id="PolImbalanceRatioAnt-28"><a href="#PolImbalanceRatioAnt-28"><span class="linenos">28</span></a>    <span class="n">tx_pol_ratio</span><span class="p">:</span> <span class="n">interp1d</span>
 </span><span id="PolImbalanceRatioAnt-29"><a href="#PolImbalanceRatioAnt-29"><span class="linenos">29</span></a>    <span class="n">rx_pol_ratio</span><span class="p">:</span> <span class="n">interp1d</span>
 </span></pre></div>

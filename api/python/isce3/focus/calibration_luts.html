@@ -104,7 +104,7 @@
 </span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a>                  <span class="n">dem</span><span class="o">=</span><span class="n">isce3</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">DEMInterpolator</span><span class="p">(),</span>
 </span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a>                  <span class="n">rdr2geo_params</span><span class="o">=</span><span class="nb">dict</span><span class="p">(),</span>
 </span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a>                  <span class="n">interp_method</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-</span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a><span class="sd">    Generate look-up tables related to radar line-of-sight.</span>
 </span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a>
 </span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a><span class="sd">    Parameters</span>
@@ -113,7 +113,7 @@
 </span><span id="L-17"><a href="#L-17"><span class="linenos"> 17</span></a><span class="sd">        Trajectory of antenna phase center</span>
 </span><span id="L-18"><a href="#L-18"><span class="linenos"> 18</span></a><span class="sd">    Attitude : isce3.core.Attitude</span>
 </span><span id="L-19"><a href="#L-19"><span class="linenos"> 19</span></a><span class="sd">        Orientation of the antenna (RCS) frame wrt ECEF frame</span>
-</span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a><span class="sd">    side : isce3.core.LookSide or str in {&quot;left&quot;, &quot;right&quot;}</span>
+</span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a><span class="sd">    side : isce3.core.LookSide or str in {"left", "right"}</span>
 </span><span id="L-21"><a href="#L-21"><span class="linenos"> 21</span></a><span class="sd">        Side the radar looks</span>
 </span><span id="L-22"><a href="#L-22"><span class="linenos"> 22</span></a><span class="sd">    doppler : isce3.core.LUT2d</span>
 </span><span id="L-23"><a href="#L-23"><span class="linenos"> 23</span></a><span class="sd">        Doppler centroid (in Hz) corresponding to radar boresight.</span>
@@ -124,7 +124,7 @@
 </span><span id="L-28"><a href="#L-28"><span class="linenos"> 28</span></a><span class="sd">        Digital elevation model. Surface heights (in m) above ellipsoid.</span>
 </span><span id="L-29"><a href="#L-29"><span class="linenos"> 29</span></a><span class="sd">    rdr2geo_params : dict, optional</span>
 </span><span id="L-30"><a href="#L-30"><span class="linenos"> 30</span></a><span class="sd">        Root finding parameters for isce3.geometry.rdr2geo_bracket.</span>
-</span><span id="L-31"><a href="#L-31"><span class="linenos"> 31</span></a><span class="sd">        Keys among {&quot;tol_height&quot;, &quot;look_min&quot;, &quot;look_max&quot;}.</span>
+</span><span id="L-31"><a href="#L-31"><span class="linenos"> 31</span></a><span class="sd">        Keys among {"tol_height", "look_min", "look_max"}.</span>
 </span><span id="L-32"><a href="#L-32"><span class="linenos"> 32</span></a><span class="sd">    interp_method : str, optional</span>
 </span><span id="L-33"><a href="#L-33"><span class="linenos"> 33</span></a><span class="sd">        Interpolation method to be used for the resulting LUT</span>
 </span><span id="L-34"><a href="#L-34"><span class="linenos"> 34</span></a><span class="sd">        Defaults to the same interpolation method as the doppler LUT</span>
@@ -139,7 +139,7 @@
 </span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a><span class="sd">        ellipsoid is inferred from DEM.</span>
 </span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a><span class="sd">    hgt_lut : isce3.core.LUT2d</span>
 </span><span id="L-45"><a href="#L-45"><span class="linenos"> 45</span></a><span class="sd">        Terrain height (in m) vs native-Doppler radar coordinates (time, range).</span>
-</span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a><span class="sd">    """</span>
 </span><span id="L-47"><a href="#L-47"><span class="linenos"> 47</span></a>    <span class="c1"># Use same coords in the provided Doppler LUT</span>
 </span><span id="L-48"><a href="#L-48"><span class="linenos"> 48</span></a>    <span class="c1"># Note that RSLC metadata requires all LUTs to be on the same grid anyhow.</span>
 </span><span id="L-49"><a href="#L-49"><span class="linenos"> 49</span></a>    <span class="n">az_times</span> <span class="o">=</span> <span class="n">doppler</span><span class="o">.</span><span class="n">y_start</span> <span class="o">+</span> <span class="n">doppler</span><span class="o">.</span><span class="n">y_spacing</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">doppler</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
@@ -163,15 +163,15 @@
 </span><span id="L-67"><a href="#L-67"><span class="linenos"> 67</span></a>    <span class="n">height</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">target_xyz</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span>
 </span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a>
 </span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a>    <span class="c1"># There are several conventions for antenna angle coordinates.</span>
-</span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a>    <span class="c1"># The NISAR patterns are provided in the &quot;EL AND AZ&quot; convention,</span>
+</span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a>    <span class="c1"># The NISAR patterns are provided in the "EL AND AZ" convention,</span>
 </span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a>    <span class="c1"># which is the default in isce3.  See JPL D-80882 and REE manual.</span>
 </span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a>    <span class="n">frame</span> <span class="o">=</span> <span class="n">isce3</span><span class="o">.</span><span class="n">antenna</span><span class="o">.</span><span class="n">Frame</span><span class="p">()</span>
 </span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">elevation</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
-</span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a>        <span class="c1"># position and orientation don&#39;t depend on slant range</span>
+</span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a>        <span class="c1"># position and orientation don't depend on slant range</span>
 </span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a>        <span class="n">ti</span> <span class="o">=</span> <span class="n">az_times</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
 </span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a>        <span class="n">radar_pos</span><span class="p">,</span> <span class="n">radar_vel</span> <span class="o">=</span> <span class="n">orbit</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">ti</span><span class="p">)</span>
-</span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a>        <span class="c1"># RCS is the &quot;(Radar Antenna) Reflector Coordinate System&quot;</span>
-</span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a>        <span class="c1"># The attitude data tells us how it&#39;s oriented relative to</span>
+</span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a>        <span class="c1"># RCS is the "(Radar Antenna) Reflector Coordinate System"</span>
+</span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a>        <span class="c1"># The attitude data tells us how it's oriented relative to</span>
 </span><span id="L-79"><a href="#L-79"><span class="linenos"> 79</span></a>        <span class="c1"># ECEF XYZ coordinates.  See JPL D-80882, JPL D-102264</span>
 </span><span id="L-80"><a href="#L-80"><span class="linenos"> 80</span></a>        <span class="n">q_rcs2xyz</span> <span class="o">=</span> <span class="n">attitude</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">ti</span><span class="p">)</span>
 </span><span id="L-81"><a href="#L-81"><span class="linenos"> 81</span></a>        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">elevation</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
@@ -198,29 +198,29 @@
 </span><span id="L-102"><a href="#L-102"><span class="linenos">102</span></a>
 </span><span id="L-103"><a href="#L-103"><span class="linenos">103</span></a><span class="nd">@unique</span>
 </span><span id="L-104"><a href="#L-104"><span class="linenos">104</span></a><span class="k">class</span><span class="w"> </span><span class="nc">AreaConvention</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>  <span class="c1"># StrEnum in Python 3.11+</span>
-</span><span id="L-105"><a href="#L-105"><span class="linenos">105</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-105"><a href="#L-105"><span class="linenos">105</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-106"><a href="#L-106"><span class="linenos">106</span></a><span class="sd">    Flags denoting pixel area normalization convention for backscatter values.</span>
-</span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a><span class="sd">    """</span>
 </span><span id="L-108"><a href="#L-108"><span class="linenos">108</span></a>
-</span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a>    <span class="n">BETA0</span> <span class="o">=</span> <span class="s2">&quot;beta0&quot;</span>
-</span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a>    <span class="n">BETA0</span> <span class="o">=</span> <span class="s2">"beta0"</span>
+</span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a><span class="sd">    Area in slant plane (line-of-sight cross velocity).</span>
-</span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a><span class="sd">    """</span>
 </span><span id="L-113"><a href="#L-113"><span class="linenos">113</span></a>
-</span><span id="L-114"><a href="#L-114"><span class="linenos">114</span></a>    <span class="n">SIGMA0</span> <span class="o">=</span> <span class="s2">&quot;sigma0&quot;</span>
-</span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-114"><a href="#L-114"><span class="linenos">114</span></a>    <span class="n">SIGMA0</span> <span class="o">=</span> <span class="s2">"sigma0"</span>
+</span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-116"><a href="#L-116"><span class="linenos">116</span></a><span class="sd">    Area in ground plane.</span>
-</span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a><span class="sd">    """</span>
 </span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a>
-</span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a>    <span class="n">GAMMA0</span> <span class="o">=</span> <span class="s2">&quot;gamma0&quot;</span>
-</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a>    <span class="n">GAMMA0</span> <span class="o">=</span> <span class="s2">"gamma0"</span>
+</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a><span class="sd">    Ground area projected into a plane perpendicular to radar line-of-sight.</span>
-</span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a><span class="sd">    """</span>
 </span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a>
 </span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a>
 </span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a><span class="k">def</span><span class="w"> </span><span class="nf">make_cal_luts</span><span class="p">(</span><span class="n">inc_lut</span><span class="p">:</span> <span class="n">LUT2d</span><span class="p">,</span> <span class="n">abscal</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
-</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a>                  <span class="n">input_convention</span><span class="p">:</span> <span class="n">AreaConvention</span> <span class="o">=</span> <span class="s2">&quot;beta0&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">LUT2d</span><span class="p">]:</span>
-</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a>                  <span class="n">input_convention</span><span class="p">:</span> <span class="n">AreaConvention</span> <span class="o">=</span> <span class="s2">"beta0"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">LUT2d</span><span class="p">]:</span>
+</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a><span class="sd">    Generate calibration lookup tables for converting between backscatter</span>
 </span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a><span class="sd">    area normalization conventions.</span>
 </span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a>
@@ -250,11 +250,11 @@
 </span><span id="L-154"><a href="#L-154"><span class="linenos">154</span></a><span class="sd">    The units and sense of the LUTs follow the conventions established for</span>
 </span><span id="L-155"><a href="#L-155"><span class="linenos">155</span></a><span class="sd">    Sentinel-1 data [1]_ and NISAR data [2]_.</span>
 </span><span id="L-156"><a href="#L-156"><span class="linenos">156</span></a>
-</span><span id="L-157"><a href="#L-157"><span class="linenos">157</span></a><span class="sd">    .. [1] Piantanida, et al., &quot;Sentinel-1 Level 1 Detailed Algorithm</span>
-</span><span id="L-158"><a href="#L-158"><span class="linenos">158</span></a><span class="sd">       Definition&quot;, ESA DI-MPC-IPFDPM, Rev 2.5, p. 9-28, 2022.</span>
-</span><span id="L-159"><a href="#L-159"><span class="linenos">159</span></a><span class="sd">    .. [2] Hawkins, &quot;NASA SDS Product Specification Level-1 Range Doppler</span>
-</span><span id="L-160"><a href="#L-160"><span class="linenos">160</span></a><span class="sd">       Single Look Complex,&quot; JPL D-102268, Version 1.1.0, p. 17, 2024.</span>
-</span><span id="L-161"><a href="#L-161"><span class="linenos">161</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-157"><a href="#L-157"><span class="linenos">157</span></a><span class="sd">    .. [1] Piantanida, et al., "Sentinel-1 Level 1 Detailed Algorithm</span>
+</span><span id="L-158"><a href="#L-158"><span class="linenos">158</span></a><span class="sd">       Definition", ESA DI-MPC-IPFDPM, Rev 2.5, p. 9-28, 2022.</span>
+</span><span id="L-159"><a href="#L-159"><span class="linenos">159</span></a><span class="sd">    .. [2] Hawkins, "NASA SDS Product Specification Level-1 Range Doppler</span>
+</span><span id="L-160"><a href="#L-160"><span class="linenos">160</span></a><span class="sd">       Single Look Complex," JPL D-102268, Version 1.1.0, p. 17, 2024.</span>
+</span><span id="L-161"><a href="#L-161"><span class="linenos">161</span></a><span class="sd">    """</span>
 </span><span id="L-162"><a href="#L-162"><span class="linenos">162</span></a>    <span class="c1"># validate input</span>
 </span><span id="L-163"><a href="#L-163"><span class="linenos">163</span></a>    <span class="n">input_convention</span> <span class="o">=</span> <span class="n">AreaConvention</span><span class="p">(</span><span class="n">input_convention</span><span class="p">)</span>
 </span><span id="L-164"><a href="#L-164"><span class="linenos">164</span></a>
@@ -263,20 +263,20 @@
 </span><span id="L-167"><a href="#L-167"><span class="linenos">167</span></a>    <span class="n">one</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">inc</span><span class="p">)</span>
 </span><span id="L-168"><a href="#L-168"><span class="linenos">168</span></a>
 </span><span id="L-169"><a href="#L-169"><span class="linenos">169</span></a>    <span class="c1"># XXX will include abscal when constructing LUT2d below.</span>
-</span><span id="L-170"><a href="#L-170"><span class="linenos">170</span></a>    <span class="k">if</span> <span class="n">input_convention</span> <span class="o">==</span> <span class="s2">&quot;beta0&quot;</span><span class="p">:</span>
+</span><span id="L-170"><a href="#L-170"><span class="linenos">170</span></a>    <span class="k">if</span> <span class="n">input_convention</span> <span class="o">==</span> <span class="s2">"beta0"</span><span class="p">:</span>
 </span><span id="L-171"><a href="#L-171"><span class="linenos">171</span></a>        <span class="n">beta0</span> <span class="o">=</span> <span class="n">one</span>
 </span><span id="L-172"><a href="#L-172"><span class="linenos">172</span></a>        <span class="n">sigma0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">inc</span><span class="p">))</span>
 </span><span id="L-173"><a href="#L-173"><span class="linenos">173</span></a>        <span class="n">gamma0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">inc</span><span class="p">))</span>
-</span><span id="L-174"><a href="#L-174"><span class="linenos">174</span></a>    <span class="k">elif</span> <span class="n">input_convention</span> <span class="o">==</span> <span class="s2">&quot;sigma0&quot;</span><span class="p">:</span>
+</span><span id="L-174"><a href="#L-174"><span class="linenos">174</span></a>    <span class="k">elif</span> <span class="n">input_convention</span> <span class="o">==</span> <span class="s2">"sigma0"</span><span class="p">:</span>
 </span><span id="L-175"><a href="#L-175"><span class="linenos">175</span></a>        <span class="n">beta0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">inc</span><span class="p">))</span>
 </span><span id="L-176"><a href="#L-176"><span class="linenos">176</span></a>        <span class="n">sigma0</span> <span class="o">=</span> <span class="n">one</span>
 </span><span id="L-177"><a href="#L-177"><span class="linenos">177</span></a>        <span class="n">gamma0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">inc</span><span class="p">))</span>
-</span><span id="L-178"><a href="#L-178"><span class="linenos">178</span></a>    <span class="k">elif</span> <span class="n">input_convention</span> <span class="o">==</span> <span class="s2">&quot;gamma0&quot;</span><span class="p">:</span>
+</span><span id="L-178"><a href="#L-178"><span class="linenos">178</span></a>    <span class="k">elif</span> <span class="n">input_convention</span> <span class="o">==</span> <span class="s2">"gamma0"</span><span class="p">:</span>
 </span><span id="L-179"><a href="#L-179"><span class="linenos">179</span></a>        <span class="n">beta0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">inc</span><span class="p">))</span>
 </span><span id="L-180"><a href="#L-180"><span class="linenos">180</span></a>        <span class="n">sigma0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">inc</span><span class="p">))</span>
 </span><span id="L-181"><a href="#L-181"><span class="linenos">181</span></a>        <span class="n">gamma0</span> <span class="o">=</span> <span class="n">one</span>
 </span><span id="L-182"><a href="#L-182"><span class="linenos">182</span></a>    <span class="k">else</span><span class="p">:</span>
-</span><span id="L-183"><a href="#L-183"><span class="linenos">183</span></a>        <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;unhandled area convention </span><span class="si">{</span><span class="n">input_convention</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="L-183"><a href="#L-183"><span class="linenos">183</span></a>        <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"unhandled area convention </span><span class="si">{</span><span class="n">input_convention</span><span class="si">}</span><span class="s2">"</span>
 </span><span id="L-184"><a href="#L-184"><span class="linenos">184</span></a>
 </span><span id="L-185"><a href="#L-185"><span class="linenos">185</span></a>    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">LUT2d</span><span class="p">(</span><span class="n">inc_lut</span><span class="o">.</span><span class="n">x_start</span><span class="p">,</span> <span class="n">inc_lut</span><span class="o">.</span><span class="n">y_start</span><span class="p">,</span> <span class="n">inc_lut</span><span class="o">.</span><span class="n">x_spacing</span><span class="p">,</span>
 </span><span id="L-186"><a href="#L-186"><span class="linenos">186</span></a>                       <span class="n">inc_lut</span><span class="o">.</span><span class="n">y_spacing</span><span class="p">,</span> <span class="n">backscatter</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">abscal</span><span class="p">),</span>
@@ -301,7 +301,7 @@
 </span><span id="make_los_luts-9"><a href="#make_los_luts-9"><span class="linenos">  9</span></a>                  <span class="n">dem</span><span class="o">=</span><span class="n">isce3</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">DEMInterpolator</span><span class="p">(),</span>
 </span><span id="make_los_luts-10"><a href="#make_los_luts-10"><span class="linenos"> 10</span></a>                  <span class="n">rdr2geo_params</span><span class="o">=</span><span class="nb">dict</span><span class="p">(),</span>
 </span><span id="make_los_luts-11"><a href="#make_los_luts-11"><span class="linenos"> 11</span></a>                  <span class="n">interp_method</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-</span><span id="make_los_luts-12"><a href="#make_los_luts-12"><span class="linenos"> 12</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="make_los_luts-12"><a href="#make_los_luts-12"><span class="linenos"> 12</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="make_los_luts-13"><a href="#make_los_luts-13"><span class="linenos"> 13</span></a><span class="sd">    Generate look-up tables related to radar line-of-sight.</span>
 </span><span id="make_los_luts-14"><a href="#make_los_luts-14"><span class="linenos"> 14</span></a>
 </span><span id="make_los_luts-15"><a href="#make_los_luts-15"><span class="linenos"> 15</span></a><span class="sd">    Parameters</span>
@@ -310,7 +310,7 @@
 </span><span id="make_los_luts-18"><a href="#make_los_luts-18"><span class="linenos"> 18</span></a><span class="sd">        Trajectory of antenna phase center</span>
 </span><span id="make_los_luts-19"><a href="#make_los_luts-19"><span class="linenos"> 19</span></a><span class="sd">    Attitude : isce3.core.Attitude</span>
 </span><span id="make_los_luts-20"><a href="#make_los_luts-20"><span class="linenos"> 20</span></a><span class="sd">        Orientation of the antenna (RCS) frame wrt ECEF frame</span>
-</span><span id="make_los_luts-21"><a href="#make_los_luts-21"><span class="linenos"> 21</span></a><span class="sd">    side : isce3.core.LookSide or str in {&quot;left&quot;, &quot;right&quot;}</span>
+</span><span id="make_los_luts-21"><a href="#make_los_luts-21"><span class="linenos"> 21</span></a><span class="sd">    side : isce3.core.LookSide or str in {"left", "right"}</span>
 </span><span id="make_los_luts-22"><a href="#make_los_luts-22"><span class="linenos"> 22</span></a><span class="sd">        Side the radar looks</span>
 </span><span id="make_los_luts-23"><a href="#make_los_luts-23"><span class="linenos"> 23</span></a><span class="sd">    doppler : isce3.core.LUT2d</span>
 </span><span id="make_los_luts-24"><a href="#make_los_luts-24"><span class="linenos"> 24</span></a><span class="sd">        Doppler centroid (in Hz) corresponding to radar boresight.</span>
@@ -321,7 +321,7 @@
 </span><span id="make_los_luts-29"><a href="#make_los_luts-29"><span class="linenos"> 29</span></a><span class="sd">        Digital elevation model. Surface heights (in m) above ellipsoid.</span>
 </span><span id="make_los_luts-30"><a href="#make_los_luts-30"><span class="linenos"> 30</span></a><span class="sd">    rdr2geo_params : dict, optional</span>
 </span><span id="make_los_luts-31"><a href="#make_los_luts-31"><span class="linenos"> 31</span></a><span class="sd">        Root finding parameters for isce3.geometry.rdr2geo_bracket.</span>
-</span><span id="make_los_luts-32"><a href="#make_los_luts-32"><span class="linenos"> 32</span></a><span class="sd">        Keys among {&quot;tol_height&quot;, &quot;look_min&quot;, &quot;look_max&quot;}.</span>
+</span><span id="make_los_luts-32"><a href="#make_los_luts-32"><span class="linenos"> 32</span></a><span class="sd">        Keys among {"tol_height", "look_min", "look_max"}.</span>
 </span><span id="make_los_luts-33"><a href="#make_los_luts-33"><span class="linenos"> 33</span></a><span class="sd">    interp_method : str, optional</span>
 </span><span id="make_los_luts-34"><a href="#make_los_luts-34"><span class="linenos"> 34</span></a><span class="sd">        Interpolation method to be used for the resulting LUT</span>
 </span><span id="make_los_luts-35"><a href="#make_los_luts-35"><span class="linenos"> 35</span></a><span class="sd">        Defaults to the same interpolation method as the doppler LUT</span>
@@ -336,7 +336,7 @@
 </span><span id="make_los_luts-44"><a href="#make_los_luts-44"><span class="linenos"> 44</span></a><span class="sd">        ellipsoid is inferred from DEM.</span>
 </span><span id="make_los_luts-45"><a href="#make_los_luts-45"><span class="linenos"> 45</span></a><span class="sd">    hgt_lut : isce3.core.LUT2d</span>
 </span><span id="make_los_luts-46"><a href="#make_los_luts-46"><span class="linenos"> 46</span></a><span class="sd">        Terrain height (in m) vs native-Doppler radar coordinates (time, range).</span>
-</span><span id="make_los_luts-47"><a href="#make_los_luts-47"><span class="linenos"> 47</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="make_los_luts-47"><a href="#make_los_luts-47"><span class="linenos"> 47</span></a><span class="sd">    """</span>
 </span><span id="make_los_luts-48"><a href="#make_los_luts-48"><span class="linenos"> 48</span></a>    <span class="c1"># Use same coords in the provided Doppler LUT</span>
 </span><span id="make_los_luts-49"><a href="#make_los_luts-49"><span class="linenos"> 49</span></a>    <span class="c1"># Note that RSLC metadata requires all LUTs to be on the same grid anyhow.</span>
 </span><span id="make_los_luts-50"><a href="#make_los_luts-50"><span class="linenos"> 50</span></a>    <span class="n">az_times</span> <span class="o">=</span> <span class="n">doppler</span><span class="o">.</span><span class="n">y_start</span> <span class="o">+</span> <span class="n">doppler</span><span class="o">.</span><span class="n">y_spacing</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">doppler</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
@@ -360,15 +360,15 @@
 </span><span id="make_los_luts-68"><a href="#make_los_luts-68"><span class="linenos"> 68</span></a>    <span class="n">height</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">target_xyz</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span>
 </span><span id="make_los_luts-69"><a href="#make_los_luts-69"><span class="linenos"> 69</span></a>
 </span><span id="make_los_luts-70"><a href="#make_los_luts-70"><span class="linenos"> 70</span></a>    <span class="c1"># There are several conventions for antenna angle coordinates.</span>
-</span><span id="make_los_luts-71"><a href="#make_los_luts-71"><span class="linenos"> 71</span></a>    <span class="c1"># The NISAR patterns are provided in the &quot;EL AND AZ&quot; convention,</span>
+</span><span id="make_los_luts-71"><a href="#make_los_luts-71"><span class="linenos"> 71</span></a>    <span class="c1"># The NISAR patterns are provided in the "EL AND AZ" convention,</span>
 </span><span id="make_los_luts-72"><a href="#make_los_luts-72"><span class="linenos"> 72</span></a>    <span class="c1"># which is the default in isce3.  See JPL D-80882 and REE manual.</span>
 </span><span id="make_los_luts-73"><a href="#make_los_luts-73"><span class="linenos"> 73</span></a>    <span class="n">frame</span> <span class="o">=</span> <span class="n">isce3</span><span class="o">.</span><span class="n">antenna</span><span class="o">.</span><span class="n">Frame</span><span class="p">()</span>
 </span><span id="make_los_luts-74"><a href="#make_los_luts-74"><span class="linenos"> 74</span></a>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">elevation</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
-</span><span id="make_los_luts-75"><a href="#make_los_luts-75"><span class="linenos"> 75</span></a>        <span class="c1"># position and orientation don&#39;t depend on slant range</span>
+</span><span id="make_los_luts-75"><a href="#make_los_luts-75"><span class="linenos"> 75</span></a>        <span class="c1"># position and orientation don't depend on slant range</span>
 </span><span id="make_los_luts-76"><a href="#make_los_luts-76"><span class="linenos"> 76</span></a>        <span class="n">ti</span> <span class="o">=</span> <span class="n">az_times</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
 </span><span id="make_los_luts-77"><a href="#make_los_luts-77"><span class="linenos"> 77</span></a>        <span class="n">radar_pos</span><span class="p">,</span> <span class="n">radar_vel</span> <span class="o">=</span> <span class="n">orbit</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">ti</span><span class="p">)</span>
-</span><span id="make_los_luts-78"><a href="#make_los_luts-78"><span class="linenos"> 78</span></a>        <span class="c1"># RCS is the &quot;(Radar Antenna) Reflector Coordinate System&quot;</span>
-</span><span id="make_los_luts-79"><a href="#make_los_luts-79"><span class="linenos"> 79</span></a>        <span class="c1"># The attitude data tells us how it&#39;s oriented relative to</span>
+</span><span id="make_los_luts-78"><a href="#make_los_luts-78"><span class="linenos"> 78</span></a>        <span class="c1"># RCS is the "(Radar Antenna) Reflector Coordinate System"</span>
+</span><span id="make_los_luts-79"><a href="#make_los_luts-79"><span class="linenos"> 79</span></a>        <span class="c1"># The attitude data tells us how it's oriented relative to</span>
 </span><span id="make_los_luts-80"><a href="#make_los_luts-80"><span class="linenos"> 80</span></a>        <span class="c1"># ECEF XYZ coordinates.  See JPL D-80882, JPL D-102264</span>
 </span><span id="make_los_luts-81"><a href="#make_los_luts-81"><span class="linenos"> 81</span></a>        <span class="n">q_rcs2xyz</span> <span class="o">=</span> <span class="n">attitude</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">ti</span><span class="p">)</span>
 </span><span id="make_los_luts-82"><a href="#make_los_luts-82"><span class="linenos"> 82</span></a>        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">elevation</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
@@ -446,24 +446,24 @@ hgt_lut : isce3.core.LUT2d
     <a class="headerlink" href="#AreaConvention"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="AreaConvention-104"><a href="#AreaConvention-104"><span class="linenos">104</span></a><span class="nd">@unique</span>
 </span><span id="AreaConvention-105"><a href="#AreaConvention-105"><span class="linenos">105</span></a><span class="k">class</span><span class="w"> </span><span class="nc">AreaConvention</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>  <span class="c1"># StrEnum in Python 3.11+</span>
-</span><span id="AreaConvention-106"><a href="#AreaConvention-106"><span class="linenos">106</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="AreaConvention-106"><a href="#AreaConvention-106"><span class="linenos">106</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="AreaConvention-107"><a href="#AreaConvention-107"><span class="linenos">107</span></a><span class="sd">    Flags denoting pixel area normalization convention for backscatter values.</span>
-</span><span id="AreaConvention-108"><a href="#AreaConvention-108"><span class="linenos">108</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="AreaConvention-108"><a href="#AreaConvention-108"><span class="linenos">108</span></a><span class="sd">    """</span>
 </span><span id="AreaConvention-109"><a href="#AreaConvention-109"><span class="linenos">109</span></a>
-</span><span id="AreaConvention-110"><a href="#AreaConvention-110"><span class="linenos">110</span></a>    <span class="n">BETA0</span> <span class="o">=</span> <span class="s2">&quot;beta0&quot;</span>
-</span><span id="AreaConvention-111"><a href="#AreaConvention-111"><span class="linenos">111</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="AreaConvention-110"><a href="#AreaConvention-110"><span class="linenos">110</span></a>    <span class="n">BETA0</span> <span class="o">=</span> <span class="s2">"beta0"</span>
+</span><span id="AreaConvention-111"><a href="#AreaConvention-111"><span class="linenos">111</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="AreaConvention-112"><a href="#AreaConvention-112"><span class="linenos">112</span></a><span class="sd">    Area in slant plane (line-of-sight cross velocity).</span>
-</span><span id="AreaConvention-113"><a href="#AreaConvention-113"><span class="linenos">113</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="AreaConvention-113"><a href="#AreaConvention-113"><span class="linenos">113</span></a><span class="sd">    """</span>
 </span><span id="AreaConvention-114"><a href="#AreaConvention-114"><span class="linenos">114</span></a>
-</span><span id="AreaConvention-115"><a href="#AreaConvention-115"><span class="linenos">115</span></a>    <span class="n">SIGMA0</span> <span class="o">=</span> <span class="s2">&quot;sigma0&quot;</span>
-</span><span id="AreaConvention-116"><a href="#AreaConvention-116"><span class="linenos">116</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="AreaConvention-115"><a href="#AreaConvention-115"><span class="linenos">115</span></a>    <span class="n">SIGMA0</span> <span class="o">=</span> <span class="s2">"sigma0"</span>
+</span><span id="AreaConvention-116"><a href="#AreaConvention-116"><span class="linenos">116</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="AreaConvention-117"><a href="#AreaConvention-117"><span class="linenos">117</span></a><span class="sd">    Area in ground plane.</span>
-</span><span id="AreaConvention-118"><a href="#AreaConvention-118"><span class="linenos">118</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="AreaConvention-118"><a href="#AreaConvention-118"><span class="linenos">118</span></a><span class="sd">    """</span>
 </span><span id="AreaConvention-119"><a href="#AreaConvention-119"><span class="linenos">119</span></a>
-</span><span id="AreaConvention-120"><a href="#AreaConvention-120"><span class="linenos">120</span></a>    <span class="n">GAMMA0</span> <span class="o">=</span> <span class="s2">&quot;gamma0&quot;</span>
-</span><span id="AreaConvention-121"><a href="#AreaConvention-121"><span class="linenos">121</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="AreaConvention-120"><a href="#AreaConvention-120"><span class="linenos">120</span></a>    <span class="n">GAMMA0</span> <span class="o">=</span> <span class="s2">"gamma0"</span>
+</span><span id="AreaConvention-121"><a href="#AreaConvention-121"><span class="linenos">121</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="AreaConvention-122"><a href="#AreaConvention-122"><span class="linenos">122</span></a><span class="sd">    Ground area projected into a plane perpendicular to radar line-of-sight.</span>
-</span><span id="AreaConvention-123"><a href="#AreaConvention-123"><span class="linenos">123</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="AreaConvention-123"><a href="#AreaConvention-123"><span class="linenos">123</span></a><span class="sd">    """</span>
 </span></pre></div>
 
 
@@ -519,15 +519,15 @@ hgt_lut : isce3.core.LUT2d
 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">make_cal_luts</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">inc_lut</span><span class="p">:</span> <span class="n">isce3</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">isce3</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">LUT2d</span>,</span><span class="param">	<span class="n">abscal</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span>,</span><span class="param">	<span class="n">input_convention</span><span class="p">:</span> <span class="n"><a href="#AreaConvention">AreaConvention</a></span> <span class="o">=</span> <span class="s1">&#39;beta0&#39;</span></span><span class="return-annotation">) -> <span class="nb">tuple</span><span class="p">[</span><span class="n">isce3</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">isce3</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">LUT2d</span><span class="p">]</span>:</span></span>
+        <span class="name">make_cal_luts</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">inc_lut</span><span class="p">:</span> <span class="n">isce3</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">isce3</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">LUT2d</span>,</span><span class="param">	<span class="n">abscal</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span>,</span><span class="param">	<span class="n">input_convention</span><span class="p">:</span> <span class="n"><a href="#AreaConvention">AreaConvention</a></span> <span class="o">=</span> <span class="s1">'beta0'</span></span><span class="return-annotation">) -> <span class="nb">tuple</span><span class="p">[</span><span class="n">isce3</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">isce3</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">LUT2d</span><span class="p">]</span>:</span></span>
 
                 <label class="view-source-button" for="make_cal_luts-view-source"><span>View Source</span></label>
 
     </div>
     <a class="headerlink" href="#make_cal_luts"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="make_cal_luts-126"><a href="#make_cal_luts-126"><span class="linenos">126</span></a><span class="k">def</span><span class="w"> </span><span class="nf">make_cal_luts</span><span class="p">(</span><span class="n">inc_lut</span><span class="p">:</span> <span class="n">LUT2d</span><span class="p">,</span> <span class="n">abscal</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
-</span><span id="make_cal_luts-127"><a href="#make_cal_luts-127"><span class="linenos">127</span></a>                  <span class="n">input_convention</span><span class="p">:</span> <span class="n">AreaConvention</span> <span class="o">=</span> <span class="s2">&quot;beta0&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">LUT2d</span><span class="p">]:</span>
-</span><span id="make_cal_luts-128"><a href="#make_cal_luts-128"><span class="linenos">128</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="make_cal_luts-127"><a href="#make_cal_luts-127"><span class="linenos">127</span></a>                  <span class="n">input_convention</span><span class="p">:</span> <span class="n">AreaConvention</span> <span class="o">=</span> <span class="s2">"beta0"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">LUT2d</span><span class="p">]:</span>
+</span><span id="make_cal_luts-128"><a href="#make_cal_luts-128"><span class="linenos">128</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="make_cal_luts-129"><a href="#make_cal_luts-129"><span class="linenos">129</span></a><span class="sd">    Generate calibration lookup tables for converting between backscatter</span>
 </span><span id="make_cal_luts-130"><a href="#make_cal_luts-130"><span class="linenos">130</span></a><span class="sd">    area normalization conventions.</span>
 </span><span id="make_cal_luts-131"><a href="#make_cal_luts-131"><span class="linenos">131</span></a>
@@ -557,11 +557,11 @@ hgt_lut : isce3.core.LUT2d
 </span><span id="make_cal_luts-155"><a href="#make_cal_luts-155"><span class="linenos">155</span></a><span class="sd">    The units and sense of the LUTs follow the conventions established for</span>
 </span><span id="make_cal_luts-156"><a href="#make_cal_luts-156"><span class="linenos">156</span></a><span class="sd">    Sentinel-1 data [1]_ and NISAR data [2]_.</span>
 </span><span id="make_cal_luts-157"><a href="#make_cal_luts-157"><span class="linenos">157</span></a>
-</span><span id="make_cal_luts-158"><a href="#make_cal_luts-158"><span class="linenos">158</span></a><span class="sd">    .. [1] Piantanida, et al., &quot;Sentinel-1 Level 1 Detailed Algorithm</span>
-</span><span id="make_cal_luts-159"><a href="#make_cal_luts-159"><span class="linenos">159</span></a><span class="sd">       Definition&quot;, ESA DI-MPC-IPFDPM, Rev 2.5, p. 9-28, 2022.</span>
-</span><span id="make_cal_luts-160"><a href="#make_cal_luts-160"><span class="linenos">160</span></a><span class="sd">    .. [2] Hawkins, &quot;NASA SDS Product Specification Level-1 Range Doppler</span>
-</span><span id="make_cal_luts-161"><a href="#make_cal_luts-161"><span class="linenos">161</span></a><span class="sd">       Single Look Complex,&quot; JPL D-102268, Version 1.1.0, p. 17, 2024.</span>
-</span><span id="make_cal_luts-162"><a href="#make_cal_luts-162"><span class="linenos">162</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="make_cal_luts-158"><a href="#make_cal_luts-158"><span class="linenos">158</span></a><span class="sd">    .. [1] Piantanida, et al., "Sentinel-1 Level 1 Detailed Algorithm</span>
+</span><span id="make_cal_luts-159"><a href="#make_cal_luts-159"><span class="linenos">159</span></a><span class="sd">       Definition", ESA DI-MPC-IPFDPM, Rev 2.5, p. 9-28, 2022.</span>
+</span><span id="make_cal_luts-160"><a href="#make_cal_luts-160"><span class="linenos">160</span></a><span class="sd">    .. [2] Hawkins, "NASA SDS Product Specification Level-1 Range Doppler</span>
+</span><span id="make_cal_luts-161"><a href="#make_cal_luts-161"><span class="linenos">161</span></a><span class="sd">       Single Look Complex," JPL D-102268, Version 1.1.0, p. 17, 2024.</span>
+</span><span id="make_cal_luts-162"><a href="#make_cal_luts-162"><span class="linenos">162</span></a><span class="sd">    """</span>
 </span><span id="make_cal_luts-163"><a href="#make_cal_luts-163"><span class="linenos">163</span></a>    <span class="c1"># validate input</span>
 </span><span id="make_cal_luts-164"><a href="#make_cal_luts-164"><span class="linenos">164</span></a>    <span class="n">input_convention</span> <span class="o">=</span> <span class="n">AreaConvention</span><span class="p">(</span><span class="n">input_convention</span><span class="p">)</span>
 </span><span id="make_cal_luts-165"><a href="#make_cal_luts-165"><span class="linenos">165</span></a>
@@ -570,20 +570,20 @@ hgt_lut : isce3.core.LUT2d
 </span><span id="make_cal_luts-168"><a href="#make_cal_luts-168"><span class="linenos">168</span></a>    <span class="n">one</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">inc</span><span class="p">)</span>
 </span><span id="make_cal_luts-169"><a href="#make_cal_luts-169"><span class="linenos">169</span></a>
 </span><span id="make_cal_luts-170"><a href="#make_cal_luts-170"><span class="linenos">170</span></a>    <span class="c1"># XXX will include abscal when constructing LUT2d below.</span>
-</span><span id="make_cal_luts-171"><a href="#make_cal_luts-171"><span class="linenos">171</span></a>    <span class="k">if</span> <span class="n">input_convention</span> <span class="o">==</span> <span class="s2">&quot;beta0&quot;</span><span class="p">:</span>
+</span><span id="make_cal_luts-171"><a href="#make_cal_luts-171"><span class="linenos">171</span></a>    <span class="k">if</span> <span class="n">input_convention</span> <span class="o">==</span> <span class="s2">"beta0"</span><span class="p">:</span>
 </span><span id="make_cal_luts-172"><a href="#make_cal_luts-172"><span class="linenos">172</span></a>        <span class="n">beta0</span> <span class="o">=</span> <span class="n">one</span>
 </span><span id="make_cal_luts-173"><a href="#make_cal_luts-173"><span class="linenos">173</span></a>        <span class="n">sigma0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">inc</span><span class="p">))</span>
 </span><span id="make_cal_luts-174"><a href="#make_cal_luts-174"><span class="linenos">174</span></a>        <span class="n">gamma0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">inc</span><span class="p">))</span>
-</span><span id="make_cal_luts-175"><a href="#make_cal_luts-175"><span class="linenos">175</span></a>    <span class="k">elif</span> <span class="n">input_convention</span> <span class="o">==</span> <span class="s2">&quot;sigma0&quot;</span><span class="p">:</span>
+</span><span id="make_cal_luts-175"><a href="#make_cal_luts-175"><span class="linenos">175</span></a>    <span class="k">elif</span> <span class="n">input_convention</span> <span class="o">==</span> <span class="s2">"sigma0"</span><span class="p">:</span>
 </span><span id="make_cal_luts-176"><a href="#make_cal_luts-176"><span class="linenos">176</span></a>        <span class="n">beta0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">inc</span><span class="p">))</span>
 </span><span id="make_cal_luts-177"><a href="#make_cal_luts-177"><span class="linenos">177</span></a>        <span class="n">sigma0</span> <span class="o">=</span> <span class="n">one</span>
 </span><span id="make_cal_luts-178"><a href="#make_cal_luts-178"><span class="linenos">178</span></a>        <span class="n">gamma0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">inc</span><span class="p">))</span>
-</span><span id="make_cal_luts-179"><a href="#make_cal_luts-179"><span class="linenos">179</span></a>    <span class="k">elif</span> <span class="n">input_convention</span> <span class="o">==</span> <span class="s2">&quot;gamma0&quot;</span><span class="p">:</span>
+</span><span id="make_cal_luts-179"><a href="#make_cal_luts-179"><span class="linenos">179</span></a>    <span class="k">elif</span> <span class="n">input_convention</span> <span class="o">==</span> <span class="s2">"gamma0"</span><span class="p">:</span>
 </span><span id="make_cal_luts-180"><a href="#make_cal_luts-180"><span class="linenos">180</span></a>        <span class="n">beta0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">inc</span><span class="p">))</span>
 </span><span id="make_cal_luts-181"><a href="#make_cal_luts-181"><span class="linenos">181</span></a>        <span class="n">sigma0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">inc</span><span class="p">))</span>
 </span><span id="make_cal_luts-182"><a href="#make_cal_luts-182"><span class="linenos">182</span></a>        <span class="n">gamma0</span> <span class="o">=</span> <span class="n">one</span>
 </span><span id="make_cal_luts-183"><a href="#make_cal_luts-183"><span class="linenos">183</span></a>    <span class="k">else</span><span class="p">:</span>
-</span><span id="make_cal_luts-184"><a href="#make_cal_luts-184"><span class="linenos">184</span></a>        <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;unhandled area convention </span><span class="si">{</span><span class="n">input_convention</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="make_cal_luts-184"><a href="#make_cal_luts-184"><span class="linenos">184</span></a>        <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"unhandled area convention </span><span class="si">{</span><span class="n">input_convention</span><span class="si">}</span><span class="s2">"</span>
 </span><span id="make_cal_luts-185"><a href="#make_cal_luts-185"><span class="linenos">185</span></a>
 </span><span id="make_cal_luts-186"><a href="#make_cal_luts-186"><span class="linenos">186</span></a>    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">LUT2d</span><span class="p">(</span><span class="n">inc_lut</span><span class="o">.</span><span class="n">x_start</span><span class="p">,</span> <span class="n">inc_lut</span><span class="o">.</span><span class="n">y_start</span><span class="p">,</span> <span class="n">inc_lut</span><span class="o">.</span><span class="n">x_spacing</span><span class="p">,</span>
 </span><span id="make_cal_luts-187"><a href="#make_cal_luts-187"><span class="linenos">187</span></a>                       <span class="n">inc_lut</span><span class="o">.</span><span class="n">y_spacing</span><span class="p">,</span> <span class="n">backscatter</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">abscal</span><span class="p">),</span>

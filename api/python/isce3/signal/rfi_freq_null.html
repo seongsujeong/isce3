@@ -100,10 +100,10 @@ averaged Power Spectra. Detected RFI-contaminated frequency bins are nulled.</p>
 
                         <label class="view-source-button" for="mod-rfi_freq_null-view-source"><span>View Source</span></label>
 
-                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos">  1</span></a><span class="sd">&quot;&quot;&quot;</span>
+                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos">  1</span></a><span class="sd">"""</span>
 </span><span id="L-2"><a href="#L-2"><span class="linenos">  2</span></a><span class="sd">Perform RFI Detection and mitigation by evaluating raw data frequency domain</span>
 </span><span id="L-3"><a href="#L-3"><span class="linenos">  3</span></a><span class="sd">averaged Power Spectra. Detected RFI-contaminated frequency bins are nulled.</span>
-</span><span id="L-4"><a href="#L-4"><span class="linenos">  4</span></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-4"><a href="#L-4"><span class="linenos">  4</span></a><span class="sd">"""</span>
 </span><span id="L-5"><a href="#L-5"><span class="linenos">  5</span></a>
 </span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 </span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a>
@@ -114,7 +114,7 @@ averaged Power Spectra. Detected RFI-contaminated frequency bins are nulled.</p>
 </span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterator</span>
 </span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a>
 </span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a><span class="k">def</span><span class="w"> </span><span class="nf">overlap_slice_gen</span><span class="p">(</span><span class="n">total_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">overlap</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">slice</span><span class="p">]:</span>
-</span><span id="L-15"><a href="#L-15"><span class="linenos"> 15</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate slices with size defined by batch_size and number of </span>
+</span><span id="L-15"><a href="#L-15"><span class="linenos"> 15</span></a><span class="w">    </span><span class="sd">"""Generate slices with size defined by batch_size and number of </span>
 </span><span id="L-16"><a href="#L-16"><span class="linenos"> 16</span></a><span class="sd">    overlapping samples defined by overlap.</span>
 </span><span id="L-17"><a href="#L-17"><span class="linenos"> 17</span></a>
 </span><span id="L-18"><a href="#L-18"><span class="linenos"> 18</span></a><span class="sd">    Parameters</span>
@@ -132,14 +132,14 @@ averaged Power Spectra. Detected RFI-contaminated frequency bins are nulled.</p>
 </span><span id="L-30"><a href="#L-30"><span class="linenos"> 30</span></a><span class="sd">    slice: slice obj</span>
 </span><span id="L-31"><a href="#L-31"><span class="linenos"> 31</span></a><span class="sd">        Iterable slices of data with specified input batch size, bounded by start_idx</span>
 </span><span id="L-32"><a href="#L-32"><span class="linenos"> 32</span></a><span class="sd">        and stop_idx.</span>
-</span><span id="L-33"><a href="#L-33"><span class="linenos"> 33</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-33"><a href="#L-33"><span class="linenos"> 33</span></a><span class="sd">    """</span>
 </span><span id="L-34"><a href="#L-34"><span class="linenos"> 34</span></a>
 </span><span id="L-35"><a href="#L-35"><span class="linenos"> 35</span></a>    <span class="n">step_size</span> <span class="o">=</span> <span class="n">batch_size</span> <span class="o">-</span> <span class="n">overlap</span>
 </span><span id="L-36"><a href="#L-36"><span class="linenos"> 36</span></a>    <span class="n">overlap_batch_size</span> <span class="o">=</span> <span class="n">batch_size</span> <span class="o">+</span> <span class="n">step_size</span>
 </span><span id="L-37"><a href="#L-37"><span class="linenos"> 37</span></a>
 </span><span id="L-38"><a href="#L-38"><span class="linenos"> 38</span></a>    <span class="k">if</span> <span class="n">batch_size</span> <span class="o">&lt;</span> <span class="n">overlap</span><span class="p">:</span>
 </span><span id="L-39"><a href="#L-39"><span class="linenos"> 39</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span id="L-40"><a href="#L-40"><span class="linenos"> 40</span></a>            <span class="sa">f</span><span class="s2">&quot;The value of &#39;overlap&#39; (</span><span class="si">{</span><span class="n">overlap</span><span class="si">}</span><span class="s2">) must be less than that of &#39;batch_size&#39; (</span><span class="si">{</span><span class="n">batch_size</span><span class="si">}</span><span class="s2">).&quot;</span>
+</span><span id="L-40"><a href="#L-40"><span class="linenos"> 40</span></a>            <span class="sa">f</span><span class="s2">"The value of 'overlap' (</span><span class="si">{</span><span class="n">overlap</span><span class="si">}</span><span class="s2">) must be less than that of 'batch_size' (</span><span class="si">{</span><span class="n">batch_size</span><span class="si">}</span><span class="s2">)."</span>
 </span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a>        <span class="p">)</span>
 </span><span id="L-42"><a href="#L-42"><span class="linenos"> 42</span></a>
 </span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a>    <span class="c1"># If total_size is less than overlap_batch_size, generate the slice that</span>
@@ -176,7 +176,7 @@ averaged Power Spectra. Detected RFI-contaminated frequency bins are nulled.</p>
 </span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a>    <span class="n">mitigate_enable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 </span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a>    <span class="n">raw_data_mitigated</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a><span class="p">):</span>
-</span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Top-level function which performs RFI mitigation on input raw data</span>
+</span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a><span class="w">    </span><span class="sd">"""Top-level function which performs RFI mitigation on input raw data</span>
 </span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a><span class="sd">    using Frequency Domain Notch Filtering (FDNF) approach by calling </span>
 </span><span id="L-79"><a href="#L-79"><span class="linenos"> 79</span></a><span class="sd">    lower-level mitigation algorithm.</span>
 </span><span id="L-80"><a href="#L-80"><span class="linenos"> 80</span></a>
@@ -231,7 +231,7 @@ averaged Power Spectra. Detected RFI-contaminated frequency bins are nulled.</p>
 </span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a><span class="sd">         must be an array-like object supporting `multidimensional array access</span>
 </span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a><span class="sd">         &lt;https://numpy.org/doc/stable/user/basics.indexing.html&gt;`_.</span>
 </span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a><span class="sd">         The array should have the same shape and dtype as the input raw data array.</span>
-</span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a><span class="sd">         If None (the default), the input &#39;raw&#39; data array will be modified in-place.</span>
+</span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a><span class="sd">         If None (the default), the input 'raw' data array will be modified in-place.</span>
 </span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a>
 </span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a><span class="sd">    Returns</span>
 </span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a><span class="sd">    -------</span>
@@ -243,7 +243,7 @@ averaged Power Spectra. Detected RFI-contaminated frequency bins are nulled.</p>
 </span><span id="L-141"><a href="#L-141"><span class="linenos">141</span></a><span class="sd">    ..[1]  F. Meyer, J. Nicoll, and A. Doulgeris, “Correction and Characterization </span>
 </span><span id="L-142"><a href="#L-142"><span class="linenos">142</span></a><span class="sd">    of Radio Frequency Interference Signatures in L-Band Synthetic Aperture Radar </span>
 </span><span id="L-143"><a href="#L-143"><span class="linenos">143</span></a><span class="sd">    Data”, IEEE Trans. Geosci. Remote Sens., vol. 51, no. 10, pp. 4961-4972, Oct. 2013.</span>
-</span><span id="L-144"><a href="#L-144"><span class="linenos">144</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-144"><a href="#L-144"><span class="linenos">144</span></a><span class="sd">    """</span>
 </span><span id="L-145"><a href="#L-145"><span class="linenos">145</span></a>
 </span><span id="L-146"><a href="#L-146"><span class="linenos">146</span></a>    <span class="c1"># Modify raw_data in-place</span>
 </span><span id="L-147"><a href="#L-147"><span class="linenos">147</span></a>    <span class="k">if</span> <span class="n">raw_data_mitigated</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -251,8 +251,8 @@ averaged Power Spectra. Detected RFI-contaminated frequency bins are nulled.</p>
 </span><span id="L-149"><a href="#L-149"><span class="linenos">149</span></a>    <span class="k">else</span><span class="p">:</span>
 </span><span id="L-150"><a href="#L-150"><span class="linenos">150</span></a>        <span class="k">if</span> <span class="n">raw_data_mitigated</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">raw_data</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
 </span><span id="L-151"><a href="#L-151"><span class="linenos">151</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span id="L-152"><a href="#L-152"><span class="linenos">152</span></a>                <span class="s2">&quot;Shape mismatch: output mitigated data array must have the same shape&quot;</span>
-</span><span id="L-153"><a href="#L-153"><span class="linenos">153</span></a>                <span class="s2">&quot; as the input data&quot;</span>
+</span><span id="L-152"><a href="#L-152"><span class="linenos">152</span></a>                <span class="s2">"Shape mismatch: output mitigated data array must have the same shape"</span>
+</span><span id="L-153"><a href="#L-153"><span class="linenos">153</span></a>                <span class="s2">" as the input data"</span>
 </span><span id="L-154"><a href="#L-154"><span class="linenos">154</span></a>            <span class="p">)</span>
 </span><span id="L-155"><a href="#L-155"><span class="linenos">155</span></a>
 </span><span id="L-156"><a href="#L-156"><span class="linenos">156</span></a>    <span class="n">num_pulses</span><span class="p">,</span> <span class="n">num_rng_samples</span> <span class="o">=</span> <span class="n">raw_data</span><span class="o">.</span><span class="n">shape</span>
@@ -266,14 +266,14 @@ averaged Power Spectra. Detected RFI-contaminated frequency bins are nulled.</p>
 </span><span id="L-164"><a href="#L-164"><span class="linenos">164</span></a>    <span class="c1"># Verify data blocking dimensions</span>
 </span><span id="L-165"><a href="#L-165"><span class="linenos">165</span></a>    <span class="k">if</span> <span class="n">num_samples_rng_blk</span> <span class="o">&lt;</span> <span class="n">rng_winsize</span><span class="p">:</span>
 </span><span id="L-166"><a href="#L-166"><span class="linenos">166</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span id="L-167"><a href="#L-167"><span class="linenos">167</span></a>            <span class="sa">f</span><span class="s1">&#39;Number of range samples per block </span><span class="si">{</span><span class="n">num_samples_rng_blk</span><span class="si">}</span><span class="s1"> is less than&#39;</span>
-</span><span id="L-168"><a href="#L-168"><span class="linenos">168</span></a>            <span class="sa">f</span><span class="s1">&#39;range window size </span><span class="si">{</span><span class="n">rng_winsize</span><span class="si">}</span><span class="s1">&#39;</span>
+</span><span id="L-167"><a href="#L-167"><span class="linenos">167</span></a>            <span class="sa">f</span><span class="s1">'Number of range samples per block </span><span class="si">{</span><span class="n">num_samples_rng_blk</span><span class="si">}</span><span class="s1"> is less than'</span>
+</span><span id="L-168"><a href="#L-168"><span class="linenos">168</span></a>            <span class="sa">f</span><span class="s1">'range window size </span><span class="si">{</span><span class="n">rng_winsize</span><span class="si">}</span><span class="s1">'</span>
 </span><span id="L-169"><a href="#L-169"><span class="linenos">169</span></a>        <span class="p">)</span>
 </span><span id="L-170"><a href="#L-170"><span class="linenos">170</span></a>
 </span><span id="L-171"><a href="#L-171"><span class="linenos">171</span></a>    <span class="k">if</span> <span class="n">num_pulses_az</span> <span class="o">&lt;</span> <span class="n">az_winsize</span><span class="p">:</span>
 </span><span id="L-172"><a href="#L-172"><span class="linenos">172</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span id="L-173"><a href="#L-173"><span class="linenos">173</span></a>            <span class="sa">f</span><span class="s1">&#39;Number of pulses per block </span><span class="si">{</span><span class="n">num_pulses_az</span><span class="si">}</span><span class="s1"> is less than&#39;</span>
-</span><span id="L-174"><a href="#L-174"><span class="linenos">174</span></a>            <span class="sa">f</span><span class="s1">&#39;azimuth window size </span><span class="si">{</span><span class="n">az_winsize</span><span class="si">}</span><span class="s1">&#39;</span>
+</span><span id="L-173"><a href="#L-173"><span class="linenos">173</span></a>            <span class="sa">f</span><span class="s1">'Number of pulses per block </span><span class="si">{</span><span class="n">num_pulses_az</span><span class="si">}</span><span class="s1"> is less than'</span>
+</span><span id="L-174"><a href="#L-174"><span class="linenos">174</span></a>            <span class="sa">f</span><span class="s1">'azimuth window size </span><span class="si">{</span><span class="n">az_winsize</span><span class="si">}</span><span class="s1">'</span>
 </span><span id="L-175"><a href="#L-175"><span class="linenos">175</span></a>        <span class="p">)</span>
 </span><span id="L-176"><a href="#L-176"><span class="linenos">176</span></a>
 </span><span id="L-177"><a href="#L-177"><span class="linenos">177</span></a>    <span class="c1"># Count the total number of detected RFI frequency bins</span>
@@ -323,7 +323,7 @@ averaged Power Spectra. Detected RFI-contaminated frequency bins are nulled.</p>
 </span><span id="L-221"><a href="#L-221"><span class="linenos">221</span></a>    <span class="n">mitigate_enable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 </span><span id="L-222"><a href="#L-222"><span class="linenos">222</span></a>    <span class="n">raw_data_mitigated</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 </span><span id="L-223"><a href="#L-223"><span class="linenos">223</span></a><span class="p">):</span>
-</span><span id="L-224"><a href="#L-224"><span class="linenos">224</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrapper function which takes raw data input and performs</span>
+</span><span id="L-224"><a href="#L-224"><span class="linenos">224</span></a><span class="w">    </span><span class="sd">"""Wrapper function which takes raw data input and performs</span>
 </span><span id="L-225"><a href="#L-225"><span class="linenos">225</span></a><span class="sd">    RFI mitigation using Frequency Domain Notch Filtering (FDNF) approach</span>
 </span><span id="L-226"><a href="#L-226"><span class="linenos">226</span></a><span class="sd">    by generating a frequency domain detection mask based on individual </span>
 </span><span id="L-227"><a href="#L-227"><span class="linenos">227</span></a><span class="sd">    narrowband detection and wideband detection mask, and subsequently </span>
@@ -368,14 +368,14 @@ averaged Power Spectra. Detected RFI-contaminated frequency bins are nulled.</p>
 </span><span id="L-266"><a href="#L-266"><span class="linenos">266</span></a><span class="sd">         must be an array-like object supporting `multidimensional array access</span>
 </span><span id="L-267"><a href="#L-267"><span class="linenos">267</span></a><span class="sd">         &lt;https://numpy.org/doc/stable/user/basics.indexing.html&gt;`_.</span>
 </span><span id="L-268"><a href="#L-268"><span class="linenos">268</span></a><span class="sd">         The array should have the same shape and dtype as the input raw data array.</span>
-</span><span id="L-269"><a href="#L-269"><span class="linenos">269</span></a><span class="sd">         If None (the default), the input &#39;raw&#39; data array will be modified in-place.</span>
+</span><span id="L-269"><a href="#L-269"><span class="linenos">269</span></a><span class="sd">         If None (the default), the input 'raw' data array will be modified in-place.</span>
 </span><span id="L-270"><a href="#L-270"><span class="linenos">270</span></a>
 </span><span id="L-271"><a href="#L-271"><span class="linenos">271</span></a><span class="sd">    Returns</span>
 </span><span id="L-272"><a href="#L-272"><span class="linenos">272</span></a><span class="sd">    -------</span>
 </span><span id="L-273"><a href="#L-273"><span class="linenos">273</span></a><span class="sd">    rfi_detect_mask: 2D array, bool</span>
 </span><span id="L-274"><a href="#L-274"><span class="linenos">274</span></a><span class="sd">        Frequency domain binary RFI mask of combined TSNB and TVWB types of RFI.</span>
 </span><span id="L-275"><a href="#L-275"><span class="linenos">275</span></a><span class="sd">        Same shape as input raw_data</span>
-</span><span id="L-276"><a href="#L-276"><span class="linenos">276</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-276"><a href="#L-276"><span class="linenos">276</span></a><span class="sd">    """</span>
 </span><span id="L-277"><a href="#L-277"><span class="linenos">277</span></a>
 </span><span id="L-278"><a href="#L-278"><span class="linenos">278</span></a>    <span class="c1"># Contributed by Josh Cohen</span>
 </span><span id="L-279"><a href="#L-279"><span class="linenos">279</span></a>
@@ -384,13 +384,13 @@ averaged Power Spectra. Detected RFI-contaminated frequency bins are nulled.</p>
 </span><span id="L-282"><a href="#L-282"><span class="linenos">282</span></a>    <span class="k">else</span><span class="p">:</span>
 </span><span id="L-283"><a href="#L-283"><span class="linenos">283</span></a>        <span class="k">if</span> <span class="n">raw_data_mitigated</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">raw_data</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
 </span><span id="L-284"><a href="#L-284"><span class="linenos">284</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span id="L-285"><a href="#L-285"><span class="linenos">285</span></a>                <span class="s2">&quot;Shape mismatch: output mitigated data array must have the same shape&quot;</span>
-</span><span id="L-286"><a href="#L-286"><span class="linenos">286</span></a>                <span class="s2">&quot; as the input data&quot;</span>
+</span><span id="L-285"><a href="#L-285"><span class="linenos">285</span></a>                <span class="s2">"Shape mismatch: output mitigated data array must have the same shape"</span>
+</span><span id="L-286"><a href="#L-286"><span class="linenos">286</span></a>                <span class="s2">" as the input data"</span>
 </span><span id="L-287"><a href="#L-287"><span class="linenos">287</span></a>            <span class="p">)</span>
 </span><span id="L-288"><a href="#L-288"><span class="linenos">288</span></a>
 </span><span id="L-289"><a href="#L-289"><span class="linenos">289</span></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">iscomplexobj</span><span class="p">(</span><span class="n">raw_data_mitigated</span><span class="p">):</span>
 </span><span id="L-290"><a href="#L-290"><span class="linenos">290</span></a>        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-</span><span id="L-291"><a href="#L-291"><span class="linenos">291</span></a>            <span class="s2">&quot;Data type mismatch: raw_data_mitigated should be complex.&quot;</span>
+</span><span id="L-291"><a href="#L-291"><span class="linenos">291</span></a>            <span class="s2">"Data type mismatch: raw_data_mitigated should be complex."</span>
 </span><span id="L-292"><a href="#L-292"><span class="linenos">292</span></a>        <span class="p">)</span>
 </span><span id="L-293"><a href="#L-293"><span class="linenos">293</span></a>
 </span><span id="L-294"><a href="#L-294"><span class="linenos">294</span></a>    <span class="n">num_rng_samples</span> <span class="o">=</span> <span class="n">raw_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -435,7 +435,7 @@ averaged Power Spectra. Detected RFI-contaminated frequency bins are nulled.</p>
 </span><span id="L-333"><a href="#L-333"><span class="linenos">333</span></a>
 </span><span id="L-334"><a href="#L-334"><span class="linenos">334</span></a>
 </span><span id="L-335"><a href="#L-335"><span class="linenos">335</span></a><span class="k">def</span><span class="w"> </span><span class="nf">trim_mean_and_std</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">trim_frac</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-</span><span id="L-336"><a href="#L-336"><span class="linenos">336</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-336"><a href="#L-336"><span class="linenos">336</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-337"><a href="#L-337"><span class="linenos">337</span></a><span class="sd">    Return the mean and standard deviation of an array after trimming both tails.</span>
 </span><span id="L-338"><a href="#L-338"><span class="linenos">338</span></a>
 </span><span id="L-339"><a href="#L-339"><span class="linenos">339</span></a><span class="sd">    Parameters</span>
@@ -455,7 +455,7 @@ averaged Power Spectra. Detected RFI-contaminated frequency bins are nulled.</p>
 </span><span id="L-353"><a href="#L-353"><span class="linenos">353</span></a><span class="sd">        Mean of trimmed array.</span>
 </span><span id="L-354"><a href="#L-354"><span class="linenos">354</span></a><span class="sd">    trim_std : numpy.ndarray</span>
 </span><span id="L-355"><a href="#L-355"><span class="linenos">355</span></a><span class="sd">        Standard deviation of trimmed array.</span>
-</span><span id="L-356"><a href="#L-356"><span class="linenos">356</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-356"><a href="#L-356"><span class="linenos">356</span></a><span class="sd">    """</span>
 </span><span id="L-357"><a href="#L-357"><span class="linenos">357</span></a>
 </span><span id="L-358"><a href="#L-358"><span class="linenos">358</span></a>    <span class="c1"># Contributed by Geoffrey Gunter</span>
 </span><span id="L-359"><a href="#L-359"><span class="linenos">359</span></a>
@@ -464,7 +464,7 @@ averaged Power Spectra. Detected RFI-contaminated frequency bins are nulled.</p>
 </span><span id="L-362"><a href="#L-362"><span class="linenos">362</span></a>    <span class="n">lowercut</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">trim_frac</span> <span class="o">*</span> <span class="n">nobs</span><span class="p">))</span>
 </span><span id="L-363"><a href="#L-363"><span class="linenos">363</span></a>    <span class="n">uppercut</span> <span class="o">=</span> <span class="n">nobs</span> <span class="o">-</span> <span class="n">lowercut</span>
 </span><span id="L-364"><a href="#L-364"><span class="linenos">364</span></a>    <span class="k">if</span> <span class="p">(</span><span class="n">lowercut</span> <span class="o">&gt;</span> <span class="n">uppercut</span><span class="p">):</span>
-</span><span id="L-365"><a href="#L-365"><span class="linenos">365</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Proportion too big.&quot;</span><span class="p">)</span>
+</span><span id="L-365"><a href="#L-365"><span class="linenos">365</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Proportion too big."</span><span class="p">)</span>
 </span><span id="L-366"><a href="#L-366"><span class="linenos">366</span></a>
 </span><span id="L-367"><a href="#L-367"><span class="linenos">367</span></a>    <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="n">lowercut</span><span class="p">,</span> <span class="n">uppercut</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span> <span class="n">axis</span><span class="p">)</span>
 </span><span id="L-368"><a href="#L-368"><span class="linenos">368</span></a>
@@ -484,12 +484,12 @@ averaged Power Spectra. Detected RFI-contaminated frequency bins are nulled.</p>
 </span><span id="L-382"><a href="#L-382"><span class="linenos">382</span></a>    <span class="n">pvalue_threshold</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span>
 </span><span id="L-383"><a href="#L-383"><span class="linenos">383</span></a>    <span class="n">trim_frac</span><span class="o">=</span><span class="mf">0.01</span>
 </span><span id="L-384"><a href="#L-384"><span class="linenos">384</span></a><span class="p">):</span>
-</span><span id="L-385"><a href="#L-385"><span class="linenos">385</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Estimate Time-Stationary Narrowband (TSNB) frequency domain RFI mask.</span>
+</span><span id="L-385"><a href="#L-385"><span class="linenos">385</span></a><span class="w">    </span><span class="sd">"""Estimate Time-Stationary Narrowband (TSNB) frequency domain RFI mask.</span>
 </span><span id="L-386"><a href="#L-386"><span class="linenos">386</span></a><span class="sd">    The TSNB type of RFI is assumed to be consistently present in the </span>
 </span><span id="L-387"><a href="#L-387"><span class="linenos">387</span></a><span class="sd">    same range bin(s) across numerous slow time pulses. Therefore, TSNB RFI </span>
 </span><span id="L-388"><a href="#L-388"><span class="linenos">388</span></a><span class="sd">    can be identified by its signatures in the averaged range power spectrum </span>
 </span><span id="L-389"><a href="#L-389"><span class="linenos">389</span></a><span class="sd">    in azimuth-time direction. The averaging azimuth-time window size is </span>
-</span><span id="L-390"><a href="#L-390"><span class="linenos">390</span></a><span class="sd">    defined by &#39;az_winsize&#39;.</span>
+</span><span id="L-390"><a href="#L-390"><span class="linenos">390</span></a><span class="sd">    defined by 'az_winsize'.</span>
 </span><span id="L-391"><a href="#L-391"><span class="linenos">391</span></a>
 </span><span id="L-392"><a href="#L-392"><span class="linenos">392</span></a><span class="sd">    Parameters</span>
 </span><span id="L-393"><a href="#L-393"><span class="linenos">393</span></a><span class="sd">    ------------</span>
@@ -515,14 +515,14 @@ averaged Power Spectra. Detected RFI-contaminated frequency bins are nulled.</p>
 </span><span id="L-413"><a href="#L-413"><span class="linenos">413</span></a><span class="sd">    mask_tsnb: 2D array of same size as input, int32</span>
 </span><span id="L-414"><a href="#L-414"><span class="linenos">414</span></a><span class="sd">        Frequency domain TSNB hit mask based on p-value of the PDF of</span>
 </span><span id="L-415"><a href="#L-415"><span class="linenos">415</span></a><span class="sd">        range frequency power spectra</span>
-</span><span id="L-416"><a href="#L-416"><span class="linenos">416</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-416"><a href="#L-416"><span class="linenos">416</span></a><span class="sd">    """</span>
 </span><span id="L-417"><a href="#L-417"><span class="linenos">417</span></a>
 </span><span id="L-418"><a href="#L-418"><span class="linenos">418</span></a>    <span class="c1"># Contributed by Josh Cohen</span>
 </span><span id="L-419"><a href="#L-419"><span class="linenos">419</span></a>
 </span><span id="L-420"><a href="#L-420"><span class="linenos">420</span></a>    <span class="n">num_pulses</span><span class="p">,</span> <span class="n">num_rng_samples</span> <span class="o">=</span> <span class="n">raw_data_fft_psd</span><span class="o">.</span><span class="n">shape</span>
 </span><span id="L-421"><a href="#L-421"><span class="linenos">421</span></a>
 </span><span id="L-422"><a href="#L-422"><span class="linenos">422</span></a>    <span class="k">if</span> <span class="p">(</span><span class="n">az_winsize</span> <span class="o">&gt;</span>  <span class="n">num_pulses</span><span class="p">):</span>
-</span><span id="L-423"><a href="#L-423"><span class="linenos">423</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Azimuth window size shall be equal to or less than </span><span class="si">{</span><span class="n">num_pulses</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+</span><span id="L-423"><a href="#L-423"><span class="linenos">423</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Azimuth window size shall be equal to or less than </span><span class="si">{</span><span class="n">num_pulses</span><span class="si">}</span><span class="s1">.'</span><span class="p">)</span>
 </span><span id="L-424"><a href="#L-424"><span class="linenos">424</span></a>
 </span><span id="L-425"><a href="#L-425"><span class="linenos">425</span></a>    <span class="c1"># TSNB hit mask</span>
 </span><span id="L-426"><a href="#L-426"><span class="linenos">426</span></a>    <span class="n">tsnb_hits_buffer</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">az_winsize</span><span class="p">,</span> <span class="n">num_rng_samples</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
@@ -560,10 +560,10 @@ averaged Power Spectra. Detected RFI-contaminated frequency bins are nulled.</p>
 </span><span id="L-458"><a href="#L-458"><span class="linenos">458</span></a>    <span class="n">pvalue_threshold</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> 
 </span><span id="L-459"><a href="#L-459"><span class="linenos">459</span></a>    <span class="n">trim_frac</span><span class="o">=</span><span class="mf">0.01</span>
 </span><span id="L-460"><a href="#L-460"><span class="linenos">460</span></a><span class="p">):</span>
-</span><span id="L-461"><a href="#L-461"><span class="linenos">461</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Estimate Time-Varying Wideband (TVWB) frequency-domain RFI mask.</span>
+</span><span id="L-461"><a href="#L-461"><span class="linenos">461</span></a><span class="w">    </span><span class="sd">"""Estimate Time-Varying Wideband (TVWB) frequency-domain RFI mask.</span>
 </span><span id="L-462"><a href="#L-462"><span class="linenos">462</span></a><span class="sd">    TVWB RFI signatures can be best identified by averaging frequency power</span>
 </span><span id="L-463"><a href="#L-463"><span class="linenos">463</span></a><span class="sd">    spectrum in range-frequency direction. The averaging window size is defined</span>
-</span><span id="L-464"><a href="#L-464"><span class="linenos">464</span></a><span class="sd">    as &#39;rng_winsize&#39;.</span>
+</span><span id="L-464"><a href="#L-464"><span class="linenos">464</span></a><span class="sd">    as 'rng_winsize'.</span>
 </span><span id="L-465"><a href="#L-465"><span class="linenos">465</span></a>
 </span><span id="L-466"><a href="#L-466"><span class="linenos">466</span></a><span class="sd">    Parameters</span>
 </span><span id="L-467"><a href="#L-467"><span class="linenos">467</span></a><span class="sd">    ----------</span>
@@ -590,15 +590,15 @@ averaged Power Spectra. Detected RFI-contaminated frequency bins are nulled.</p>
 </span><span id="L-488"><a href="#L-488"><span class="linenos">488</span></a><span class="sd">    mask_tvwb: 2D array, int32, same dimension as input</span>
 </span><span id="L-489"><a href="#L-489"><span class="linenos">489</span></a><span class="sd">        Frequency domain TVWB hit mask based on p-value of the probability</span>
 </span><span id="L-490"><a href="#L-490"><span class="linenos">490</span></a><span class="sd">        density function (PDF) of range frequency power spectra. Must be</span>
-</span><span id="L-491"><a href="#L-491"><span class="linenos">491</span></a><span class="sd">        of the same shape as &#39;mask_tsnb&#39;.</span>
-</span><span id="L-492"><a href="#L-492"><span class="linenos">492</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-491"><a href="#L-491"><span class="linenos">491</span></a><span class="sd">        of the same shape as 'mask_tsnb'.</span>
+</span><span id="L-492"><a href="#L-492"><span class="linenos">492</span></a><span class="sd">    """</span>
 </span><span id="L-493"><a href="#L-493"><span class="linenos">493</span></a>
 </span><span id="L-494"><a href="#L-494"><span class="linenos">494</span></a>    <span class="c1"># Contributed by Josh Cohen</span>
 </span><span id="L-495"><a href="#L-495"><span class="linenos">495</span></a>    
 </span><span id="L-496"><a href="#L-496"><span class="linenos">496</span></a>    <span class="n">num_pulses</span><span class="p">,</span> <span class="n">num_rng_samples</span> <span class="o">=</span> <span class="n">raw_data_fft_psd</span><span class="o">.</span><span class="n">shape</span>
 </span><span id="L-497"><a href="#L-497"><span class="linenos">497</span></a>
 </span><span id="L-498"><a href="#L-498"><span class="linenos">498</span></a>    <span class="k">if</span> <span class="p">(</span><span class="n">rng_winsize</span> <span class="o">&gt;</span>  <span class="n">num_rng_samples</span><span class="p">):</span>
-</span><span id="L-499"><a href="#L-499"><span class="linenos">499</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Range window size shall be equal to or less than </span><span class="si">{</span><span class="n">num_rng_samples</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+</span><span id="L-499"><a href="#L-499"><span class="linenos">499</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Range window size shall be equal to or less than </span><span class="si">{</span><span class="n">num_rng_samples</span><span class="si">}</span><span class="s1">.'</span><span class="p">)</span>
 </span><span id="L-500"><a href="#L-500"><span class="linenos">500</span></a>
 </span><span id="L-501"><a href="#L-501"><span class="linenos">501</span></a>    <span class="c1"># Transposing to match TSNB Block code</span>
 </span><span id="L-502"><a href="#L-502"><span class="linenos">502</span></a>    <span class="n">raw_data_fft_psd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">raw_data_fft_psd</span><span class="p">)</span>
@@ -612,7 +612,7 @@ averaged Power Spectra. Detected RFI-contaminated frequency bins are nulled.</p>
 </span><span id="L-510"><a href="#L-510"><span class="linenos">510</span></a>        <span class="n">rng_block</span> <span class="o">=</span> <span class="n">raw_data_fft_psd</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">rng_winsize</span><span class="p">]</span>
 </span><span id="L-511"><a href="#L-511"><span class="linenos">511</span></a>        <span class="n">avg_rng_freq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">rng_block</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># Average in range frequency</span>
 </span><span id="L-512"><a href="#L-512"><span class="linenos">512</span></a>
-</span><span id="L-513"><a href="#L-513"><span class="linenos">513</span></a>        <span class="c1"># In Meyer&#39;s paper, detrending is applied to linear-scale averaged power </span>
+</span><span id="L-513"><a href="#L-513"><span class="linenos">513</span></a>        <span class="c1"># In Meyer's paper, detrending is applied to linear-scale averaged power </span>
 </span><span id="L-514"><a href="#L-514"><span class="linenos">514</span></a>        <span class="c1"># spectra. However, in the code below, linear-scale averaged power spectra </span>
 </span><span id="L-515"><a href="#L-515"><span class="linenos">515</span></a>        <span class="c1"># is converted to log scale before detrending. The reason is that detrending </span>
 </span><span id="L-516"><a href="#L-516"><span class="linenos">516</span></a>        <span class="c1"># with linear curve fitting approach implemented in this code is more accurate </span>
@@ -624,7 +624,7 @@ averaged Power Spectra. Detected RFI-contaminated frequency bins are nulled.</p>
 </span><span id="L-522"><a href="#L-522"><span class="linenos">522</span></a>        <span class="c1"># Generate numpy function with best-fit linear coeffs</span>
 </span><span id="L-523"><a href="#L-523"><span class="linenos">523</span></a>        <span class="n">pfit</span> <span class="o">=</span> <span class="n">Polynomial</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">avg_rng_freq_db</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 </span><span id="L-524"><a href="#L-524"><span class="linenos">524</span></a>
-</span><span id="L-525"><a href="#L-525"><span class="linenos">525</span></a>        <span class="c1"># Detrend the average with the best-fit (normalize the row&#39;s mean)</span>
+</span><span id="L-525"><a href="#L-525"><span class="linenos">525</span></a>        <span class="c1"># Detrend the average with the best-fit (normalize the row's mean)</span>
 </span><span id="L-526"><a href="#L-526"><span class="linenos">526</span></a>        <span class="n">avg_rng_freq_db</span> <span class="o">-=</span> <span class="n">pfit</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 </span><span id="L-527"><a href="#L-527"><span class="linenos">527</span></a>
 </span><span id="L-528"><a href="#L-528"><span class="linenos">528</span></a>        <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">trim_mean_and_std</span><span class="p">(</span><span class="n">avg_rng_freq_db</span><span class="p">,</span> <span class="n">trim_frac</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -650,7 +650,7 @@ averaged Power Spectra. Detected RFI-contaminated frequency bins are nulled.</p>
 </span><span id="L-548"><a href="#L-548"><span class="linenos">548</span></a>    <span class="n">mask_tvwb</span><span class="p">,</span>
 </span><span id="L-549"><a href="#L-549"><span class="linenos">549</span></a>    <span class="n">cdf_threshold</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
 </span><span id="L-550"><a href="#L-550"><span class="linenos">550</span></a><span class="p">):</span>
-</span><span id="L-551"><a href="#L-551"><span class="linenos">551</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Estimate combined frequency-domain RFI mask using input</span>
+</span><span id="L-551"><a href="#L-551"><span class="linenos">551</span></a><span class="w">    </span><span class="sd">"""Estimate combined frequency-domain RFI mask using input</span>
 </span><span id="L-552"><a href="#L-552"><span class="linenos">552</span></a><span class="sd">    TSNB and TVWB masks.</span>
 </span><span id="L-553"><a href="#L-553"><span class="linenos">553</span></a>
 </span><span id="L-554"><a href="#L-554"><span class="linenos">554</span></a><span class="sd">    Parameters</span>
@@ -661,7 +661,7 @@ averaged Power Spectra. Detected RFI-contaminated frequency bins are nulled.</p>
 </span><span id="L-559"><a href="#L-559"><span class="linenos">559</span></a><span class="sd">    mask_tvwb: 2D array, int32</span>
 </span><span id="L-560"><a href="#L-560"><span class="linenos">560</span></a><span class="sd">        Frequency domain TVWB hit mask based on p-value of the probability</span>
 </span><span id="L-561"><a href="#L-561"><span class="linenos">561</span></a><span class="sd">        density function (PDF) of range frequency power spectra. Must be</span>
-</span><span id="L-562"><a href="#L-562"><span class="linenos">562</span></a><span class="sd">        of the same shape as &#39;mask_tsnb&#39;.</span>
+</span><span id="L-562"><a href="#L-562"><span class="linenos">562</span></a><span class="sd">        of the same shape as 'mask_tsnb'.</span>
 </span><span id="L-563"><a href="#L-563"><span class="linenos">563</span></a><span class="sd">    cdf_threshold: float, default=0.1</span>
 </span><span id="L-564"><a href="#L-564"><span class="linenos">564</span></a><span class="sd">        This is the  threshold for the cumulative probability density function (CDF) </span>
 </span><span id="L-565"><a href="#L-565"><span class="linenos">565</span></a><span class="sd">        of the input Time Stationary Narrowband (TSNB) and Time Varying Wideband </span>
@@ -673,12 +673,12 @@ averaged Power Spectra. Detected RFI-contaminated frequency bins are nulled.</p>
 </span><span id="L-571"><a href="#L-571"><span class="linenos">571</span></a><span class="sd">    -------</span>
 </span><span id="L-572"><a href="#L-572"><span class="linenos">572</span></a><span class="sd">    rfi_detect_mask: 2D array, bool, same dimension as input TSNB and TVWB masks</span>
 </span><span id="L-573"><a href="#L-573"><span class="linenos">573</span></a><span class="sd">        Frequency domain binary RFI mask of combined TSNB and TVWB types of RFI.</span>
-</span><span id="L-574"><a href="#L-574"><span class="linenos">574</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-574"><a href="#L-574"><span class="linenos">574</span></a><span class="sd">    """</span>
 </span><span id="L-575"><a href="#L-575"><span class="linenos">575</span></a>
 </span><span id="L-576"><a href="#L-576"><span class="linenos">576</span></a>    <span class="c1"># Contributed by Josh Cohen and Geoff Gunter</span>
 </span><span id="L-577"><a href="#L-577"><span class="linenos">577</span></a>
 </span><span id="L-578"><a href="#L-578"><span class="linenos">578</span></a>    <span class="k">if</span> <span class="n">mask_tsnb</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">mask_tvwb</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
-</span><span id="L-579"><a href="#L-579"><span class="linenos">579</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;shape mismatch: RFI masks must have the same shape&quot;</span><span class="p">)</span>
+</span><span id="L-579"><a href="#L-579"><span class="linenos">579</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"shape mismatch: RFI masks must have the same shape"</span><span class="p">)</span>
 </span><span id="L-580"><a href="#L-580"><span class="linenos">580</span></a>
 </span><span id="L-581"><a href="#L-581"><span class="linenos">581</span></a>    <span class="n">tsnb_thresh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">mask_tsnb</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">cdf_threshold</span><span class="p">)</span>
 </span><span id="L-582"><a href="#L-582"><span class="linenos">582</span></a>    <span class="n">tvwb_thresh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">mask_tvwb</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">cdf_threshold</span><span class="p">)</span>
@@ -701,7 +701,7 @@ averaged Power Spectra. Detected RFI-contaminated frequency bins are nulled.</p>
 </span><span id="L-599"><a href="#L-599"><span class="linenos">599</span></a>    <span class="n">rng_winsize</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
 </span><span id="L-600"><a href="#L-600"><span class="linenos">600</span></a>    <span class="n">raw_data_mitigated</span><span class="o">=</span><span class="kc">None</span>
 </span><span id="L-601"><a href="#L-601"><span class="linenos">601</span></a><span class="p">):</span>
-</span><span id="L-602"><a href="#L-602"><span class="linenos">602</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Null the frequency domain FFT bins identified as RFI by the</span>
+</span><span id="L-602"><a href="#L-602"><span class="linenos">602</span></a><span class="w">    </span><span class="sd">"""Null the frequency domain FFT bins identified as RFI by the</span>
 </span><span id="L-603"><a href="#L-603"><span class="linenos">603</span></a><span class="sd">    binary rfi_detect_mask, and then take inverse FFT of RFI-mitigated </span>
 </span><span id="L-604"><a href="#L-604"><span class="linenos">604</span></a><span class="sd">    frequency response to generate its time-domain counterpart.</span>
 </span><span id="L-605"><a href="#L-605"><span class="linenos">605</span></a>
@@ -725,8 +725,8 @@ averaged Power Spectra. Detected RFI-contaminated frequency bins are nulled.</p>
 </span><span id="L-623"><a href="#L-623"><span class="linenos">623</span></a><span class="sd">         must be an array-like object supporting `multidimensional array access</span>
 </span><span id="L-624"><a href="#L-624"><span class="linenos">624</span></a><span class="sd">         &lt;https://numpy.org/doc/stable/user/basics.indexing.html&gt;`_.</span>
 </span><span id="L-625"><a href="#L-625"><span class="linenos">625</span></a><span class="sd">         The array should have the same shape and dtype as the input raw data array.</span>
-</span><span id="L-626"><a href="#L-626"><span class="linenos">626</span></a><span class="sd">         If None (the default), the input &#39;raw&#39; data array will be modified in-place.</span>
-</span><span id="L-627"><a href="#L-627"><span class="linenos">627</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-626"><a href="#L-626"><span class="linenos">626</span></a><span class="sd">         If None (the default), the input 'raw' data array will be modified in-place.</span>
+</span><span id="L-627"><a href="#L-627"><span class="linenos">627</span></a><span class="sd">    """</span>
 </span><span id="L-628"><a href="#L-628"><span class="linenos">628</span></a>
 </span><span id="L-629"><a href="#L-629"><span class="linenos">629</span></a>    <span class="n">num_pulses</span><span class="p">,</span> <span class="n">num_rng_samples</span> <span class="o">=</span> <span class="n">raw_data</span><span class="o">.</span><span class="n">shape</span>
 </span><span id="L-630"><a href="#L-630"><span class="linenos">630</span></a>
@@ -740,7 +740,7 @@ averaged Power Spectra. Detected RFI-contaminated frequency bins are nulled.</p>
 </span><span id="L-638"><a href="#L-638"><span class="linenos">638</span></a>    <span class="n">raw_data</span> <span class="o">=</span> <span class="n">raw_data</span><span class="p">[:</span><span class="n">num_pulses_no_overlap</span><span class="p">,</span> <span class="p">:</span><span class="n">num_samples_no_overlap</span><span class="p">]</span>
 </span><span id="L-639"><a href="#L-639"><span class="linenos">639</span></a>    <span class="n">raw_data_fft</span> <span class="o">=</span> <span class="n">raw_data_fft</span><span class="p">[:</span><span class="n">num_pulses_no_overlap</span><span class="p">,</span> <span class="p">:</span><span class="n">num_samples_no_overlap</span><span class="p">]</span>
 </span><span id="L-640"><a href="#L-640"><span class="linenos">640</span></a>
-</span><span id="L-641"><a href="#L-641"><span class="linenos">641</span></a>    <span class="c1"># Create an alias for raw_data if there is no &#39;raw_data_mitigated&#39; as input</span>
+</span><span id="L-641"><a href="#L-641"><span class="linenos">641</span></a>    <span class="c1"># Create an alias for raw_data if there is no 'raw_data_mitigated' as input</span>
 </span><span id="L-642"><a href="#L-642"><span class="linenos">642</span></a>    <span class="k">if</span> <span class="n">raw_data_mitigated</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
 </span><span id="L-643"><a href="#L-643"><span class="linenos">643</span></a>        <span class="n">raw_data_mitigated</span> <span class="o">=</span> <span class="n">raw_data</span>
 </span><span id="L-644"><a href="#L-644"><span class="linenos">644</span></a>    <span class="k">else</span><span class="p">:</span>
@@ -772,7 +772,7 @@ averaged Power Spectra. Detected RFI-contaminated frequency bins are nulled.</p>
     </div>
     <a class="headerlink" href="#overlap_slice_gen"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="overlap_slice_gen-15"><a href="#overlap_slice_gen-15"><span class="linenos">15</span></a><span class="k">def</span><span class="w"> </span><span class="nf">overlap_slice_gen</span><span class="p">(</span><span class="n">total_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">overlap</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">slice</span><span class="p">]:</span>
-</span><span id="overlap_slice_gen-16"><a href="#overlap_slice_gen-16"><span class="linenos">16</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate slices with size defined by batch_size and number of </span>
+</span><span id="overlap_slice_gen-16"><a href="#overlap_slice_gen-16"><span class="linenos">16</span></a><span class="w">    </span><span class="sd">"""Generate slices with size defined by batch_size and number of </span>
 </span><span id="overlap_slice_gen-17"><a href="#overlap_slice_gen-17"><span class="linenos">17</span></a><span class="sd">    overlapping samples defined by overlap.</span>
 </span><span id="overlap_slice_gen-18"><a href="#overlap_slice_gen-18"><span class="linenos">18</span></a>
 </span><span id="overlap_slice_gen-19"><a href="#overlap_slice_gen-19"><span class="linenos">19</span></a><span class="sd">    Parameters</span>
@@ -790,14 +790,14 @@ averaged Power Spectra. Detected RFI-contaminated frequency bins are nulled.</p>
 </span><span id="overlap_slice_gen-31"><a href="#overlap_slice_gen-31"><span class="linenos">31</span></a><span class="sd">    slice: slice obj</span>
 </span><span id="overlap_slice_gen-32"><a href="#overlap_slice_gen-32"><span class="linenos">32</span></a><span class="sd">        Iterable slices of data with specified input batch size, bounded by start_idx</span>
 </span><span id="overlap_slice_gen-33"><a href="#overlap_slice_gen-33"><span class="linenos">33</span></a><span class="sd">        and stop_idx.</span>
-</span><span id="overlap_slice_gen-34"><a href="#overlap_slice_gen-34"><span class="linenos">34</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="overlap_slice_gen-34"><a href="#overlap_slice_gen-34"><span class="linenos">34</span></a><span class="sd">    """</span>
 </span><span id="overlap_slice_gen-35"><a href="#overlap_slice_gen-35"><span class="linenos">35</span></a>
 </span><span id="overlap_slice_gen-36"><a href="#overlap_slice_gen-36"><span class="linenos">36</span></a>    <span class="n">step_size</span> <span class="o">=</span> <span class="n">batch_size</span> <span class="o">-</span> <span class="n">overlap</span>
 </span><span id="overlap_slice_gen-37"><a href="#overlap_slice_gen-37"><span class="linenos">37</span></a>    <span class="n">overlap_batch_size</span> <span class="o">=</span> <span class="n">batch_size</span> <span class="o">+</span> <span class="n">step_size</span>
 </span><span id="overlap_slice_gen-38"><a href="#overlap_slice_gen-38"><span class="linenos">38</span></a>
 </span><span id="overlap_slice_gen-39"><a href="#overlap_slice_gen-39"><span class="linenos">39</span></a>    <span class="k">if</span> <span class="n">batch_size</span> <span class="o">&lt;</span> <span class="n">overlap</span><span class="p">:</span>
 </span><span id="overlap_slice_gen-40"><a href="#overlap_slice_gen-40"><span class="linenos">40</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span id="overlap_slice_gen-41"><a href="#overlap_slice_gen-41"><span class="linenos">41</span></a>            <span class="sa">f</span><span class="s2">&quot;The value of &#39;overlap&#39; (</span><span class="si">{</span><span class="n">overlap</span><span class="si">}</span><span class="s2">) must be less than that of &#39;batch_size&#39; (</span><span class="si">{</span><span class="n">batch_size</span><span class="si">}</span><span class="s2">).&quot;</span>
+</span><span id="overlap_slice_gen-41"><a href="#overlap_slice_gen-41"><span class="linenos">41</span></a>            <span class="sa">f</span><span class="s2">"The value of 'overlap' (</span><span class="si">{</span><span class="n">overlap</span><span class="si">}</span><span class="s2">) must be less than that of 'batch_size' (</span><span class="si">{</span><span class="n">batch_size</span><span class="si">}</span><span class="s2">)."</span>
 </span><span id="overlap_slice_gen-42"><a href="#overlap_slice_gen-42"><span class="linenos">42</span></a>        <span class="p">)</span>
 </span><span id="overlap_slice_gen-43"><a href="#overlap_slice_gen-43"><span class="linenos">43</span></a>
 </span><span id="overlap_slice_gen-44"><a href="#overlap_slice_gen-44"><span class="linenos">44</span></a>    <span class="c1"># If total_size is less than overlap_batch_size, generate the slice that</span>
@@ -868,7 +868,7 @@ overlap: int
 </span><span id="run_freq_notch-75"><a href="#run_freq_notch-75"><span class="linenos"> 75</span></a>    <span class="n">mitigate_enable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 </span><span id="run_freq_notch-76"><a href="#run_freq_notch-76"><span class="linenos"> 76</span></a>    <span class="n">raw_data_mitigated</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="run_freq_notch-77"><a href="#run_freq_notch-77"><span class="linenos"> 77</span></a><span class="p">):</span>
-</span><span id="run_freq_notch-78"><a href="#run_freq_notch-78"><span class="linenos"> 78</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Top-level function which performs RFI mitigation on input raw data</span>
+</span><span id="run_freq_notch-78"><a href="#run_freq_notch-78"><span class="linenos"> 78</span></a><span class="w">    </span><span class="sd">"""Top-level function which performs RFI mitigation on input raw data</span>
 </span><span id="run_freq_notch-79"><a href="#run_freq_notch-79"><span class="linenos"> 79</span></a><span class="sd">    using Frequency Domain Notch Filtering (FDNF) approach by calling </span>
 </span><span id="run_freq_notch-80"><a href="#run_freq_notch-80"><span class="linenos"> 80</span></a><span class="sd">    lower-level mitigation algorithm.</span>
 </span><span id="run_freq_notch-81"><a href="#run_freq_notch-81"><span class="linenos"> 81</span></a>
@@ -923,7 +923,7 @@ overlap: int
 </span><span id="run_freq_notch-130"><a href="#run_freq_notch-130"><span class="linenos">130</span></a><span class="sd">         must be an array-like object supporting `multidimensional array access</span>
 </span><span id="run_freq_notch-131"><a href="#run_freq_notch-131"><span class="linenos">131</span></a><span class="sd">         &lt;https://numpy.org/doc/stable/user/basics.indexing.html&gt;`_.</span>
 </span><span id="run_freq_notch-132"><a href="#run_freq_notch-132"><span class="linenos">132</span></a><span class="sd">         The array should have the same shape and dtype as the input raw data array.</span>
-</span><span id="run_freq_notch-133"><a href="#run_freq_notch-133"><span class="linenos">133</span></a><span class="sd">         If None (the default), the input &#39;raw&#39; data array will be modified in-place.</span>
+</span><span id="run_freq_notch-133"><a href="#run_freq_notch-133"><span class="linenos">133</span></a><span class="sd">         If None (the default), the input 'raw' data array will be modified in-place.</span>
 </span><span id="run_freq_notch-134"><a href="#run_freq_notch-134"><span class="linenos">134</span></a>
 </span><span id="run_freq_notch-135"><a href="#run_freq_notch-135"><span class="linenos">135</span></a><span class="sd">    Returns</span>
 </span><span id="run_freq_notch-136"><a href="#run_freq_notch-136"><span class="linenos">136</span></a><span class="sd">    -------</span>
@@ -935,7 +935,7 @@ overlap: int
 </span><span id="run_freq_notch-142"><a href="#run_freq_notch-142"><span class="linenos">142</span></a><span class="sd">    ..[1]  F. Meyer, J. Nicoll, and A. Doulgeris, “Correction and Characterization </span>
 </span><span id="run_freq_notch-143"><a href="#run_freq_notch-143"><span class="linenos">143</span></a><span class="sd">    of Radio Frequency Interference Signatures in L-Band Synthetic Aperture Radar </span>
 </span><span id="run_freq_notch-144"><a href="#run_freq_notch-144"><span class="linenos">144</span></a><span class="sd">    Data”, IEEE Trans. Geosci. Remote Sens., vol. 51, no. 10, pp. 4961-4972, Oct. 2013.</span>
-</span><span id="run_freq_notch-145"><a href="#run_freq_notch-145"><span class="linenos">145</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="run_freq_notch-145"><a href="#run_freq_notch-145"><span class="linenos">145</span></a><span class="sd">    """</span>
 </span><span id="run_freq_notch-146"><a href="#run_freq_notch-146"><span class="linenos">146</span></a>
 </span><span id="run_freq_notch-147"><a href="#run_freq_notch-147"><span class="linenos">147</span></a>    <span class="c1"># Modify raw_data in-place</span>
 </span><span id="run_freq_notch-148"><a href="#run_freq_notch-148"><span class="linenos">148</span></a>    <span class="k">if</span> <span class="n">raw_data_mitigated</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -943,8 +943,8 @@ overlap: int
 </span><span id="run_freq_notch-150"><a href="#run_freq_notch-150"><span class="linenos">150</span></a>    <span class="k">else</span><span class="p">:</span>
 </span><span id="run_freq_notch-151"><a href="#run_freq_notch-151"><span class="linenos">151</span></a>        <span class="k">if</span> <span class="n">raw_data_mitigated</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">raw_data</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
 </span><span id="run_freq_notch-152"><a href="#run_freq_notch-152"><span class="linenos">152</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span id="run_freq_notch-153"><a href="#run_freq_notch-153"><span class="linenos">153</span></a>                <span class="s2">&quot;Shape mismatch: output mitigated data array must have the same shape&quot;</span>
-</span><span id="run_freq_notch-154"><a href="#run_freq_notch-154"><span class="linenos">154</span></a>                <span class="s2">&quot; as the input data&quot;</span>
+</span><span id="run_freq_notch-153"><a href="#run_freq_notch-153"><span class="linenos">153</span></a>                <span class="s2">"Shape mismatch: output mitigated data array must have the same shape"</span>
+</span><span id="run_freq_notch-154"><a href="#run_freq_notch-154"><span class="linenos">154</span></a>                <span class="s2">" as the input data"</span>
 </span><span id="run_freq_notch-155"><a href="#run_freq_notch-155"><span class="linenos">155</span></a>            <span class="p">)</span>
 </span><span id="run_freq_notch-156"><a href="#run_freq_notch-156"><span class="linenos">156</span></a>
 </span><span id="run_freq_notch-157"><a href="#run_freq_notch-157"><span class="linenos">157</span></a>    <span class="n">num_pulses</span><span class="p">,</span> <span class="n">num_rng_samples</span> <span class="o">=</span> <span class="n">raw_data</span><span class="o">.</span><span class="n">shape</span>
@@ -958,14 +958,14 @@ overlap: int
 </span><span id="run_freq_notch-165"><a href="#run_freq_notch-165"><span class="linenos">165</span></a>    <span class="c1"># Verify data blocking dimensions</span>
 </span><span id="run_freq_notch-166"><a href="#run_freq_notch-166"><span class="linenos">166</span></a>    <span class="k">if</span> <span class="n">num_samples_rng_blk</span> <span class="o">&lt;</span> <span class="n">rng_winsize</span><span class="p">:</span>
 </span><span id="run_freq_notch-167"><a href="#run_freq_notch-167"><span class="linenos">167</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span id="run_freq_notch-168"><a href="#run_freq_notch-168"><span class="linenos">168</span></a>            <span class="sa">f</span><span class="s1">&#39;Number of range samples per block </span><span class="si">{</span><span class="n">num_samples_rng_blk</span><span class="si">}</span><span class="s1"> is less than&#39;</span>
-</span><span id="run_freq_notch-169"><a href="#run_freq_notch-169"><span class="linenos">169</span></a>            <span class="sa">f</span><span class="s1">&#39;range window size </span><span class="si">{</span><span class="n">rng_winsize</span><span class="si">}</span><span class="s1">&#39;</span>
+</span><span id="run_freq_notch-168"><a href="#run_freq_notch-168"><span class="linenos">168</span></a>            <span class="sa">f</span><span class="s1">'Number of range samples per block </span><span class="si">{</span><span class="n">num_samples_rng_blk</span><span class="si">}</span><span class="s1"> is less than'</span>
+</span><span id="run_freq_notch-169"><a href="#run_freq_notch-169"><span class="linenos">169</span></a>            <span class="sa">f</span><span class="s1">'range window size </span><span class="si">{</span><span class="n">rng_winsize</span><span class="si">}</span><span class="s1">'</span>
 </span><span id="run_freq_notch-170"><a href="#run_freq_notch-170"><span class="linenos">170</span></a>        <span class="p">)</span>
 </span><span id="run_freq_notch-171"><a href="#run_freq_notch-171"><span class="linenos">171</span></a>
 </span><span id="run_freq_notch-172"><a href="#run_freq_notch-172"><span class="linenos">172</span></a>    <span class="k">if</span> <span class="n">num_pulses_az</span> <span class="o">&lt;</span> <span class="n">az_winsize</span><span class="p">:</span>
 </span><span id="run_freq_notch-173"><a href="#run_freq_notch-173"><span class="linenos">173</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span id="run_freq_notch-174"><a href="#run_freq_notch-174"><span class="linenos">174</span></a>            <span class="sa">f</span><span class="s1">&#39;Number of pulses per block </span><span class="si">{</span><span class="n">num_pulses_az</span><span class="si">}</span><span class="s1"> is less than&#39;</span>
-</span><span id="run_freq_notch-175"><a href="#run_freq_notch-175"><span class="linenos">175</span></a>            <span class="sa">f</span><span class="s1">&#39;azimuth window size </span><span class="si">{</span><span class="n">az_winsize</span><span class="si">}</span><span class="s1">&#39;</span>
+</span><span id="run_freq_notch-174"><a href="#run_freq_notch-174"><span class="linenos">174</span></a>            <span class="sa">f</span><span class="s1">'Number of pulses per block </span><span class="si">{</span><span class="n">num_pulses_az</span><span class="si">}</span><span class="s1"> is less than'</span>
+</span><span id="run_freq_notch-175"><a href="#run_freq_notch-175"><span class="linenos">175</span></a>            <span class="sa">f</span><span class="s1">'azimuth window size </span><span class="si">{</span><span class="n">az_winsize</span><span class="si">}</span><span class="s1">'</span>
 </span><span id="run_freq_notch-176"><a href="#run_freq_notch-176"><span class="linenos">176</span></a>        <span class="p">)</span>
 </span><span id="run_freq_notch-177"><a href="#run_freq_notch-177"><span class="linenos">177</span></a>
 </span><span id="run_freq_notch-178"><a href="#run_freq_notch-178"><span class="linenos">178</span></a>    <span class="c1"># Count the total number of detected RFI frequency bins</span>
@@ -1100,7 +1100,7 @@ Data”, IEEE Trans. Geosci. Remote Sens., vol. 51, no. 10, pp. 4961-4972, Oct. 
 </span><span id="rfi_freq_notch-222"><a href="#rfi_freq_notch-222"><span class="linenos">222</span></a>    <span class="n">mitigate_enable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 </span><span id="rfi_freq_notch-223"><a href="#rfi_freq_notch-223"><span class="linenos">223</span></a>    <span class="n">raw_data_mitigated</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 </span><span id="rfi_freq_notch-224"><a href="#rfi_freq_notch-224"><span class="linenos">224</span></a><span class="p">):</span>
-</span><span id="rfi_freq_notch-225"><a href="#rfi_freq_notch-225"><span class="linenos">225</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrapper function which takes raw data input and performs</span>
+</span><span id="rfi_freq_notch-225"><a href="#rfi_freq_notch-225"><span class="linenos">225</span></a><span class="w">    </span><span class="sd">"""Wrapper function which takes raw data input and performs</span>
 </span><span id="rfi_freq_notch-226"><a href="#rfi_freq_notch-226"><span class="linenos">226</span></a><span class="sd">    RFI mitigation using Frequency Domain Notch Filtering (FDNF) approach</span>
 </span><span id="rfi_freq_notch-227"><a href="#rfi_freq_notch-227"><span class="linenos">227</span></a><span class="sd">    by generating a frequency domain detection mask based on individual </span>
 </span><span id="rfi_freq_notch-228"><a href="#rfi_freq_notch-228"><span class="linenos">228</span></a><span class="sd">    narrowband detection and wideband detection mask, and subsequently </span>
@@ -1145,14 +1145,14 @@ Data”, IEEE Trans. Geosci. Remote Sens., vol. 51, no. 10, pp. 4961-4972, Oct. 
 </span><span id="rfi_freq_notch-267"><a href="#rfi_freq_notch-267"><span class="linenos">267</span></a><span class="sd">         must be an array-like object supporting `multidimensional array access</span>
 </span><span id="rfi_freq_notch-268"><a href="#rfi_freq_notch-268"><span class="linenos">268</span></a><span class="sd">         &lt;https://numpy.org/doc/stable/user/basics.indexing.html&gt;`_.</span>
 </span><span id="rfi_freq_notch-269"><a href="#rfi_freq_notch-269"><span class="linenos">269</span></a><span class="sd">         The array should have the same shape and dtype as the input raw data array.</span>
-</span><span id="rfi_freq_notch-270"><a href="#rfi_freq_notch-270"><span class="linenos">270</span></a><span class="sd">         If None (the default), the input &#39;raw&#39; data array will be modified in-place.</span>
+</span><span id="rfi_freq_notch-270"><a href="#rfi_freq_notch-270"><span class="linenos">270</span></a><span class="sd">         If None (the default), the input 'raw' data array will be modified in-place.</span>
 </span><span id="rfi_freq_notch-271"><a href="#rfi_freq_notch-271"><span class="linenos">271</span></a>
 </span><span id="rfi_freq_notch-272"><a href="#rfi_freq_notch-272"><span class="linenos">272</span></a><span class="sd">    Returns</span>
 </span><span id="rfi_freq_notch-273"><a href="#rfi_freq_notch-273"><span class="linenos">273</span></a><span class="sd">    -------</span>
 </span><span id="rfi_freq_notch-274"><a href="#rfi_freq_notch-274"><span class="linenos">274</span></a><span class="sd">    rfi_detect_mask: 2D array, bool</span>
 </span><span id="rfi_freq_notch-275"><a href="#rfi_freq_notch-275"><span class="linenos">275</span></a><span class="sd">        Frequency domain binary RFI mask of combined TSNB and TVWB types of RFI.</span>
 </span><span id="rfi_freq_notch-276"><a href="#rfi_freq_notch-276"><span class="linenos">276</span></a><span class="sd">        Same shape as input raw_data</span>
-</span><span id="rfi_freq_notch-277"><a href="#rfi_freq_notch-277"><span class="linenos">277</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="rfi_freq_notch-277"><a href="#rfi_freq_notch-277"><span class="linenos">277</span></a><span class="sd">    """</span>
 </span><span id="rfi_freq_notch-278"><a href="#rfi_freq_notch-278"><span class="linenos">278</span></a>
 </span><span id="rfi_freq_notch-279"><a href="#rfi_freq_notch-279"><span class="linenos">279</span></a>    <span class="c1"># Contributed by Josh Cohen</span>
 </span><span id="rfi_freq_notch-280"><a href="#rfi_freq_notch-280"><span class="linenos">280</span></a>
@@ -1161,13 +1161,13 @@ Data”, IEEE Trans. Geosci. Remote Sens., vol. 51, no. 10, pp. 4961-4972, Oct. 
 </span><span id="rfi_freq_notch-283"><a href="#rfi_freq_notch-283"><span class="linenos">283</span></a>    <span class="k">else</span><span class="p">:</span>
 </span><span id="rfi_freq_notch-284"><a href="#rfi_freq_notch-284"><span class="linenos">284</span></a>        <span class="k">if</span> <span class="n">raw_data_mitigated</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">raw_data</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
 </span><span id="rfi_freq_notch-285"><a href="#rfi_freq_notch-285"><span class="linenos">285</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span id="rfi_freq_notch-286"><a href="#rfi_freq_notch-286"><span class="linenos">286</span></a>                <span class="s2">&quot;Shape mismatch: output mitigated data array must have the same shape&quot;</span>
-</span><span id="rfi_freq_notch-287"><a href="#rfi_freq_notch-287"><span class="linenos">287</span></a>                <span class="s2">&quot; as the input data&quot;</span>
+</span><span id="rfi_freq_notch-286"><a href="#rfi_freq_notch-286"><span class="linenos">286</span></a>                <span class="s2">"Shape mismatch: output mitigated data array must have the same shape"</span>
+</span><span id="rfi_freq_notch-287"><a href="#rfi_freq_notch-287"><span class="linenos">287</span></a>                <span class="s2">" as the input data"</span>
 </span><span id="rfi_freq_notch-288"><a href="#rfi_freq_notch-288"><span class="linenos">288</span></a>            <span class="p">)</span>
 </span><span id="rfi_freq_notch-289"><a href="#rfi_freq_notch-289"><span class="linenos">289</span></a>
 </span><span id="rfi_freq_notch-290"><a href="#rfi_freq_notch-290"><span class="linenos">290</span></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">iscomplexobj</span><span class="p">(</span><span class="n">raw_data_mitigated</span><span class="p">):</span>
 </span><span id="rfi_freq_notch-291"><a href="#rfi_freq_notch-291"><span class="linenos">291</span></a>        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-</span><span id="rfi_freq_notch-292"><a href="#rfi_freq_notch-292"><span class="linenos">292</span></a>            <span class="s2">&quot;Data type mismatch: raw_data_mitigated should be complex.&quot;</span>
+</span><span id="rfi_freq_notch-292"><a href="#rfi_freq_notch-292"><span class="linenos">292</span></a>            <span class="s2">"Data type mismatch: raw_data_mitigated should be complex."</span>
 </span><span id="rfi_freq_notch-293"><a href="#rfi_freq_notch-293"><span class="linenos">293</span></a>        <span class="p">)</span>
 </span><span id="rfi_freq_notch-294"><a href="#rfi_freq_notch-294"><span class="linenos">294</span></a>
 </span><span id="rfi_freq_notch-295"><a href="#rfi_freq_notch-295"><span class="linenos">295</span></a>    <span class="n">num_rng_samples</span> <span class="o">=</span> <span class="n">raw_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -1280,7 +1280,7 @@ raw_data_mitigated: numpy.ndarray complex [num_pulses x num_rng_samples] or None
     </div>
     <a class="headerlink" href="#trim_mean_and_std"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="trim_mean_and_std-336"><a href="#trim_mean_and_std-336"><span class="linenos">336</span></a><span class="k">def</span><span class="w"> </span><span class="nf">trim_mean_and_std</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">trim_frac</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-</span><span id="trim_mean_and_std-337"><a href="#trim_mean_and_std-337"><span class="linenos">337</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="trim_mean_and_std-337"><a href="#trim_mean_and_std-337"><span class="linenos">337</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="trim_mean_and_std-338"><a href="#trim_mean_and_std-338"><span class="linenos">338</span></a><span class="sd">    Return the mean and standard deviation of an array after trimming both tails.</span>
 </span><span id="trim_mean_and_std-339"><a href="#trim_mean_and_std-339"><span class="linenos">339</span></a>
 </span><span id="trim_mean_and_std-340"><a href="#trim_mean_and_std-340"><span class="linenos">340</span></a><span class="sd">    Parameters</span>
@@ -1300,7 +1300,7 @@ raw_data_mitigated: numpy.ndarray complex [num_pulses x num_rng_samples] or None
 </span><span id="trim_mean_and_std-354"><a href="#trim_mean_and_std-354"><span class="linenos">354</span></a><span class="sd">        Mean of trimmed array.</span>
 </span><span id="trim_mean_and_std-355"><a href="#trim_mean_and_std-355"><span class="linenos">355</span></a><span class="sd">    trim_std : numpy.ndarray</span>
 </span><span id="trim_mean_and_std-356"><a href="#trim_mean_and_std-356"><span class="linenos">356</span></a><span class="sd">        Standard deviation of trimmed array.</span>
-</span><span id="trim_mean_and_std-357"><a href="#trim_mean_and_std-357"><span class="linenos">357</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="trim_mean_and_std-357"><a href="#trim_mean_and_std-357"><span class="linenos">357</span></a><span class="sd">    """</span>
 </span><span id="trim_mean_and_std-358"><a href="#trim_mean_and_std-358"><span class="linenos">358</span></a>
 </span><span id="trim_mean_and_std-359"><a href="#trim_mean_and_std-359"><span class="linenos">359</span></a>    <span class="c1"># Contributed by Geoffrey Gunter</span>
 </span><span id="trim_mean_and_std-360"><a href="#trim_mean_and_std-360"><span class="linenos">360</span></a>
@@ -1309,7 +1309,7 @@ raw_data_mitigated: numpy.ndarray complex [num_pulses x num_rng_samples] or None
 </span><span id="trim_mean_and_std-363"><a href="#trim_mean_and_std-363"><span class="linenos">363</span></a>    <span class="n">lowercut</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">trim_frac</span> <span class="o">*</span> <span class="n">nobs</span><span class="p">))</span>
 </span><span id="trim_mean_and_std-364"><a href="#trim_mean_and_std-364"><span class="linenos">364</span></a>    <span class="n">uppercut</span> <span class="o">=</span> <span class="n">nobs</span> <span class="o">-</span> <span class="n">lowercut</span>
 </span><span id="trim_mean_and_std-365"><a href="#trim_mean_and_std-365"><span class="linenos">365</span></a>    <span class="k">if</span> <span class="p">(</span><span class="n">lowercut</span> <span class="o">&gt;</span> <span class="n">uppercut</span><span class="p">):</span>
-</span><span id="trim_mean_and_std-366"><a href="#trim_mean_and_std-366"><span class="linenos">366</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Proportion too big.&quot;</span><span class="p">)</span>
+</span><span id="trim_mean_and_std-366"><a href="#trim_mean_and_std-366"><span class="linenos">366</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Proportion too big."</span><span class="p">)</span>
 </span><span id="trim_mean_and_std-367"><a href="#trim_mean_and_std-367"><span class="linenos">367</span></a>
 </span><span id="trim_mean_and_std-368"><a href="#trim_mean_and_std-368"><span class="linenos">368</span></a>    <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="n">lowercut</span><span class="p">,</span> <span class="n">uppercut</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span> <span class="n">axis</span><span class="p">)</span>
 </span><span id="trim_mean_and_std-369"><a href="#trim_mean_and_std-369"><span class="linenos">369</span></a>
@@ -1364,12 +1364,12 @@ trim_std : numpy.ndarray
 </span><span id="detect_rfi_tsnb-383"><a href="#detect_rfi_tsnb-383"><span class="linenos">383</span></a>    <span class="n">pvalue_threshold</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span>
 </span><span id="detect_rfi_tsnb-384"><a href="#detect_rfi_tsnb-384"><span class="linenos">384</span></a>    <span class="n">trim_frac</span><span class="o">=</span><span class="mf">0.01</span>
 </span><span id="detect_rfi_tsnb-385"><a href="#detect_rfi_tsnb-385"><span class="linenos">385</span></a><span class="p">):</span>
-</span><span id="detect_rfi_tsnb-386"><a href="#detect_rfi_tsnb-386"><span class="linenos">386</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Estimate Time-Stationary Narrowband (TSNB) frequency domain RFI mask.</span>
+</span><span id="detect_rfi_tsnb-386"><a href="#detect_rfi_tsnb-386"><span class="linenos">386</span></a><span class="w">    </span><span class="sd">"""Estimate Time-Stationary Narrowband (TSNB) frequency domain RFI mask.</span>
 </span><span id="detect_rfi_tsnb-387"><a href="#detect_rfi_tsnb-387"><span class="linenos">387</span></a><span class="sd">    The TSNB type of RFI is assumed to be consistently present in the </span>
 </span><span id="detect_rfi_tsnb-388"><a href="#detect_rfi_tsnb-388"><span class="linenos">388</span></a><span class="sd">    same range bin(s) across numerous slow time pulses. Therefore, TSNB RFI </span>
 </span><span id="detect_rfi_tsnb-389"><a href="#detect_rfi_tsnb-389"><span class="linenos">389</span></a><span class="sd">    can be identified by its signatures in the averaged range power spectrum </span>
 </span><span id="detect_rfi_tsnb-390"><a href="#detect_rfi_tsnb-390"><span class="linenos">390</span></a><span class="sd">    in azimuth-time direction. The averaging azimuth-time window size is </span>
-</span><span id="detect_rfi_tsnb-391"><a href="#detect_rfi_tsnb-391"><span class="linenos">391</span></a><span class="sd">    defined by &#39;az_winsize&#39;.</span>
+</span><span id="detect_rfi_tsnb-391"><a href="#detect_rfi_tsnb-391"><span class="linenos">391</span></a><span class="sd">    defined by 'az_winsize'.</span>
 </span><span id="detect_rfi_tsnb-392"><a href="#detect_rfi_tsnb-392"><span class="linenos">392</span></a>
 </span><span id="detect_rfi_tsnb-393"><a href="#detect_rfi_tsnb-393"><span class="linenos">393</span></a><span class="sd">    Parameters</span>
 </span><span id="detect_rfi_tsnb-394"><a href="#detect_rfi_tsnb-394"><span class="linenos">394</span></a><span class="sd">    ------------</span>
@@ -1395,14 +1395,14 @@ trim_std : numpy.ndarray
 </span><span id="detect_rfi_tsnb-414"><a href="#detect_rfi_tsnb-414"><span class="linenos">414</span></a><span class="sd">    mask_tsnb: 2D array of same size as input, int32</span>
 </span><span id="detect_rfi_tsnb-415"><a href="#detect_rfi_tsnb-415"><span class="linenos">415</span></a><span class="sd">        Frequency domain TSNB hit mask based on p-value of the PDF of</span>
 </span><span id="detect_rfi_tsnb-416"><a href="#detect_rfi_tsnb-416"><span class="linenos">416</span></a><span class="sd">        range frequency power spectra</span>
-</span><span id="detect_rfi_tsnb-417"><a href="#detect_rfi_tsnb-417"><span class="linenos">417</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="detect_rfi_tsnb-417"><a href="#detect_rfi_tsnb-417"><span class="linenos">417</span></a><span class="sd">    """</span>
 </span><span id="detect_rfi_tsnb-418"><a href="#detect_rfi_tsnb-418"><span class="linenos">418</span></a>
 </span><span id="detect_rfi_tsnb-419"><a href="#detect_rfi_tsnb-419"><span class="linenos">419</span></a>    <span class="c1"># Contributed by Josh Cohen</span>
 </span><span id="detect_rfi_tsnb-420"><a href="#detect_rfi_tsnb-420"><span class="linenos">420</span></a>
 </span><span id="detect_rfi_tsnb-421"><a href="#detect_rfi_tsnb-421"><span class="linenos">421</span></a>    <span class="n">num_pulses</span><span class="p">,</span> <span class="n">num_rng_samples</span> <span class="o">=</span> <span class="n">raw_data_fft_psd</span><span class="o">.</span><span class="n">shape</span>
 </span><span id="detect_rfi_tsnb-422"><a href="#detect_rfi_tsnb-422"><span class="linenos">422</span></a>
 </span><span id="detect_rfi_tsnb-423"><a href="#detect_rfi_tsnb-423"><span class="linenos">423</span></a>    <span class="k">if</span> <span class="p">(</span><span class="n">az_winsize</span> <span class="o">&gt;</span>  <span class="n">num_pulses</span><span class="p">):</span>
-</span><span id="detect_rfi_tsnb-424"><a href="#detect_rfi_tsnb-424"><span class="linenos">424</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Azimuth window size shall be equal to or less than </span><span class="si">{</span><span class="n">num_pulses</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+</span><span id="detect_rfi_tsnb-424"><a href="#detect_rfi_tsnb-424"><span class="linenos">424</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Azimuth window size shall be equal to or less than </span><span class="si">{</span><span class="n">num_pulses</span><span class="si">}</span><span class="s1">.'</span><span class="p">)</span>
 </span><span id="detect_rfi_tsnb-425"><a href="#detect_rfi_tsnb-425"><span class="linenos">425</span></a>
 </span><span id="detect_rfi_tsnb-426"><a href="#detect_rfi_tsnb-426"><span class="linenos">426</span></a>    <span class="c1"># TSNB hit mask</span>
 </span><span id="detect_rfi_tsnb-427"><a href="#detect_rfi_tsnb-427"><span class="linenos">427</span></a>    <span class="n">tsnb_hits_buffer</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">az_winsize</span><span class="p">,</span> <span class="n">num_rng_samples</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
@@ -1487,10 +1487,10 @@ trim_frac: float, optional
 </span><span id="detect_rfi_tvwb-459"><a href="#detect_rfi_tvwb-459"><span class="linenos">459</span></a>    <span class="n">pvalue_threshold</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> 
 </span><span id="detect_rfi_tvwb-460"><a href="#detect_rfi_tvwb-460"><span class="linenos">460</span></a>    <span class="n">trim_frac</span><span class="o">=</span><span class="mf">0.01</span>
 </span><span id="detect_rfi_tvwb-461"><a href="#detect_rfi_tvwb-461"><span class="linenos">461</span></a><span class="p">):</span>
-</span><span id="detect_rfi_tvwb-462"><a href="#detect_rfi_tvwb-462"><span class="linenos">462</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Estimate Time-Varying Wideband (TVWB) frequency-domain RFI mask.</span>
+</span><span id="detect_rfi_tvwb-462"><a href="#detect_rfi_tvwb-462"><span class="linenos">462</span></a><span class="w">    </span><span class="sd">"""Estimate Time-Varying Wideband (TVWB) frequency-domain RFI mask.</span>
 </span><span id="detect_rfi_tvwb-463"><a href="#detect_rfi_tvwb-463"><span class="linenos">463</span></a><span class="sd">    TVWB RFI signatures can be best identified by averaging frequency power</span>
 </span><span id="detect_rfi_tvwb-464"><a href="#detect_rfi_tvwb-464"><span class="linenos">464</span></a><span class="sd">    spectrum in range-frequency direction. The averaging window size is defined</span>
-</span><span id="detect_rfi_tvwb-465"><a href="#detect_rfi_tvwb-465"><span class="linenos">465</span></a><span class="sd">    as &#39;rng_winsize&#39;.</span>
+</span><span id="detect_rfi_tvwb-465"><a href="#detect_rfi_tvwb-465"><span class="linenos">465</span></a><span class="sd">    as 'rng_winsize'.</span>
 </span><span id="detect_rfi_tvwb-466"><a href="#detect_rfi_tvwb-466"><span class="linenos">466</span></a>
 </span><span id="detect_rfi_tvwb-467"><a href="#detect_rfi_tvwb-467"><span class="linenos">467</span></a><span class="sd">    Parameters</span>
 </span><span id="detect_rfi_tvwb-468"><a href="#detect_rfi_tvwb-468"><span class="linenos">468</span></a><span class="sd">    ----------</span>
@@ -1517,15 +1517,15 @@ trim_frac: float, optional
 </span><span id="detect_rfi_tvwb-489"><a href="#detect_rfi_tvwb-489"><span class="linenos">489</span></a><span class="sd">    mask_tvwb: 2D array, int32, same dimension as input</span>
 </span><span id="detect_rfi_tvwb-490"><a href="#detect_rfi_tvwb-490"><span class="linenos">490</span></a><span class="sd">        Frequency domain TVWB hit mask based on p-value of the probability</span>
 </span><span id="detect_rfi_tvwb-491"><a href="#detect_rfi_tvwb-491"><span class="linenos">491</span></a><span class="sd">        density function (PDF) of range frequency power spectra. Must be</span>
-</span><span id="detect_rfi_tvwb-492"><a href="#detect_rfi_tvwb-492"><span class="linenos">492</span></a><span class="sd">        of the same shape as &#39;mask_tsnb&#39;.</span>
-</span><span id="detect_rfi_tvwb-493"><a href="#detect_rfi_tvwb-493"><span class="linenos">493</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="detect_rfi_tvwb-492"><a href="#detect_rfi_tvwb-492"><span class="linenos">492</span></a><span class="sd">        of the same shape as 'mask_tsnb'.</span>
+</span><span id="detect_rfi_tvwb-493"><a href="#detect_rfi_tvwb-493"><span class="linenos">493</span></a><span class="sd">    """</span>
 </span><span id="detect_rfi_tvwb-494"><a href="#detect_rfi_tvwb-494"><span class="linenos">494</span></a>
 </span><span id="detect_rfi_tvwb-495"><a href="#detect_rfi_tvwb-495"><span class="linenos">495</span></a>    <span class="c1"># Contributed by Josh Cohen</span>
 </span><span id="detect_rfi_tvwb-496"><a href="#detect_rfi_tvwb-496"><span class="linenos">496</span></a>    
 </span><span id="detect_rfi_tvwb-497"><a href="#detect_rfi_tvwb-497"><span class="linenos">497</span></a>    <span class="n">num_pulses</span><span class="p">,</span> <span class="n">num_rng_samples</span> <span class="o">=</span> <span class="n">raw_data_fft_psd</span><span class="o">.</span><span class="n">shape</span>
 </span><span id="detect_rfi_tvwb-498"><a href="#detect_rfi_tvwb-498"><span class="linenos">498</span></a>
 </span><span id="detect_rfi_tvwb-499"><a href="#detect_rfi_tvwb-499"><span class="linenos">499</span></a>    <span class="k">if</span> <span class="p">(</span><span class="n">rng_winsize</span> <span class="o">&gt;</span>  <span class="n">num_rng_samples</span><span class="p">):</span>
-</span><span id="detect_rfi_tvwb-500"><a href="#detect_rfi_tvwb-500"><span class="linenos">500</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Range window size shall be equal to or less than </span><span class="si">{</span><span class="n">num_rng_samples</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+</span><span id="detect_rfi_tvwb-500"><a href="#detect_rfi_tvwb-500"><span class="linenos">500</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Range window size shall be equal to or less than </span><span class="si">{</span><span class="n">num_rng_samples</span><span class="si">}</span><span class="s1">.'</span><span class="p">)</span>
 </span><span id="detect_rfi_tvwb-501"><a href="#detect_rfi_tvwb-501"><span class="linenos">501</span></a>
 </span><span id="detect_rfi_tvwb-502"><a href="#detect_rfi_tvwb-502"><span class="linenos">502</span></a>    <span class="c1"># Transposing to match TSNB Block code</span>
 </span><span id="detect_rfi_tvwb-503"><a href="#detect_rfi_tvwb-503"><span class="linenos">503</span></a>    <span class="n">raw_data_fft_psd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">raw_data_fft_psd</span><span class="p">)</span>
@@ -1539,7 +1539,7 @@ trim_frac: float, optional
 </span><span id="detect_rfi_tvwb-511"><a href="#detect_rfi_tvwb-511"><span class="linenos">511</span></a>        <span class="n">rng_block</span> <span class="o">=</span> <span class="n">raw_data_fft_psd</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">rng_winsize</span><span class="p">]</span>
 </span><span id="detect_rfi_tvwb-512"><a href="#detect_rfi_tvwb-512"><span class="linenos">512</span></a>        <span class="n">avg_rng_freq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">rng_block</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># Average in range frequency</span>
 </span><span id="detect_rfi_tvwb-513"><a href="#detect_rfi_tvwb-513"><span class="linenos">513</span></a>
-</span><span id="detect_rfi_tvwb-514"><a href="#detect_rfi_tvwb-514"><span class="linenos">514</span></a>        <span class="c1"># In Meyer&#39;s paper, detrending is applied to linear-scale averaged power </span>
+</span><span id="detect_rfi_tvwb-514"><a href="#detect_rfi_tvwb-514"><span class="linenos">514</span></a>        <span class="c1"># In Meyer's paper, detrending is applied to linear-scale averaged power </span>
 </span><span id="detect_rfi_tvwb-515"><a href="#detect_rfi_tvwb-515"><span class="linenos">515</span></a>        <span class="c1"># spectra. However, in the code below, linear-scale averaged power spectra </span>
 </span><span id="detect_rfi_tvwb-516"><a href="#detect_rfi_tvwb-516"><span class="linenos">516</span></a>        <span class="c1"># is converted to log scale before detrending. The reason is that detrending </span>
 </span><span id="detect_rfi_tvwb-517"><a href="#detect_rfi_tvwb-517"><span class="linenos">517</span></a>        <span class="c1"># with linear curve fitting approach implemented in this code is more accurate </span>
@@ -1551,7 +1551,7 @@ trim_frac: float, optional
 </span><span id="detect_rfi_tvwb-523"><a href="#detect_rfi_tvwb-523"><span class="linenos">523</span></a>        <span class="c1"># Generate numpy function with best-fit linear coeffs</span>
 </span><span id="detect_rfi_tvwb-524"><a href="#detect_rfi_tvwb-524"><span class="linenos">524</span></a>        <span class="n">pfit</span> <span class="o">=</span> <span class="n">Polynomial</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">avg_rng_freq_db</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 </span><span id="detect_rfi_tvwb-525"><a href="#detect_rfi_tvwb-525"><span class="linenos">525</span></a>
-</span><span id="detect_rfi_tvwb-526"><a href="#detect_rfi_tvwb-526"><span class="linenos">526</span></a>        <span class="c1"># Detrend the average with the best-fit (normalize the row&#39;s mean)</span>
+</span><span id="detect_rfi_tvwb-526"><a href="#detect_rfi_tvwb-526"><span class="linenos">526</span></a>        <span class="c1"># Detrend the average with the best-fit (normalize the row's mean)</span>
 </span><span id="detect_rfi_tvwb-527"><a href="#detect_rfi_tvwb-527"><span class="linenos">527</span></a>        <span class="n">avg_rng_freq_db</span> <span class="o">-=</span> <span class="n">pfit</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 </span><span id="detect_rfi_tvwb-528"><a href="#detect_rfi_tvwb-528"><span class="linenos">528</span></a>
 </span><span id="detect_rfi_tvwb-529"><a href="#detect_rfi_tvwb-529"><span class="linenos">529</span></a>        <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">trim_mean_and_std</span><span class="p">(</span><span class="n">avg_rng_freq_db</span><span class="p">,</span> <span class="n">trim_frac</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -1624,7 +1624,7 @@ trim_frac: float, optional
 </span><span id="gen_rfi_detect_mask-549"><a href="#gen_rfi_detect_mask-549"><span class="linenos">549</span></a>    <span class="n">mask_tvwb</span><span class="p">,</span>
 </span><span id="gen_rfi_detect_mask-550"><a href="#gen_rfi_detect_mask-550"><span class="linenos">550</span></a>    <span class="n">cdf_threshold</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
 </span><span id="gen_rfi_detect_mask-551"><a href="#gen_rfi_detect_mask-551"><span class="linenos">551</span></a><span class="p">):</span>
-</span><span id="gen_rfi_detect_mask-552"><a href="#gen_rfi_detect_mask-552"><span class="linenos">552</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Estimate combined frequency-domain RFI mask using input</span>
+</span><span id="gen_rfi_detect_mask-552"><a href="#gen_rfi_detect_mask-552"><span class="linenos">552</span></a><span class="w">    </span><span class="sd">"""Estimate combined frequency-domain RFI mask using input</span>
 </span><span id="gen_rfi_detect_mask-553"><a href="#gen_rfi_detect_mask-553"><span class="linenos">553</span></a><span class="sd">    TSNB and TVWB masks.</span>
 </span><span id="gen_rfi_detect_mask-554"><a href="#gen_rfi_detect_mask-554"><span class="linenos">554</span></a>
 </span><span id="gen_rfi_detect_mask-555"><a href="#gen_rfi_detect_mask-555"><span class="linenos">555</span></a><span class="sd">    Parameters</span>
@@ -1635,7 +1635,7 @@ trim_frac: float, optional
 </span><span id="gen_rfi_detect_mask-560"><a href="#gen_rfi_detect_mask-560"><span class="linenos">560</span></a><span class="sd">    mask_tvwb: 2D array, int32</span>
 </span><span id="gen_rfi_detect_mask-561"><a href="#gen_rfi_detect_mask-561"><span class="linenos">561</span></a><span class="sd">        Frequency domain TVWB hit mask based on p-value of the probability</span>
 </span><span id="gen_rfi_detect_mask-562"><a href="#gen_rfi_detect_mask-562"><span class="linenos">562</span></a><span class="sd">        density function (PDF) of range frequency power spectra. Must be</span>
-</span><span id="gen_rfi_detect_mask-563"><a href="#gen_rfi_detect_mask-563"><span class="linenos">563</span></a><span class="sd">        of the same shape as &#39;mask_tsnb&#39;.</span>
+</span><span id="gen_rfi_detect_mask-563"><a href="#gen_rfi_detect_mask-563"><span class="linenos">563</span></a><span class="sd">        of the same shape as 'mask_tsnb'.</span>
 </span><span id="gen_rfi_detect_mask-564"><a href="#gen_rfi_detect_mask-564"><span class="linenos">564</span></a><span class="sd">    cdf_threshold: float, default=0.1</span>
 </span><span id="gen_rfi_detect_mask-565"><a href="#gen_rfi_detect_mask-565"><span class="linenos">565</span></a><span class="sd">        This is the  threshold for the cumulative probability density function (CDF) </span>
 </span><span id="gen_rfi_detect_mask-566"><a href="#gen_rfi_detect_mask-566"><span class="linenos">566</span></a><span class="sd">        of the input Time Stationary Narrowband (TSNB) and Time Varying Wideband </span>
@@ -1647,12 +1647,12 @@ trim_frac: float, optional
 </span><span id="gen_rfi_detect_mask-572"><a href="#gen_rfi_detect_mask-572"><span class="linenos">572</span></a><span class="sd">    -------</span>
 </span><span id="gen_rfi_detect_mask-573"><a href="#gen_rfi_detect_mask-573"><span class="linenos">573</span></a><span class="sd">    rfi_detect_mask: 2D array, bool, same dimension as input TSNB and TVWB masks</span>
 </span><span id="gen_rfi_detect_mask-574"><a href="#gen_rfi_detect_mask-574"><span class="linenos">574</span></a><span class="sd">        Frequency domain binary RFI mask of combined TSNB and TVWB types of RFI.</span>
-</span><span id="gen_rfi_detect_mask-575"><a href="#gen_rfi_detect_mask-575"><span class="linenos">575</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="gen_rfi_detect_mask-575"><a href="#gen_rfi_detect_mask-575"><span class="linenos">575</span></a><span class="sd">    """</span>
 </span><span id="gen_rfi_detect_mask-576"><a href="#gen_rfi_detect_mask-576"><span class="linenos">576</span></a>
 </span><span id="gen_rfi_detect_mask-577"><a href="#gen_rfi_detect_mask-577"><span class="linenos">577</span></a>    <span class="c1"># Contributed by Josh Cohen and Geoff Gunter</span>
 </span><span id="gen_rfi_detect_mask-578"><a href="#gen_rfi_detect_mask-578"><span class="linenos">578</span></a>
 </span><span id="gen_rfi_detect_mask-579"><a href="#gen_rfi_detect_mask-579"><span class="linenos">579</span></a>    <span class="k">if</span> <span class="n">mask_tsnb</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">mask_tvwb</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
-</span><span id="gen_rfi_detect_mask-580"><a href="#gen_rfi_detect_mask-580"><span class="linenos">580</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;shape mismatch: RFI masks must have the same shape&quot;</span><span class="p">)</span>
+</span><span id="gen_rfi_detect_mask-580"><a href="#gen_rfi_detect_mask-580"><span class="linenos">580</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"shape mismatch: RFI masks must have the same shape"</span><span class="p">)</span>
 </span><span id="gen_rfi_detect_mask-581"><a href="#gen_rfi_detect_mask-581"><span class="linenos">581</span></a>
 </span><span id="gen_rfi_detect_mask-582"><a href="#gen_rfi_detect_mask-582"><span class="linenos">582</span></a>    <span class="n">tsnb_thresh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">mask_tsnb</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">cdf_threshold</span><span class="p">)</span>
 </span><span id="gen_rfi_detect_mask-583"><a href="#gen_rfi_detect_mask-583"><span class="linenos">583</span></a>    <span class="n">tvwb_thresh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">mask_tvwb</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">cdf_threshold</span><span class="p">)</span>
@@ -1714,7 +1714,7 @@ cdf_threshold: float, default=0.1
 </span><span id="rfi_freq_removal-600"><a href="#rfi_freq_removal-600"><span class="linenos">600</span></a>    <span class="n">rng_winsize</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
 </span><span id="rfi_freq_removal-601"><a href="#rfi_freq_removal-601"><span class="linenos">601</span></a>    <span class="n">raw_data_mitigated</span><span class="o">=</span><span class="kc">None</span>
 </span><span id="rfi_freq_removal-602"><a href="#rfi_freq_removal-602"><span class="linenos">602</span></a><span class="p">):</span>
-</span><span id="rfi_freq_removal-603"><a href="#rfi_freq_removal-603"><span class="linenos">603</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Null the frequency domain FFT bins identified as RFI by the</span>
+</span><span id="rfi_freq_removal-603"><a href="#rfi_freq_removal-603"><span class="linenos">603</span></a><span class="w">    </span><span class="sd">"""Null the frequency domain FFT bins identified as RFI by the</span>
 </span><span id="rfi_freq_removal-604"><a href="#rfi_freq_removal-604"><span class="linenos">604</span></a><span class="sd">    binary rfi_detect_mask, and then take inverse FFT of RFI-mitigated </span>
 </span><span id="rfi_freq_removal-605"><a href="#rfi_freq_removal-605"><span class="linenos">605</span></a><span class="sd">    frequency response to generate its time-domain counterpart.</span>
 </span><span id="rfi_freq_removal-606"><a href="#rfi_freq_removal-606"><span class="linenos">606</span></a>
@@ -1738,8 +1738,8 @@ cdf_threshold: float, default=0.1
 </span><span id="rfi_freq_removal-624"><a href="#rfi_freq_removal-624"><span class="linenos">624</span></a><span class="sd">         must be an array-like object supporting `multidimensional array access</span>
 </span><span id="rfi_freq_removal-625"><a href="#rfi_freq_removal-625"><span class="linenos">625</span></a><span class="sd">         &lt;https://numpy.org/doc/stable/user/basics.indexing.html&gt;`_.</span>
 </span><span id="rfi_freq_removal-626"><a href="#rfi_freq_removal-626"><span class="linenos">626</span></a><span class="sd">         The array should have the same shape and dtype as the input raw data array.</span>
-</span><span id="rfi_freq_removal-627"><a href="#rfi_freq_removal-627"><span class="linenos">627</span></a><span class="sd">         If None (the default), the input &#39;raw&#39; data array will be modified in-place.</span>
-</span><span id="rfi_freq_removal-628"><a href="#rfi_freq_removal-628"><span class="linenos">628</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="rfi_freq_removal-627"><a href="#rfi_freq_removal-627"><span class="linenos">627</span></a><span class="sd">         If None (the default), the input 'raw' data array will be modified in-place.</span>
+</span><span id="rfi_freq_removal-628"><a href="#rfi_freq_removal-628"><span class="linenos">628</span></a><span class="sd">    """</span>
 </span><span id="rfi_freq_removal-629"><a href="#rfi_freq_removal-629"><span class="linenos">629</span></a>
 </span><span id="rfi_freq_removal-630"><a href="#rfi_freq_removal-630"><span class="linenos">630</span></a>    <span class="n">num_pulses</span><span class="p">,</span> <span class="n">num_rng_samples</span> <span class="o">=</span> <span class="n">raw_data</span><span class="o">.</span><span class="n">shape</span>
 </span><span id="rfi_freq_removal-631"><a href="#rfi_freq_removal-631"><span class="linenos">631</span></a>
@@ -1753,7 +1753,7 @@ cdf_threshold: float, default=0.1
 </span><span id="rfi_freq_removal-639"><a href="#rfi_freq_removal-639"><span class="linenos">639</span></a>    <span class="n">raw_data</span> <span class="o">=</span> <span class="n">raw_data</span><span class="p">[:</span><span class="n">num_pulses_no_overlap</span><span class="p">,</span> <span class="p">:</span><span class="n">num_samples_no_overlap</span><span class="p">]</span>
 </span><span id="rfi_freq_removal-640"><a href="#rfi_freq_removal-640"><span class="linenos">640</span></a>    <span class="n">raw_data_fft</span> <span class="o">=</span> <span class="n">raw_data_fft</span><span class="p">[:</span><span class="n">num_pulses_no_overlap</span><span class="p">,</span> <span class="p">:</span><span class="n">num_samples_no_overlap</span><span class="p">]</span>
 </span><span id="rfi_freq_removal-641"><a href="#rfi_freq_removal-641"><span class="linenos">641</span></a>
-</span><span id="rfi_freq_removal-642"><a href="#rfi_freq_removal-642"><span class="linenos">642</span></a>    <span class="c1"># Create an alias for raw_data if there is no &#39;raw_data_mitigated&#39; as input</span>
+</span><span id="rfi_freq_removal-642"><a href="#rfi_freq_removal-642"><span class="linenos">642</span></a>    <span class="c1"># Create an alias for raw_data if there is no 'raw_data_mitigated' as input</span>
 </span><span id="rfi_freq_removal-643"><a href="#rfi_freq_removal-643"><span class="linenos">643</span></a>    <span class="k">if</span> <span class="n">raw_data_mitigated</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
 </span><span id="rfi_freq_removal-644"><a href="#rfi_freq_removal-644"><span class="linenos">644</span></a>        <span class="n">raw_data_mitigated</span> <span class="o">=</span> <span class="n">raw_data</span>
 </span><span id="rfi_freq_removal-645"><a href="#rfi_freq_removal-645"><span class="linenos">645</span></a>    <span class="k">else</span><span class="p">:</span>

@@ -97,7 +97,7 @@
 </span><span id="L-19"><a href="#L-19"><span class="linenos"> 19</span></a>    <span class="n">pts_per_side</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
 </span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a>    <span class="n">geo2rdr_params</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="L-21"><a href="#L-21"><span class="linenos"> 21</span></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-</span><span id="L-22"><a href="#L-22"><span class="linenos"> 22</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-22"><a href="#L-22"><span class="linenos"> 22</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-23"><a href="#L-23"><span class="linenos"> 23</span></a><span class="sd">    Estimate the max radar grid spacing necessary to avoid undersampling the `geo_grid`.</span>
 </span><span id="L-24"><a href="#L-24"><span class="linenos"> 24</span></a>
 </span><span id="L-25"><a href="#L-25"><span class="linenos"> 25</span></a><span class="sd">    Parameters</span>
@@ -116,7 +116,7 @@
 </span><span id="L-38"><a href="#L-38"><span class="linenos"> 38</span></a><span class="sd">        range, in meters. Note that this should be the Doppler associated with the image</span>
 </span><span id="L-39"><a href="#L-39"><span class="linenos"> 39</span></a><span class="sd">        grid, which may in general be different from the native Doppler of the acquired</span>
 </span><span id="L-40"><a href="#L-40"><span class="linenos"> 40</span></a><span class="sd">        echo data.</span>
-</span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a><span class="sd">    look_side : isce3.core.LookSide or {&#39;left&#39;, &#39;right&#39;}</span>
+</span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a><span class="sd">    look_side : isce3.core.LookSide or {'left', 'right'}</span>
 </span><span id="L-42"><a href="#L-42"><span class="linenos"> 42</span></a><span class="sd">        The look direction of the sensor (left-looking or right-looking).</span>
 </span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a><span class="sd">    wavelength : float</span>
 </span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a><span class="sd">        The radar central wavelength, in meters.</span>
@@ -129,13 +129,13 @@
 </span><span id="L-51"><a href="#L-51"><span class="linenos"> 51</span></a><span class="sd">        routine used in geo2rdr (bracketing implementation). The following keys are</span>
 </span><span id="L-52"><a href="#L-52"><span class="linenos"> 52</span></a><span class="sd">        supported:</span>
 </span><span id="L-53"><a href="#L-53"><span class="linenos"> 53</span></a>
-</span><span id="L-54"><a href="#L-54"><span class="linenos"> 54</span></a><span class="sd">        &#39;tol_aztime&#39;:</span>
+</span><span id="L-54"><a href="#L-54"><span class="linenos"> 54</span></a><span class="sd">        'tol_aztime':</span>
 </span><span id="L-55"><a href="#L-55"><span class="linenos"> 55</span></a><span class="sd">          Azimuth time convergence tolerance, in seconds. Defaults to 1e-7.</span>
 </span><span id="L-56"><a href="#L-56"><span class="linenos"> 56</span></a>
-</span><span id="L-57"><a href="#L-57"><span class="linenos"> 57</span></a><span class="sd">        &#39;time_start&#39;:</span>
+</span><span id="L-57"><a href="#L-57"><span class="linenos"> 57</span></a><span class="sd">        'time_start':</span>
 </span><span id="L-58"><a href="#L-58"><span class="linenos"> 58</span></a><span class="sd">          Start of search interval, in seconds. Defaults to ``orbit.start_time``.</span>
 </span><span id="L-59"><a href="#L-59"><span class="linenos"> 59</span></a>
-</span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a><span class="sd">        &#39;time_end&#39;:</span>
+</span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a><span class="sd">        'time_end':</span>
 </span><span id="L-61"><a href="#L-61"><span class="linenos"> 61</span></a><span class="sd">          End of search interval, in seconds. Defaults to ``orbit.end_time``.</span>
 </span><span id="L-62"><a href="#L-62"><span class="linenos"> 62</span></a>
 </span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a><span class="sd">    Returns</span>
@@ -144,7 +144,7 @@
 </span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a><span class="sd">        The maximum required azimuth time pixel spacing, in seconds.</span>
 </span><span id="L-67"><a href="#L-67"><span class="linenos"> 67</span></a><span class="sd">    rg_spacing : float</span>
 </span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a><span class="sd">        The maximum required slant range pixel spacing, in meters.</span>
-</span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a><span class="sd">    """</span>
 </span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a>    <span class="n">look_side</span> <span class="o">=</span> <span class="n">normalize_look_side</span><span class="p">(</span><span class="n">look_side</span><span class="p">)</span>
 </span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a>
 </span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a>    <span class="k">if</span> <span class="n">geo2rdr_params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -250,7 +250,7 @@
 </span><span id="infer_radar_grid_spacing_from_geo_grid-20"><a href="#infer_radar_grid_spacing_from_geo_grid-20"><span class="linenos"> 20</span></a>    <span class="n">pts_per_side</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
 </span><span id="infer_radar_grid_spacing_from_geo_grid-21"><a href="#infer_radar_grid_spacing_from_geo_grid-21"><span class="linenos"> 21</span></a>    <span class="n">geo2rdr_params</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="infer_radar_grid_spacing_from_geo_grid-22"><a href="#infer_radar_grid_spacing_from_geo_grid-22"><span class="linenos"> 22</span></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-</span><span id="infer_radar_grid_spacing_from_geo_grid-23"><a href="#infer_radar_grid_spacing_from_geo_grid-23"><span class="linenos"> 23</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="infer_radar_grid_spacing_from_geo_grid-23"><a href="#infer_radar_grid_spacing_from_geo_grid-23"><span class="linenos"> 23</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="infer_radar_grid_spacing_from_geo_grid-24"><a href="#infer_radar_grid_spacing_from_geo_grid-24"><span class="linenos"> 24</span></a><span class="sd">    Estimate the max radar grid spacing necessary to avoid undersampling the `geo_grid`.</span>
 </span><span id="infer_radar_grid_spacing_from_geo_grid-25"><a href="#infer_radar_grid_spacing_from_geo_grid-25"><span class="linenos"> 25</span></a>
 </span><span id="infer_radar_grid_spacing_from_geo_grid-26"><a href="#infer_radar_grid_spacing_from_geo_grid-26"><span class="linenos"> 26</span></a><span class="sd">    Parameters</span>
@@ -269,7 +269,7 @@
 </span><span id="infer_radar_grid_spacing_from_geo_grid-39"><a href="#infer_radar_grid_spacing_from_geo_grid-39"><span class="linenos"> 39</span></a><span class="sd">        range, in meters. Note that this should be the Doppler associated with the image</span>
 </span><span id="infer_radar_grid_spacing_from_geo_grid-40"><a href="#infer_radar_grid_spacing_from_geo_grid-40"><span class="linenos"> 40</span></a><span class="sd">        grid, which may in general be different from the native Doppler of the acquired</span>
 </span><span id="infer_radar_grid_spacing_from_geo_grid-41"><a href="#infer_radar_grid_spacing_from_geo_grid-41"><span class="linenos"> 41</span></a><span class="sd">        echo data.</span>
-</span><span id="infer_radar_grid_spacing_from_geo_grid-42"><a href="#infer_radar_grid_spacing_from_geo_grid-42"><span class="linenos"> 42</span></a><span class="sd">    look_side : isce3.core.LookSide or {&#39;left&#39;, &#39;right&#39;}</span>
+</span><span id="infer_radar_grid_spacing_from_geo_grid-42"><a href="#infer_radar_grid_spacing_from_geo_grid-42"><span class="linenos"> 42</span></a><span class="sd">    look_side : isce3.core.LookSide or {'left', 'right'}</span>
 </span><span id="infer_radar_grid_spacing_from_geo_grid-43"><a href="#infer_radar_grid_spacing_from_geo_grid-43"><span class="linenos"> 43</span></a><span class="sd">        The look direction of the sensor (left-looking or right-looking).</span>
 </span><span id="infer_radar_grid_spacing_from_geo_grid-44"><a href="#infer_radar_grid_spacing_from_geo_grid-44"><span class="linenos"> 44</span></a><span class="sd">    wavelength : float</span>
 </span><span id="infer_radar_grid_spacing_from_geo_grid-45"><a href="#infer_radar_grid_spacing_from_geo_grid-45"><span class="linenos"> 45</span></a><span class="sd">        The radar central wavelength, in meters.</span>
@@ -282,13 +282,13 @@
 </span><span id="infer_radar_grid_spacing_from_geo_grid-52"><a href="#infer_radar_grid_spacing_from_geo_grid-52"><span class="linenos"> 52</span></a><span class="sd">        routine used in geo2rdr (bracketing implementation). The following keys are</span>
 </span><span id="infer_radar_grid_spacing_from_geo_grid-53"><a href="#infer_radar_grid_spacing_from_geo_grid-53"><span class="linenos"> 53</span></a><span class="sd">        supported:</span>
 </span><span id="infer_radar_grid_spacing_from_geo_grid-54"><a href="#infer_radar_grid_spacing_from_geo_grid-54"><span class="linenos"> 54</span></a>
-</span><span id="infer_radar_grid_spacing_from_geo_grid-55"><a href="#infer_radar_grid_spacing_from_geo_grid-55"><span class="linenos"> 55</span></a><span class="sd">        &#39;tol_aztime&#39;:</span>
+</span><span id="infer_radar_grid_spacing_from_geo_grid-55"><a href="#infer_radar_grid_spacing_from_geo_grid-55"><span class="linenos"> 55</span></a><span class="sd">        'tol_aztime':</span>
 </span><span id="infer_radar_grid_spacing_from_geo_grid-56"><a href="#infer_radar_grid_spacing_from_geo_grid-56"><span class="linenos"> 56</span></a><span class="sd">          Azimuth time convergence tolerance, in seconds. Defaults to 1e-7.</span>
 </span><span id="infer_radar_grid_spacing_from_geo_grid-57"><a href="#infer_radar_grid_spacing_from_geo_grid-57"><span class="linenos"> 57</span></a>
-</span><span id="infer_radar_grid_spacing_from_geo_grid-58"><a href="#infer_radar_grid_spacing_from_geo_grid-58"><span class="linenos"> 58</span></a><span class="sd">        &#39;time_start&#39;:</span>
+</span><span id="infer_radar_grid_spacing_from_geo_grid-58"><a href="#infer_radar_grid_spacing_from_geo_grid-58"><span class="linenos"> 58</span></a><span class="sd">        'time_start':</span>
 </span><span id="infer_radar_grid_spacing_from_geo_grid-59"><a href="#infer_radar_grid_spacing_from_geo_grid-59"><span class="linenos"> 59</span></a><span class="sd">          Start of search interval, in seconds. Defaults to ``orbit.start_time``.</span>
 </span><span id="infer_radar_grid_spacing_from_geo_grid-60"><a href="#infer_radar_grid_spacing_from_geo_grid-60"><span class="linenos"> 60</span></a>
-</span><span id="infer_radar_grid_spacing_from_geo_grid-61"><a href="#infer_radar_grid_spacing_from_geo_grid-61"><span class="linenos"> 61</span></a><span class="sd">        &#39;time_end&#39;:</span>
+</span><span id="infer_radar_grid_spacing_from_geo_grid-61"><a href="#infer_radar_grid_spacing_from_geo_grid-61"><span class="linenos"> 61</span></a><span class="sd">        'time_end':</span>
 </span><span id="infer_radar_grid_spacing_from_geo_grid-62"><a href="#infer_radar_grid_spacing_from_geo_grid-62"><span class="linenos"> 62</span></a><span class="sd">          End of search interval, in seconds. Defaults to ``orbit.end_time``.</span>
 </span><span id="infer_radar_grid_spacing_from_geo_grid-63"><a href="#infer_radar_grid_spacing_from_geo_grid-63"><span class="linenos"> 63</span></a>
 </span><span id="infer_radar_grid_spacing_from_geo_grid-64"><a href="#infer_radar_grid_spacing_from_geo_grid-64"><span class="linenos"> 64</span></a><span class="sd">    Returns</span>
@@ -297,7 +297,7 @@
 </span><span id="infer_radar_grid_spacing_from_geo_grid-67"><a href="#infer_radar_grid_spacing_from_geo_grid-67"><span class="linenos"> 67</span></a><span class="sd">        The maximum required azimuth time pixel spacing, in seconds.</span>
 </span><span id="infer_radar_grid_spacing_from_geo_grid-68"><a href="#infer_radar_grid_spacing_from_geo_grid-68"><span class="linenos"> 68</span></a><span class="sd">    rg_spacing : float</span>
 </span><span id="infer_radar_grid_spacing_from_geo_grid-69"><a href="#infer_radar_grid_spacing_from_geo_grid-69"><span class="linenos"> 69</span></a><span class="sd">        The maximum required slant range pixel spacing, in meters.</span>
-</span><span id="infer_radar_grid_spacing_from_geo_grid-70"><a href="#infer_radar_grid_spacing_from_geo_grid-70"><span class="linenos"> 70</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="infer_radar_grid_spacing_from_geo_grid-70"><a href="#infer_radar_grid_spacing_from_geo_grid-70"><span class="linenos"> 70</span></a><span class="sd">    """</span>
 </span><span id="infer_radar_grid_spacing_from_geo_grid-71"><a href="#infer_radar_grid_spacing_from_geo_grid-71"><span class="linenos"> 71</span></a>    <span class="n">look_side</span> <span class="o">=</span> <span class="n">normalize_look_side</span><span class="p">(</span><span class="n">look_side</span><span class="p">)</span>
 </span><span id="infer_radar_grid_spacing_from_geo_grid-72"><a href="#infer_radar_grid_spacing_from_geo_grid-72"><span class="linenos"> 72</span></a>
 </span><span id="infer_radar_grid_spacing_from_geo_grid-73"><a href="#infer_radar_grid_spacing_from_geo_grid-73"><span class="linenos"> 73</span></a>    <span class="k">if</span> <span class="n">geo2rdr_params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
