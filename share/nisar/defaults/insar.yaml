@@ -102,6 +102,10 @@ runconfig:
             # first available CUDA device. Ignored if *gpu_enabled* is False.
             gpu_id: 0
 
+            # OPTIONAL - Run supported steps of the CPU ampcor on a Metal GPU
+            # (Apple) if available. Default False
+            metal_enabled: False
+
         # ADT section - isce3 + pyre workflow
         processing:
             # Process single co-pol in offset and rubbersheeting

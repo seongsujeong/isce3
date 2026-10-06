@@ -33,14 +33,19 @@ def test_ampcor():
         # Fall back to CPU only if not compiled with CUDA support
         impls = (isce3.matchtemplate.PyCPUAmpcor,)
     for impl in impls:
-        # DLC peak search (CPU only) must find the same unique peaks
-        dlcs = (False, True) if impl is isce3.matchtemplate.PyCPUAmpcor \
-            else (False,)
+        # DLC peak search and Metal steps (CPU ampcor only) must find the
+        # same unique peaks
+        cpu = impl is isce3.matchtemplate.PyCPUAmpcor
+        dlcs = (False, True) if cpu else (False,)
+        metals = (False, True) if cpu and \
+            isce3.matchtemplate.metal_available() else (False,)
         # test FFT and sinc oversamplers
-        for ovs, dlc in itertools.product((0, 1), dlcs):
+        for ovs, dlc, metal in itertools.product((0, 1), dlcs, metals):
             ampcor = impl()
 
             ampcor.useMmap = 1
+            if metal:
+                ampcor.useMetal = 1
 
             datadir = os.path.join(
                 iscetest.data, "ampcor", "accuracy-testdata", "ovs128-rho0.8"

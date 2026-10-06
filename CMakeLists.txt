@@ -8,6 +8,14 @@ project(isce3
     LANGUAGES CXX
     )
 
+option(ISCE3_WITH_METAL "Run supported CPU ampcor steps on the Metal GPU (Apple only)" OFF)
+if(ISCE3_WITH_METAL)
+    if(NOT APPLE)
+        message(FATAL_ERROR "ISCE3_WITH_METAL requires Apple platforms")
+    endif()
+    enable_language(OBJCXX)
+endif()
+
 find_program(CCACHE ccache)
 if(CCACHE)
     message(STATUS "Using ccache: ${CCACHE}")

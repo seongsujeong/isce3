@@ -61,6 +61,7 @@ void addbinding_pycuampcor_cpu(pybind11::module& m)
         .DEF_PARAM(int, numberWindowAcrossInChunk)
 
         .DEF_PARAM(int, useMmap)
+        .DEF_PARAM(int, useMetal)
 
         .DEF_PARAM_RENAME(int, halfSearchRangeAcross, halfSearchRangeAcrossRaw)
         .DEF_PARAM_RENAME(int, halfSearchRangeDown,   halfSearchRangeDownRaw)

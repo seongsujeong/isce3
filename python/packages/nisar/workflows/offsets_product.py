@@ -138,6 +138,7 @@ def run(cfg: dict, output_hdf5: str = None):
                         ampcor.useMmap = 1
                     else:
                         ampcor = isce3.matchtemplate.PyCPUAmpcor()
+                        ampcor.useMetal = int(cfg['worker']['metal_enabled'])
 
                     # Set parameters related to reference/secondary RSLC
                     ampcor.referenceImageName = str(out_dir / 'reference')

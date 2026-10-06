@@ -49,6 +49,7 @@ def run(cfg: dict):
         ampcor.deviceID = cfg['worker']['gpu_id']
     else:
         ampcor = isce3.matchtemplate.PyCPUAmpcor()
+        ampcor.useMetal = int(cfg['worker']['metal_enabled'])
 
     # Use memory mapping (not exposed to user but reference
     # and secondary raster are memory-mappable)

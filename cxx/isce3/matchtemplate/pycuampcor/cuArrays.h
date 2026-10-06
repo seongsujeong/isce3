@@ -21,6 +21,10 @@
 
 namespace isce3::matchtemplate::pycuampcor {
 
+/// Page-aligned allocation (rounded up to whole pages), so that GPU buffers
+/// can wrap the memory without copies; release with free()
+void *pageAlignedAlloc(size_t bytes);
+
 template <typename T>
 class cuArrays{
 

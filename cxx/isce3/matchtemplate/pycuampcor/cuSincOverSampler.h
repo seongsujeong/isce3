@@ -48,6 +48,13 @@ class cuSincOverSamplerR2R
     void cuSetupSincKernel();
     // execute interface
     void execute(cuArrays<float> *imagesIn, cuArrays<float> *imagesOut, cuArrays<int2> *center, int oversamplingFactor);
+    // kernel parameters (for the Metal implementation)
+    const float *filter() const { return r_filter; }
+    int filterLength() const { return i_filtercoef + 1; }
+    int sincWindow() const { return i_sincwindow; }
+    int covs() const { return i_covs; }
+    int decfactor() const { return i_decfactor; }
+    int intplength() const { return i_intplength; }
     // destructor
     ~cuSincOverSamplerR2R();
 };

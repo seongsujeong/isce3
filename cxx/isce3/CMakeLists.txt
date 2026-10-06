@@ -38,6 +38,22 @@ target_include_directories(${LISCE} PUBLIC
     $<INSTALL_INTERFACE:"${ISCE_INCLUDEDIR}">
     )
 
+# Metal (Apple GPU) steps of the CPU ampcor
+if(ISCE3_WITH_METAL)
+    # Metal kernels are compiled at run time from source embedded in a header
+    set(METAL_SRC ${CMAKE_CURRENT_SOURCE_DIR}/matchtemplate/pycuampcor/cuAmpcor.metal)
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${METAL_SRC})
+    file(READ ${METAL_SRC} ISCE3_METAL_SOURCE)
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/matchtemplate/pycuampcor/cuMetalSource.h
+        "// Generated from cuAmpcor.metal by CMake\n"
+        "static const char *cuAmpcorMetalSource = R\"METAL(${ISCE3_METAL_SOURCE})METAL\";\n")
+    target_sources(${LISCE} PRIVATE matchtemplate/pycuampcor/cuMetal.mm)
+    # Objective-C objects held in C++ members need ARC
+    set_source_files_properties(matchtemplate/pycuampcor/cuMetal.mm PROPERTIES COMPILE_OPTIONS -fobjc-arc)
+    target_compile_definitions(${LISCE} PUBLIC ISCE3_METAL)
+    target_link_libraries(${LISCE} PRIVATE "-framework Foundation" "-framework Metal")
+endif()
+
 # Define the preprocessor macro "ISCE3_CUDA" if CUDA is enabled
 if(WITH_CUDA)
     target_compile_definitions(${LISCE} PUBLIC ISCE3_CUDA)

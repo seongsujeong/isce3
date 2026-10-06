@@ -12,8 +12,14 @@
 #include "cudaUtil.h"
 #include "cuAmpcorChunk.h"
 #include "cuAmpcorUtil.h"
+#include "cuMetal.h"
+#include <atomic>
 #include <exception>
+#include <functional>
 #include <iostream>
+#include <memory>
+#include <mutex>
+#include <thread>
 #include <vector>
 #include <isce3/fft/detail/Threads.h>
 #ifdef _OPENMP
@@ -32,6 +38,49 @@ cuAmpcorController::cuAmpcorController()
     param.reset(new cuAmpcorParameter());
 }
 
+
+/**
+ * Process chunks on the CPU with nThreads threads, one chunk processor per
+ * thread; chunk indices come from nextChunk (negative when none is left).
+ * Returns the number of chunks processed.
+ */
+static int runChunksCPU(cuAmpcorParameter *param, GDALImage *referenceImage,
+    GDALImage *secondaryImage, cuArrays<float2> *offsetImageRun,
+    cuArrays<float> *snrImageRun, cuArrays<float3> *covImageRun,
+    cuArrays<float> *corrImageRun, int nThreads,
+    const std::function<int()> &nextChunk, const std::function<void()> &chunkDone)
+{
+    if(nThreads < 1) return 0;
+    // Processors are constructed serially since FFTW planning is not
+    // thread-safe (fftwf_execute on distinct plans is). nStreams is a CUDA
+    // setting and is not used by this CPU port.
+    std::vector<std::unique_ptr<cuAmpcorChunk>> chunk(nThreads);
+    for(int ist=0; ist<nThreads; ist++)
+        chunk[ist].reset(new cuAmpcorChunk(param, referenceImage, secondaryImage,
+            offsetImageRun, snrImageRun, covImageRun, corrImageRun));
+
+    // Chunks write disjoint regions of the *Run images and only read the
+    // (mmap'ed) input images, so they can be processed concurrently.
+    std::atomic<int> processed{0};
+    std::exception_ptr error = nullptr;
+    #pragma omp parallel num_threads(nThreads)
+    {
+        cuAmpcorChunk &processor = *chunk[omp_get_thread_num()];
+        for(int k = nextChunk(); k >= 0; k = nextChunk()) {
+            try {
+                processor.run(k / param->numberChunkAcross, k % param->numberChunkAcross);
+            }
+            catch(...) {
+                #pragma omp critical
+                if(!error) error = std::current_exception();
+            }
+            processed++;
+            chunkDone();
+        }
+    }
+    if(error) std::rethrow_exception(error);
+    return processed;
+}
 
 /**
  *  Run ampcor
@@ -87,50 +136,66 @@ void cuAmpcorController::runAmpcor()
     corrImage = new cuArrays<float>(param->numberWindowDown, param->numberWindowAcross);
     corrImage->allocate();
 
-    // One chunk processor per thread; constructed serially since FFTW
-    // planning is not thread-safe (fftwf_execute on distinct plans is).
-    // nStreams is a CUDA setting and is not used by this CPU port.
-    const int nThreads = isce3::fft::detail::getMaxThreads();
-    std::vector<cuAmpcorChunk *> chunk(nThreads);
-    for(int ist=0; ist<nThreads; ist++)
-    {
-        chunk[ist]= new cuAmpcorChunk(param.get(), referenceImage, secondaryImage,
-            offsetImageRun, snrImageRun, covImageRun, corrImageRun);
-    }
+    // chunks are handed out one at a time to the CPU threads (and the Metal
+    // GPU), so faster processors take more of them
+    const int nChunks = param->numberChunkDown * param->numberChunkAcross;
+    std::atomic<int> next{0}, nDone{0};
+    auto nextChunk = [&]() { const int k = next++; return k < nChunks ? k : -1; };
+    const int messageInterval = std::max(nChunks/10, 1);
+    std::mutex messageMutex;
+    auto chunkDone = [&]() {
+        const int done = ++nDone;
+        if(done % messageInterval == 0) {
+            std::lock_guard<std::mutex> lock(messageMutex);
+            std::cout << "Processed " << done << " out of " << nChunks << " chunks" << std::endl;
+        }
+    };
 
-    int nChunksDown = param->numberChunkDown;
-    int nChunksAcross = param->numberChunkAcross;
-    int nChunks = nChunksDown * nChunksAcross;
+    int nThreads = isce3::fft::detail::getMaxThreads();
+    bool gpu = false;
+#ifdef ISCE3_METAL
+    gpu = param->useMetal && metalSupported(param.get());
+#endif
+    // threads feeding the GPU, each loading its own chunks from the images;
+    // two balance chunk loading and CPU processing on Apple M5 (10 cores)
+    const int nGpuThreads = gpu ? std::max(1, std::min(nThreads - 1, 2)) : 0;
+    nThreads -= nGpuThreads;
 
-    // report info
     std::cout << "Total number of windows (azimuth x range):  "
-        << param->numberWindowDown << " x " << param->numberWindowAcross
-        << std::endl;
+        << param->numberWindowDown << " x " << param->numberWindowAcross << std::endl;
     std::cout << "to be processed in the number of chunks: "
-        << nChunksDown << " x " << nChunksAcross
-        << " using " << nThreads << " threads" << std::endl;
+        << param->numberChunkDown << " x " << param->numberChunkAcross
+        << " using " << nThreads << " CPU threads";
+    if(gpu) std::cout << " and the Metal GPU (" << nGpuThreads << " feeding threads)";
+    std::cout << std::endl;
 
-    // Chunks write disjoint regions of the *Run images and only read the
-    // (mmap'ed) input images, so they can be processed concurrently.
-    int message_interval = std::max(nChunks/10, 1);
-    int nDone = 0;
-    std::exception_ptr error = nullptr;
-    #pragma omp parallel for schedule(dynamic)
-    for(int k = 0; k < nChunks; k++)
-    {
-        try {
-            chunk[omp_get_thread_num()]->run(k / nChunksAcross, k % nChunksAcross);
-        }
-        catch(...) {
-            #pragma omp critical
-            if(!error) error = std::current_exception();
-        }
-        #pragma omp critical
-        if(++nDone % message_interval == 0)
-            std::cout << "Processed " << nDone << " out of " << nChunks
-                << " chunks" << std::endl;
+    std::atomic<int> gpuChunks{0};
+    std::exception_ptr gpuError = nullptr;
+    std::mutex gpuErrorMutex;
+    std::vector<std::thread> gpuThreads;
+#ifdef ISCE3_METAL
+    for(int t = 0; t < nGpuThreads; t++) {
+        gpuThreads.emplace_back([&]() {
+            try {
+                gpuChunks += runAmpcorMetal(param.get(), referenceImage, secondaryImage,
+                    offsetImageRun, snrImageRun, covImageRun, corrImageRun,
+                    nextChunk, chunkDone);
+            }
+            catch(...) {
+                std::lock_guard<std::mutex> lock(gpuErrorMutex);
+                if(!gpuError) gpuError = std::current_exception();
+            }
+        });
     }
-    if(error) std::rethrow_exception(error);
+#endif
+    const int cpuChunks = runChunksCPU(param.get(), referenceImage, secondaryImage,
+        offsetImageRun, snrImageRun, covImageRun, corrImageRun, nThreads,
+        nextChunk, chunkDone);
+    for(auto &t : gpuThreads) t.join();
+    if(gpuError) std::rethrow_exception(gpuError);
+    if(gpu)
+        std::cout << "Chunks processed: " << cpuChunks << " on the CPU, "
+            << gpuChunks << " on the Metal GPU" << std::endl;
 
     // extraction of the run images to output images
     cuArraysCopyExtract(offsetImageRun, offsetImage, make_int2(0,0));
@@ -177,9 +242,6 @@ void cuAmpcorController::runAmpcor()
     delete snrImageRun;
     delete covImageRun;
     delete corrImageRun;
-
-    for (auto c : chunk)
-        delete c;
 
     delete referenceImage;
     delete secondaryImage;

@@ -24,7 +24,7 @@ cuSincOverSamplerR2R::cuSincOverSamplerR2R(const int i_covs_)
 {
     i_intplength = int(r_relfiltlen/r_beta+0.5f);
     i_filtercoef = i_intplength*i_decfactor;
-    r_filter = (float*) malloc((i_filtercoef+1)*sizeof(float));
+    r_filter = (float*) pageAlignedAlloc((i_filtercoef+1)*sizeof(float));
     cuSetupSincKernel();
 }
 

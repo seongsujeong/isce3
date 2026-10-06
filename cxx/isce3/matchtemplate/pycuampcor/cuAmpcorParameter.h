@@ -112,6 +112,7 @@ public:
     int numberChunks;               ///< total number of chunks
 
     int useMmap;                    ///< whether to use mmap 0=not 1=yes (default = 0)
+    int useMetal;                   ///< run supported steps on the Metal GPU if available 0=not 1=yes (default = 0)
     int mmapSizeInGB;               ///< size for mmap buffer(useMmap=1) or a cpu memory buffer (useMmap=0)
 
     int referenceStartPixelDown0;    ///< first starting pixel in reference image (down)

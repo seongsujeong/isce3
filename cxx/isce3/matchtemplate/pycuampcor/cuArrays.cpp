@@ -8,15 +8,26 @@
 #include "cuArrays.h"
 
 #include "float2.h"
+#include <new>
 #include <string.h>
+#include <unistd.h>
 
 namespace isce3::matchtemplate::pycuampcor {
+
+void *pageAlignedAlloc(size_t bytes)
+{
+    const size_t page = getpagesize();
+    void *p = nullptr;
+    if (posix_memalign(&p, page, (bytes + page - 1) / page * page + (bytes ? 0 : page)) != 0)
+        throw std::bad_alloc();
+    return p;
+}
 
 // allocate arrays in device memory
 template <typename T>
 void cuArrays<T>::allocate()
 {
-    devData = (T*) malloc(getByteSize());
+    devData = (T*) pageAlignedAlloc(getByteSize());
     is_allocated = 1;
 }
 

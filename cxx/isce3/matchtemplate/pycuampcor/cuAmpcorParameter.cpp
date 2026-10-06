@@ -63,6 +63,7 @@ cuAmpcorParameter::cuAmpcorParameter()
     corrStatWindowSize = 21; // 10*2+1 as in RIOPAC
 
     useMmap = 1; // use mmap
+    useMetal = 0; // CPU only
     mmapSizeInGB = 1;
 
     mergeGrossOffset = 0; // default to separate gross offset
