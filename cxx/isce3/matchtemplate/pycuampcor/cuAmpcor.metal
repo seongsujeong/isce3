@@ -521,9 +521,11 @@ kernel void fft1d(device float2 *data [[buffer(0)]],
     for (int s = 0; s < p.nradix; s++) {
         const int r = radix[s], m = n / r, step = n / (ns * r);
         for (int t = tid; t < C * m; t += nt) {
-            const int c = t / m, j = t % m, k = j % ns;
+            // two integer divisions per butterfly (they are slow on the GPU)
+            const int c = t / m, j = t - c * m;
+            const int jq = j / ns, k = j - jq * ns;
             threadgroup float2 *x = a + c * n, *y = b + c * n;
-            const int out = (j / ns) * ns * r + k;
+            const int out = jq * ns * r + k;
             if (r == 4) {
                 const float2 v0 = x[j];
                 const float2 v1 = twiddle(x[j + m], tw[k * step], p.sign);
