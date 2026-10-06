@@ -8,7 +8,9 @@
 #include "cuAmpcorUtil.h"
 
 // for FLT_MAX
+#include <algorithm>
 #include <cfloat>
+#include <cmath>
 #include <limits>
 #include "float2.h"
 
@@ -47,6 +49,62 @@ void cuArraysMaxloc2D(cuArrays<float> *images, cuArrays<int2> *maxloc,
 {
     cudaKernel_maxloc2D(images->devData, maxloc->devData, maxval->devData,
             images->height, images->width, images->count);
+}
+
+/**
+ * Find the correlation peak of each 2D image with the directional line
+ * constrained (DLC) search of Jeong et al. (2017, IEEE TGRS,
+ * doi:10.1109/TGRS.2016.2643699): pivots are placed on the line through the
+ * image center (the gross offset) along the flow direction, both forward and
+ * backward, and each pivot climbs to a local maximum by steepest ascent over
+ * its 8 neighbors. The highest of these local maxima is the peak.
+ * @param[in] images batch of correlation surfaces
+ * @param[in] direction flow direction (x: down, y: across) of each image;
+ *   (0, 0) falls back to the global maximum
+ * @param[out] maxloc peak locations (x: down, y: across)
+ * @param[out] maxval peak values
+ */
+void cuArraysMaxlocDLC(cuArrays<float> *images, const float2 *direction,
+                       cuArrays<int2> *maxloc, cuArrays<float> *maxval)
+{
+    const int nx = images->height, ny = images->width;
+    for (int bid = 0; bid < images->count; bid++) {
+        const float* image = &images->devData[(size_t)bid * nx * ny];
+        auto val = [&](int i, int j) { return image[i * ny + j]; };
+        const float2 d = direction[bid];
+        float best = std::numeric_limits<float>::lowest();
+        int2 loc = make_int2(nx / 2, ny / 2);
+
+        const float dmax = std::max(std::abs(d.x), std::abs(d.y));
+        if (dmax == 0.0f) {
+            for (int i = 0; i < nx * ny; i++)
+                if (image[i] > best) { best = image[i]; loc = make_int2(i / ny, i % ny); }
+        } else {
+            // one pixel step along the dominant axis avoids duplicate pivots
+            const float sx = d.x / dmax, sy = d.y / dmax;
+            const int nstep = std::max(nx, ny) / 2;
+            for (int k = -nstep; k <= nstep; k++) {
+                int i = (int)std::lround(nx / 2 + k * sx);
+                int j = (int)std::lround(ny / 2 + k * sy);
+                if (i < 0 || i >= nx || j < 0 || j >= ny) continue;
+                // steepest ascent to a local maximum
+                while (true) {
+                    int bi = i, bj = j;
+                    for (int di = -1; di <= 1; di++)
+                        for (int dj = -1; dj <= 1; dj++) {
+                            int ii = i + di, jj = j + dj;
+                            if (ii >= 0 && ii < nx && jj >= 0 && jj < ny
+                                    && val(ii, jj) > val(bi, bj)) { bi = ii; bj = jj; }
+                        }
+                    if (bi == i && bj == j) break;
+                    i = bi; j = bj;
+                }
+                if (val(i, j) > best) { best = val(i, j); loc = make_int2(i, j); }
+            }
+        }
+        maxval->devData[bid] = best;
+        maxloc->devData[bid] = loc;
+    }
 }
 
 /**

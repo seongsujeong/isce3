@@ -2,6 +2,8 @@
 
 #include "cuAmpcorUtil.h"
 
+#include <algorithm>
+
 namespace isce3::matchtemplate::pycuampcor {
 
 /**
@@ -72,7 +74,13 @@ void cuAmpcorChunk::run(int idxDown_, int idxAcross_)
 
     // find the maximum location of none-oversampled correlation
     // 41 x 41, if halfsearchrange=20
-    cuArraysMaxloc2D(r_corrBatchRaw, offsetInit, r_maxval);
+    if(param->flowDirectionDown.empty()) {
+        cuArraysMaxloc2D(r_corrBatchRaw, offsetInit, r_maxval);
+    } else {
+        // constrain the peak to the flow direction through the gross offset
+        getFlowDirection(flowDirection.data());
+        cuArraysMaxlocDLC(r_corrBatchRaw, flowDirection.data(), offsetInit, r_maxval);
+    }
 
     // estimate variance
     cuEstimateVariance(r_corrBatchRaw, offsetInit, r_maxval, r_referenceBatchRaw->size, r_covValue);
@@ -283,6 +291,22 @@ void cuAmpcorChunk::getRelativeOffset(int *rStartPixel, const int *oStartPixel, 
     }
 }
 
+/// flow directions of the windows within the chunk (same layout as getRelativeOffset)
+/// @param[out] direction flow direction (x: down, y: across) of each window in the chunk
+void cuAmpcorChunk::getFlowDirection(float2 *direction)
+{
+    for(int i=0; i<param->numberWindowDownInChunk; ++i) {
+        int iDown = std::min(i, nWindowsDown-1);
+        for(int j=0; j<param->numberWindowAcrossInChunk; ++j) {
+            int iAcross = std::min(j, nWindowsAcross-1);
+            int idxInAll = (iDown+idxChunkDown*param->numberWindowDownInChunk)*param->numberWindowAcross
+                + idxChunkAcross*param->numberWindowAcrossInChunk+iAcross;
+            direction[i*param->numberWindowAcrossInChunk+j] = make_float2(
+                param->flowDirectionDown[idxInAll], param->flowDirectionAcross[idxInAll]);
+        }
+    }
+}
+
 void cuAmpcorChunk::loadReferenceChunk()
 {
 
@@ -384,6 +408,8 @@ cuAmpcorChunk::cuAmpcorChunk(cuAmpcorParameter *param_, GDALImage *reference_, G
     snrImage = snrImage_;
     covImage = covImage_;
     corrImage = corrImage_;
+
+    flowDirection.resize(param->numberWindowDownInChunk * param->numberWindowAcrossInChunk);
 
     ChunkOffsetDown = new cuArrays<int> (param->numberWindowDownInChunk, param->numberWindowAcrossInChunk);
     ChunkOffsetDown->allocate();

@@ -101,5 +101,10 @@ void addbinding_pycuampcor_cpu(pybind11::module& m)
                     self.param->referenceStartPixelAcross0,
                     vD.data(), vA.data());
         })
+        .def("setFlowDirection", [](cls& self, std::vector<float> vD,
+                                               std::vector<float> vA) {
+            self.param->setFlowDirection(vD, vA);
+        }, "Per-window flow directions (down, across) enabling the DLC "
+           "integer peak search; call after setupParams")
         ;
 }

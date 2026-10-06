@@ -13,7 +13,8 @@ from nisar.workflows.dense_offsets import create_empty_dataset
 from nisar.workflows.helpers import (copy_raster, get_cfg_freq_pols,
                                      get_ground_track_velocity_product)
 from nisar.workflows.offsets_product_runconfig import OffsetsProductRunConfig
-from nisar.workflows.velocity_offsets import gross_offset_path
+from nisar.workflows.velocity_offsets import (flow_direction_path,
+                                              gross_offset_path)
 from nisar.products.insar.product_paths import ROFFGroupsPaths
 from nisar.workflows.yaml_argparse import YamlArgparse
 from osgeo import gdal
@@ -90,9 +91,13 @@ def run(cfg: dict, output_hdf5: str = None):
 
             # Per-frequency velocity-based gross offsets, if enabled
             freq_params = offs_params
-            if cfg['processing']['velocity_gross_offset']['enabled']:
+            vel_cfg = cfg['processing']['velocity_gross_offset']
+            if vel_cfg['enabled']:
                 freq_params = {**offs_params, 'gross_offset_filepath':
                                str(gross_offset_path(scratch_path, freq))}
+                if vel_cfg['dlc_enabled']:
+                    freq_params['flow_direction_filepath'] = \
+                        str(flow_direction_path(scratch_path, freq))
 
             for pol in pol_list:
                 out_dir = off_scratch / pol
@@ -313,6 +318,17 @@ def set_ampcor_params(cfg, ampcor_obj):
             ampcor_obj, gross_offset[:, 0], gross_offset[:, 1])
         ampcor_obj.setVaryingGrossOffset(gross_azimuth, gross_range)
     ampcor_obj.mergeGrossOffset = cfg['merge_gross_offset']
+
+    # Constrain the integer peak search to the flow direction (DLC)
+    if cfg.get('flow_direction_filepath') is not None:
+        if not hasattr(ampcor_obj, 'setFlowDirection'):
+            err_str = "DLC peak search is only implemented for CPU ampcor"
+            error_channel.log(err_str)
+            raise NotImplementedError(err_str)
+        direction = np.fromfile(cfg['flow_direction_filepath'],
+                                dtype=np.float32).reshape(-1, 2)
+        ampcor_obj.setFlowDirection(direction[:, 0].tolist(),
+                                    direction[:, 1].tolist())
 
     # Check pixel in image range
     ampcor_obj.checkPixelInImageRange()

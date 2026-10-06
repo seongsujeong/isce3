@@ -443,6 +443,15 @@ velocity_gross_offset_options:
     # slope used to update the height of displaced points
     dem_smoothing: num(min=0, required=False)
 
+    # Constrain the ampcor integer peak search to the predicted flow
+    # direction through the gross offset, forward and backward (DLC,
+    # Jeong et al. 2017). CPU ampcor only.
+    dlc_enabled: bool(required=False)
+
+    # Windows whose predicted offset is below this (RSLC pixels) have no
+    # flow direction and use the global correlation maximum
+    dlc_min_offset: num(min=0, required=False)
+
 offsets_product_options:
     # Flag to enable/disable offsets product computation (default: False)
     enabled: bool(required=False)

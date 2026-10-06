@@ -125,6 +125,8 @@ public:
     std::vector<int> grossOffsetDown;		///< Gross offsets between reference and secondary windows (down)
     std::vector<int> grossOffsetAcross;     ///< Gross offsets between reference and secondary windows (across)
     int mergeGrossOffset;       ///< whether to merge gross offsets into the final offsets
+    std::vector<float> flowDirectionDown;    ///< per-window flow direction (down) for DLC peak search; empty: global max
+    std::vector<float> flowDirectionAcross;  ///< per-window flow direction (across) for DLC peak search; empty: global max
 
     std::vector<int> referenceChunkStartPixelDown;    ///< reference starting pixels for each chunk (down)
     std::vector<int> referenceChunkStartPixelAcross;  ///< reference starting pixels for each chunk (across)
@@ -160,6 +162,8 @@ public:
     void setStartPixels(int, int, int, int);
     // set starting pixels for each chunk
     void setChunkStartPixels();
+    // set per-window flow directions enabling the DLC integer peak search
+    void setFlowDirection(const std::vector<float>& down, const std::vector<float>& across);
     // check whether all chunks/windows are within the image range
     void checkPixelInImageRange();
     // Process other parameters after Python Input

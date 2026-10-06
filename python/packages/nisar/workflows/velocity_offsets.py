@@ -16,6 +16,9 @@ Outputs in <scratch>/velocity_offsets/freq<freq> (offsets grid geometry):
   velocity          ENVI float32, band 1 vx, band 2 vy [map units/yr]
   gross_offset.bin  int32 (azimuth, range) per window, the format of
                     offsets_product `gross_offset_filepath`
+  flow_direction.bin  float32 (azimuth, range) unit flow direction per
+                    window for the DLC peak search; (0, 0) where the
+                    predicted offset is below `dlc_min_offset` pixels
 '''
 import pathlib
 import time
@@ -39,6 +42,24 @@ def gross_offset_path(scratch_path, freq):
     '''Path of the gross offset file computed for frequency `freq`'''
     return pathlib.Path(scratch_path) / 'velocity_offsets' / \
         f'freq{freq}' / 'gross_offset.bin'
+
+
+def flow_direction_path(scratch_path, freq):
+    '''Path of the flow direction file computed for frequency `freq`'''
+    return gross_offset_path(scratch_path, freq).with_name(
+        'flow_direction.bin')
+
+
+def flow_direction(az_off, rg_off, min_offset):
+    '''
+    Unit (azimuth, range) direction of predicted offsets, (0, 0) where their
+    magnitude is below `min_offset` pixels or undefined
+    '''
+    mag = np.hypot(az_off, rg_off)
+    valid = np.isfinite(mag) & (mag >= min_offset)
+    scale = np.where(valid, 1.0 / np.where(valid, mag, 1.0), 0.0)
+    return np.stack([np.nan_to_num(az_off) * scale,
+                     np.nan_to_num(rg_off) * scale], axis=-1)
 
 
 def time_interval_years(ref_grid, sec_grid):
@@ -256,6 +277,9 @@ def run(cfg: dict):
         gross = np.stack([np.nan_to_num(az_off), np.nan_to_num(rg_off)],
                          axis=-1)
         np.rint(gross).astype(np.int32).tofile(out_path)
+        vel_cfg = cfg['processing']['velocity_gross_offset']
+        flow_direction(az_off, rg_off, vel_cfg['dlc_min_offset']).astype(
+            np.float32).tofile(flow_direction_path(scratch_path, freq))
 
         info.log(f'freq{freq} azimuth offsets [px] min/max: '
                  f'{np.nanmin(az_off):.1f} {np.nanmax(az_off):.1f}; range: '

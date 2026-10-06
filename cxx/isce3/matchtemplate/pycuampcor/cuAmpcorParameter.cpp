@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdexcept>
 
 #ifndef IDIVUP
 #define IDIVUP(i,j) ((i+j-1)/j)
@@ -309,5 +310,18 @@ void cuAmpcorParameter::checkPixelInImageRange()
 
 
 cuAmpcorParameter::~cuAmpcorParameter() {}
+
+/**
+ * Set per-window flow directions (down, across) for the DLC integer peak search.
+ * Windows with a zero direction use the global maximum.
+ */
+void cuAmpcorParameter::setFlowDirection(const std::vector<float>& down,
+    const std::vector<float>& across)
+{
+    if(down.size() != (size_t)numberWindows || across.size() != (size_t)numberWindows)
+        throw std::invalid_argument("flow direction size does not match the number of windows");
+    flowDirectionDown = down;
+    flowDirectionAcross = across;
+}
 
 } // namespace

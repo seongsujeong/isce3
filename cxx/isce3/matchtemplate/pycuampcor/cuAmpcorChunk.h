@@ -15,6 +15,7 @@
 #include "cuSincOverSampler.h"
 #include "cuCorrFrequency.h"
 #include "cuCorrNormalizer.h"
+#include <vector>
 
 
 namespace isce3::matchtemplate::pycuampcor {
@@ -89,6 +90,8 @@ private:
     // Variance estimation
     cuArrays<float3> *r_covValue;
 
+    std::vector<float2> flowDirection; ///< flow directions of the windows in the chunk (DLC)
+
 public:
     // constructor
     cuAmpcorChunk(cuAmpcorParameter *param_,
@@ -103,6 +106,7 @@ public:
     void loadReferenceChunk();
     void loadSecondaryChunk();
     void getRelativeOffset(int *rStartPixel, const int *oStartPixel, int diff);
+    void getFlowDirection(float2 *direction);
     // run the given chunk
     void run(int, int);
 };

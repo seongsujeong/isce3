@@ -1,5 +1,6 @@
 from osgeo import gdal
 import isce3
+import itertools
 import iscetest
 import numpy
 import os
@@ -32,7 +33,11 @@ def test_ampcor():
         # Fall back to CPU only if not compiled with CUDA support
         impls = (isce3.matchtemplate.PyCPUAmpcor,)
     for impl in impls:
-        for ovs in (0, 1):  # test FFT and sinc oversamplers
+        # DLC peak search (CPU only) must find the same unique peaks
+        dlcs = (False, True) if impl is isce3.matchtemplate.PyCPUAmpcor \
+            else (False,)
+        # test FFT and sinc oversamplers
+        for ovs, dlc in itertools.product((0, 1), dlcs):
             ampcor = impl()
 
             ampcor.useMmap = 1
@@ -102,6 +107,9 @@ def test_ampcor():
 
             ampcor.setupParams()
             ampcor.setConstantGrossOffset(0, 0)
+            if dlc:
+                n = ampcor.numberWindowDown * ampcor.numberWindowAcross
+                ampcor.setFlowDirection([0.6] * n, [0.8] * n)
 
             ampcor.checkPixelInImageRange()
             create_empty_dataset(
@@ -182,3 +190,60 @@ def test_ampcor():
                 meandiff = numpy.mean(abs(got - expected))
                 print("meandiff", meandiff)
                 assert meandiff < meantol
+
+
+def run_cpu_ampcor(ref, sec, size, direction=None):
+    '''CPU ampcor of two square complex rasters; returns (down, across) offsets'''
+    ampcor = isce3.matchtemplate.PyCPUAmpcor()
+    ampcor.useMmap = 1
+    ampcor.referenceImageName, ampcor.secondaryImageName = ref, sec
+    ampcor.referenceImageWidth = ampcor.referenceImageHeight = size
+    ampcor.secondaryImageWidth = ampcor.secondaryImageHeight = size
+    ampcor.windowSizeWidth = ampcor.windowSizeHeight = 32
+    ampcor.halfSearchRangeAcross = ampcor.halfSearchRangeDown = 16
+    ampcor.skipSampleAcross = ampcor.skipSampleDown = 32
+    ampcor.numberWindowAcross = ampcor.numberWindowDown = (size - 64) // 32
+    ampcor.referenceStartPixelAcrossStatic = 16
+    ampcor.referenceStartPixelDownStatic = 16
+    ampcor.offsetImageName = "dlc_offsets"
+    ampcor.grossOffsetImageName = "dlc_gross_offset"
+    ampcor.snrImageName = "dlc_snr"
+    ampcor.covImageName = "dlc_covariance"
+    ampcor.corrImageName = "dlc_correlation_peak"
+    ampcor.setupParams()
+    ampcor.setConstantGrossOffset(0, 0)
+    n = ampcor.numberWindowDown * ampcor.numberWindowAcross
+    if direction is not None:
+        ampcor.setFlowDirection([direction[0]] * n, [direction[1]] * n)
+    for name, bands in (("dlc_offsets", 2), ("dlc_gross_offset", 2),
+                        ("dlc_snr", 1), ("dlc_covariance", 3),
+                        ("dlc_correlation_peak", 1)):
+        create_empty_dataset(name, ampcor.numberWindowAcross,
+                             ampcor.numberWindowDown, bands, gdal.GDT_Float32)
+    ampcor.runAmpcor()
+    return numpy.fromfile("dlc_offsets", dtype=numpy.float32).reshape(n, 2)
+
+
+def test_ampcor_dlc():
+    '''
+    DLC peak search keeps the peak along the flow direction: the secondary
+    holds a weaker copy of the reference shifted along the flow direction
+    (6 lines down) and a stronger decoy shifted across it (10 columns).
+    '''
+    size = 256
+    rng = numpy.random.default_rng(0)
+    ref = (rng.normal(size=(size, size)) +
+           1j * rng.normal(size=(size, size))).astype(numpy.complex64)
+    sec = 0.7 * numpy.roll(ref, 6, axis=0) + numpy.roll(ref, 10, axis=1)
+    for name, data in (("dlc_ref", ref), ("dlc_sec", sec)):
+        ds = gdal.GetDriverByName("ENVI").Create(name, size, size, 1,
+                                                 gdal.GDT_CFloat32)
+        ds.GetRasterBand(1).WriteArray(data.astype(numpy.complex64))
+        ds = None
+
+    # global maximum: the stronger decoy across the flow
+    off = run_cpu_ampcor("dlc_ref", "dlc_sec", size)
+    assert numpy.allclose(numpy.median(off, axis=0), [0, 10], atol=0.1)
+    # DLC along the down direction: the true shift
+    off = run_cpu_ampcor("dlc_ref", "dlc_sec", size, direction=(1.0, 0.0))
+    assert numpy.allclose(numpy.median(off, axis=0), [6, 0], atol=0.1)
