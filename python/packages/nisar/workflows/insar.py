@@ -9,7 +9,7 @@ from nisar.workflows import (bandpass_insar, baseline, crossmul, dense_offsets,
                              h5_prep, ionosphere, offsets_product,
                              prepare_insar_hdf5, rdr2geo, resample_slc_v2,
                              rubbersheet, solid_earth_tides, split_spectrum,
-                             troposphere, unwrap)
+                             troposphere, unwrap, velocity_offsets)
 from nisar.workflows.geocode_insar import InputProduct
 from nisar.workflows.insar_runconfig import InsarRunConfig
 from nisar.workflows.persistence import Persistence
@@ -55,6 +55,10 @@ def run(cfg: dict, out_paths: dict, run_steps: dict):
     if (run_steps['dense_offsets']) and \
             (cfg['processing']['dense_offsets']['enabled']):
         dense_offsets.run(cfg)
+
+    if (run_steps['velocity_offsets']) and \
+            (cfg['processing']['velocity_gross_offset']['enabled']):
+        velocity_offsets.run(cfg)
 
     if (run_steps['offsets_product']) and \
             (cfg['processing']['offsets_product']['enabled']):

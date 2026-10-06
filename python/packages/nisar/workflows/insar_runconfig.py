@@ -79,6 +79,20 @@ class InsarRunConfig(Geo2rdrRunConfig):
                                 'switching off offsets product and run dense offsets')
             self.cfg['processing']['offsets_product']['enabled'] = False
 
+        # Velocity-based gross offsets feed the offsets product only. Ampcor
+        # offsets must include them for rubbersheet and the ROFF product.
+        vel_cfg = self.cfg['processing']['velocity_gross_offset']
+        if vel_cfg['enabled']:
+            if not self.cfg['processing']['offsets_product']['enabled']:
+                err_str = 'velocity_gross_offset requires offsets_product enabled'
+                error_channel.log(err_str)
+                raise ValueError(err_str)
+            if vel_cfg['vx'] is None or vel_cfg['vy'] is None:
+                err_str = 'velocity_gross_offset requires vx and vy rasters'
+                error_channel.log(err_str)
+                raise ValueError(err_str)
+            self.cfg['processing']['offsets_product']['merge_gross_offset'] = True
+
         # If either dense_offsets and offsets_product are enabled and process
         # single co-pol for offsets enabled, check if co-pol values exist
         co_pol_set = {'HH', 'VV'}
