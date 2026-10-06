@@ -12,7 +12,15 @@
 #include "cudaUtil.h"
 #include "cuAmpcorChunk.h"
 #include "cuAmpcorUtil.h"
+#include <exception>
 #include <iostream>
+#include <vector>
+#include <isce3/fft/detail/Threads.h>
+#ifdef _OPENMP
+#include <omp.h>
+#else
+static int omp_get_thread_num() { return 0; }
+#endif
 #include "float2.h"
 
 namespace isce3::matchtemplate::pycuampcor {
@@ -79,47 +87,50 @@ void cuAmpcorController::runAmpcor()
     corrImage = new cuArrays<float>(param->numberWindowDown, param->numberWindowAcross);
     corrImage->allocate();
 
-    // set up the cuda streams
-    cuAmpcorChunk *chunk[param->nStreams];
-    // iterate over cuda streams
-    for(int ist=0; ist<param->nStreams; ist++)
+    // One chunk processor per thread; constructed serially since FFTW
+    // planning is not thread-safe (fftwf_execute on distinct plans is).
+    // nStreams is a CUDA setting and is not used by this CPU port.
+    const int nThreads = isce3::fft::detail::getMaxThreads();
+    std::vector<cuAmpcorChunk *> chunk(nThreads);
+    for(int ist=0; ist<nThreads; ist++)
     {
-        // create the chunk processor for each stream
         chunk[ist]= new cuAmpcorChunk(param.get(), referenceImage, secondaryImage,
             offsetImageRun, snrImageRun, covImageRun, corrImageRun);
-
     }
 
     int nChunksDown = param->numberChunkDown;
     int nChunksAcross = param->numberChunkAcross;
+    int nChunks = nChunksDown * nChunksAcross;
 
     // report info
     std::cout << "Total number of windows (azimuth x range):  "
         << param->numberWindowDown << " x " << param->numberWindowAcross
         << std::endl;
     std::cout << "to be processed in the number of chunks: "
-        << nChunksDown << " x " << nChunksAcross  << std::endl;
+        << nChunksDown << " x " << nChunksAcross
+        << " using " << nThreads << " threads" << std::endl;
 
-    // iterative over chunks down
-    int message_interval = std::max(nChunksDown/10, 1);
-    for(int i = 0; i<nChunksDown; i++)
+    // Chunks write disjoint regions of the *Run images and only read the
+    // (mmap'ed) input images, so they can be processed concurrently.
+    int message_interval = std::max(nChunks/10, 1);
+    int nDone = 0;
+    std::exception_ptr error = nullptr;
+    #pragma omp parallel for schedule(dynamic)
+    for(int k = 0; k < nChunks; k++)
     {
-        if(i%message_interval == 0)
-            std::cout << "Processing chunks (" << i+1 <<", x) - (" << std::min(nChunksDown, i+message_interval )
-                << ", x) out of " << nChunksDown << std::endl;
-        // iterate over chunks across
-        for(int j=0; j<nChunksAcross; j+=param->nStreams)
-        {
-            // iterate over cuda streams to process chunks
-            for(int ist = 0; ist < param->nStreams; ist++)
-            {
-                int chunkIdxAcross = j+ist;
-                if(chunkIdxAcross < nChunksAcross) {
-                    chunk[ist]->run(i, chunkIdxAcross);
-                }
-            }
+        try {
+            chunk[omp_get_thread_num()]->run(k / nChunksAcross, k % nChunksAcross);
         }
+        catch(...) {
+            #pragma omp critical
+            if(!error) error = std::current_exception();
+        }
+        #pragma omp critical
+        if(++nDone % message_interval == 0)
+            std::cout << "Processed " << nDone << " out of " << nChunks
+                << " chunks" << std::endl;
     }
+    if(error) std::rethrow_exception(error);
 
     // extraction of the run images to output images
     cuArraysCopyExtract(offsetImageRun, offsetImage, make_int2(0,0));
@@ -167,10 +178,8 @@ void cuAmpcorController::runAmpcor()
     delete covImageRun;
     delete corrImageRun;
 
-    for (int ist=0; ist<param->nStreams; ist++)
-    {
-        delete chunk[ist];
-    }
+    for (auto c : chunk)
+        delete c;
 
     delete referenceImage;
     delete secondaryImage;
