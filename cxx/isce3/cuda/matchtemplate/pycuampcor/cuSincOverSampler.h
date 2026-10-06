@@ -48,13 +48,25 @@ class cuSincOverSamplerR2R
 
     cudaStream_t stream;
 
+    // work arrays of the separable interpolation, grown on demand
+    int * d_tapIndex = nullptr;    // input index of each tap, per window coordinate
+    float * d_tapCoef = nullptr;   // coefficient of each tap
+    float * d_tapSum = nullptr;    // sum of the taps of each window coordinate
+    float * d_rows = nullptr;      // input rows interpolated along y
+    float * d_window = nullptr;    // oversampled window around the peak
+    size_t workCount = 0, workRows = 0;
+    void allocateWork(size_t nImages, size_t inNX);
+    void freeWork();
+
  public:
     // constructor
     cuSincOverSamplerR2R(const int i_covs_, cudaStream_t stream_);
     // set up sinc interpolation coefficients
     void cuSetupSincKernel();
-    // execute interface
-    void execute(cuArrays<float> *imagesIn, cuArrays<float> *imagesOut, cuArrays<int2> *center, int oversamplingFactor);
+    // oversample the images around their peaks and find the max value and
+    // location of the (zero elsewhere) outNX x outNY oversampled surfaces
+    void executeMaxloc(cuArrays<float> *imagesIn, int outNX, int outNY, cuArrays<int2> *center,
+        int oversamplingFactor, cuArrays<int2> *maxloc, cuArrays<float> *maxval);
     // destructor
     ~cuSincOverSamplerR2R();
 };

@@ -13,6 +13,8 @@
 #include "cudaError.h"
 #include "cuAmpcorUtil.h"
 
+#include <cfloat>
+
 /**
  * cuSincOverSamplerR2R constructor
  * @param i_covs oversampling factor
@@ -32,6 +34,7 @@ cuSincOverSamplerR2R::cuSincOverSamplerR2R(const int i_covs_, cudaStream_t strea
 cuSincOverSamplerR2R::~cuSincOverSamplerR2R()
 {
     checkCudaErrors(cudaFree(r_filter));
+    freeWork();
 }
 
 // cuda kernel for cuSetupSincKernel
@@ -80,118 +83,214 @@ void cuSincOverSamplerR2R::cuSetupSincKernel()
 }
 
 
-// cuda kernel for cuSincOverSamplerR2R::execute
-__global__ void cuSincInterpolation_kernel(const int nImages,
-    const float * imagesIn, const int inNX, const int inNY,
-    float * imagesOut, const int outNX, const int outNY,
-    int2 *centerShift, int factor,
-    const float * r_filter_, const int i_covs_, const int i_decfactor_, const int i_intplength_,
-    const int i_startX, const int i_startY, const int i_int_size)
+// output coordinate (wrapped as the original kernel) of window index k
+__device__ inline int sincOut(int k, int start, int shift, int factor, int outN)
 {
-    // get image index
-    int idxImage = blockIdx.z;
-    // get the xy threads for output image pixel indices
-    int idxX = threadIdx.x + blockDim.x*blockIdx.x;
-    int idxY = threadIdx.y + blockDim.y*blockIdx.y;
-    // cuda: to make sure extra allocated threads doing nothing
-    if(idxImage >=nImages || idxX >= i_int_size || idxY >= i_int_size) return;
-    // decide the center shift
-    int2 shift = centerShift[idxImage];
-    // determine the output pixel indices
-    int outx = idxX + i_startX + shift.x*factor;
-    if (outx >= outNX) outx-=outNX;
-    int outy = idxY + i_startY +  shift.y*factor;
-    if (outy >= outNY) outy-=outNY;
-    // flattened to 1d
-    int idxOut = idxImage*outNX*outNY + outx*outNY + outy;
+    int o = k + start + shift * factor;
+    if (o >= outN) o -= outN;
+    return o;
+}
 
-    // index in input grids
-    float r_xout = (float)outx/i_covs_;
-     // integer part
-    int i_xout = int(r_xout);
-    // factional part
-    float r_xfrac = r_xout - i_xout;
-    // fractional part in terms of the interpolation kernel grids
-    int i_xfrac = int(r_xfrac*i_decfactor_);
+// i-th tap of output coordinate `out` along an axis: input index and coefficient
+__device__ inline float sincTap(int out, int i, int inN, const float *filter,
+    int covs, int decfactor, int intplength, int &in)
+{
+    const float r_out = (float)out / covs;
+    const int i_out = int(r_out);
+    const int i_frac = int((r_out - i_out) * decfactor);
+    in = i_out - i + intplength / 2;
+    if (in < 0) in += inN;
+    if (in >= inN) in -= inN;
+    return filter[i * decfactor + i_frac];
+}
 
-    // same procedure for y
-    float r_yout = (float)outy/i_covs_;
-    int i_yout = int(r_yout);
-    float r_yfrac = r_yout - i_yout;
-    int i_yfrac = int(r_yfrac*i_decfactor_);
+// whether surface coordinate o lies in the oversampled window along an axis
+__device__ inline bool sincInWindow(int o, int start, int shift, int factor, int outN, int size)
+{
+    int k = o - (start + shift * factor);
+    if (k < 0) k += outN;
+    return k < size;
+}
 
-    // temp variables
-    float intpData = 0.0f; // interpolated value
-    float r_sincwgt = 0.0f; // total filter weight
-    float r_sinc_coef; // filter weight
+struct SincGeometry {
+    int inNX, inNY, outNX, outNY;
+    int factor, covs, decfactor, intplength;
+    int startX, startY, size;
+};
 
-    // iterate over lines of input image
-    // i=0 -> -i_intplength/2
-    for(int i=0; i < i_intplength_; i++) {
-        // find the corresponding pixel in input(unsampled) image
-
-        int inx = i_xout - i + i_intplength_/2;
-
-        if(inx < 0) inx+= inNX;
-        if(inx >= inNX) inx-= inNY;
-
-        float r_xsinc_coef = r_filter_[i*i_decfactor_+i_xfrac];
-
-        for(int j=0; j< i_intplength_; j++) {
-            // find the corresponding pixel in input(unsampled) image
-            int iny = i_yout - j + i_intplength_/2;
-            if(iny < 0) iny += inNY;
-            if(iny >= inNY) iny -= inNY;
-
-            float r_ysinc_coef = r_filter_[j*i_decfactor_+i_yfrac];
-            // multiply the factors from xy
-            r_sinc_coef = r_xsinc_coef*r_ysinc_coef;
-            // add to total sinc weight
-            r_sincwgt += r_sinc_coef;
-            // multiply by the original signal and add to results
-            intpData += imagesIn[idxImage*inNX*inNY+inx*inNY+iny]*r_sinc_coef;
-
-        }
+// taps of every window coordinate along x (axis 0) and y (axis 1):
+// tap arrays [((image * 2 + axis) * size + k) * intplength + i]
+__global__ void cuSincTaps_kernel(const int2 *centerShift, const float *filter,
+    int *tapIndex, float *tapCoef, float *tapSum, const SincGeometry g, const int nImages)
+{
+    const int k = threadIdx.x + blockDim.x * blockIdx.x;
+    const int axis = blockIdx.y, img = blockIdx.z;
+    if (k >= g.size || img >= nImages) return;
+    const int2 shift = centerShift[img];
+    const int out = axis == 0 ? sincOut(k, g.startX, shift.x, g.factor, g.outNX)
+                              : sincOut(k, g.startY, shift.y, g.factor, g.outNY);
+    const int inN = axis == 0 ? g.inNX : g.inNY;
+    const size_t base = ((size_t)(img * 2 + axis) * g.size + k) * g.intplength;
+    float sum = 0.0f;
+    for (int i = 0; i < g.intplength; i++) {
+        int in;
+        const float c = sincTap(out, i, inN, filter, g.covs, g.decfactor, g.intplength, in);
+        tapIndex[base + i] = in;
+        tapCoef[base + i] = c;
+        sum += c;
     }
-    imagesOut[idxOut] = intpData/r_sincwgt;
+    tapSum[(size_t)(img * 2 + axis) * g.size + k] = sum;
+}
+
+// pass 1: every input row interpolated along y; rows[image][row][ky]
+__global__ void cuSincRows_kernel(const float *in, float *rows, const int *tapIndex,
+    const float *tapCoef, const SincGeometry g, const int nImages)
+{
+    const int ky = threadIdx.x + blockDim.x * blockIdx.x;
+    const int row = threadIdx.y + blockDim.y * blockIdx.y;
+    const int img = blockIdx.z;
+    if (ky >= g.size || row >= g.inNX || img >= nImages) return;
+    const size_t base = ((size_t)(img * 2 + 1) * g.size + ky) * g.intplength;
+    const float *line = in + ((size_t)img * g.inNX + row) * g.inNY;
+    float v = 0.0f;
+    for (int j = 0; j < g.intplength; j++) v += line[tapIndex[base + j]] * tapCoef[base + j];
+    rows[((size_t)img * g.inNX + row) * g.size + ky] = v;
+}
+
+// pass 2: interpolation along x, normalized by the product of the tap sums;
+// window[image][kx][ky]
+__global__ void cuSincCols_kernel(const float *rows, float *window, const int *tapIndex,
+    const float *tapCoef, const float *tapSum, const SincGeometry g, const int nImages)
+{
+    const int ky = threadIdx.x + blockDim.x * blockIdx.x;
+    const int kx = threadIdx.y + blockDim.y * blockIdx.y;
+    const int img = blockIdx.z;
+    if (ky >= g.size || kx >= g.size || img >= nImages) return;
+    const size_t base = ((size_t)(img * 2) * g.size + kx) * g.intplength;
+    const float *r = rows + (size_t)img * g.inNX * g.size + ky;
+    float v = 0.0f;
+    for (int i = 0; i < g.intplength; i++) v += r[tapIndex[base + i] * g.size] * tapCoef[base + i];
+    const float norm = tapSum[(size_t)(img * 2) * g.size + kx] * tapSum[(size_t)(img * 2 + 1) * g.size + ky];
+    window[((size_t)img * g.size + kx) * g.size + ky] = v / norm;
+}
+
+// Max value and location of the outNX x outNY surface that is the window
+// and 0 elsewhere (ties: first row-major index). One block per image.
+template <const int BLOCKSIZE>
+__global__ void cuSincMaxloc_kernel(const float *window, const int2 *centerShift,
+    int2 *maxloc, float *maxval, const SincGeometry g, const int nImages)
+{
+    __shared__ float vals[BLOCKSIZE];
+    __shared__ int idxs[BLOCKSIZE];
+    const int img = blockIdx.x, tid = threadIdx.x;
+    if (img >= nImages) return;
+    const int2 shift = centerShift[img];
+    const int n = g.size * g.size;
+    const float *w = window + (size_t)img * n;
+    float best = -FLT_MAX;
+    int bestIdx = g.outNX * g.outNY;
+    for (int i = tid; i < n; i += BLOCKSIZE) {
+        const int kx = i / g.size, ky = i - kx * g.size;
+        const int idx = sincOut(kx, g.startX, shift.x, g.factor, g.outNX) * g.outNY +
+                        sincOut(ky, g.startY, shift.y, g.factor, g.outNY);
+        const float v = w[i];
+        if (v > best || (v == best && idx < bestIdx)) { best = v; bestIdx = idx; }
+    }
+    vals[tid] = best;
+    idxs[tid] = bestIdx;
+    __syncthreads();
+    for (int s = BLOCKSIZE / 2; s > 0; s >>= 1) {
+        if (tid < s) {
+            const float v = vals[tid + s];
+            const int k = idxs[tid + s];
+            if (v > vals[tid] || (v == vals[tid] && k < idxs[tid])) { vals[tid] = v; idxs[tid] = k; }
+        }
+        __syncthreads();
+    }
+    if (tid == 0) {
+        best = vals[0];
+        bestIdx = idxs[0];
+        if (best <= 0.0f) {
+            // first surface index outside the window: (0, 0) if row 0 is
+            // outside, else the first column of row 0 outside the window
+            int zero = 0;
+            if (sincInWindow(0, g.startX, shift.x, g.factor, g.outNX, g.size))
+                while (sincInWindow(zero, g.startY, shift.y, g.factor, g.outNY, g.size)) zero++;
+            if (best < 0.0f || zero < bestIdx) { best = 0.0f; bestIdx = zero; }
+        }
+        maxval[img] = best;
+        maxloc[img] = make_int2(bestIdx / g.outNY, bestIdx % g.outNY);
+    }
+}
+
+/// (re)allocate the work arrays for nImages images of inNX rows
+void cuSincOverSamplerR2R::allocateWork(size_t nImages, size_t inNX)
+{
+    if (nImages <= workCount && inNX <= workRows) return;
+    freeWork();
+    const size_t size = 2 * i_sincwindow * i_covs + 1;
+    const size_t taps = nImages * 2 * size * i_intplength;
+    checkCudaErrors(cudaMalloc((void **)&d_tapIndex, taps * sizeof(int)));
+    checkCudaErrors(cudaMalloc((void **)&d_tapCoef, taps * sizeof(float)));
+    checkCudaErrors(cudaMalloc((void **)&d_tapSum, nImages * 2 * size * sizeof(float)));
+    checkCudaErrors(cudaMalloc((void **)&d_rows, nImages * inNX * size * sizeof(float)));
+    checkCudaErrors(cudaMalloc((void **)&d_window, nImages * size * size * sizeof(float)));
+    workCount = nImages;
+    workRows = inNX;
+}
+
+/// free the work arrays
+void cuSincOverSamplerR2R::freeWork()
+{
+    if (d_tapIndex) checkCudaErrors(cudaFree(d_tapIndex));
+    if (d_tapCoef) checkCudaErrors(cudaFree(d_tapCoef));
+    if (d_tapSum) checkCudaErrors(cudaFree(d_tapSum));
+    if (d_rows) checkCudaErrors(cudaFree(d_rows));
+    if (d_window) checkCudaErrors(cudaFree(d_window));
+    d_tapIndex = nullptr;
+    d_tapCoef = d_tapSum = d_rows = d_window = nullptr;
+    workCount = workRows = 0;
 }
 
 /**
- * Execute sinc interpolation
+ * Sinc oversampling around the peaks and the max of the oversampled surfaces
  * @param[in] imagesIn input images
- * @param[out] imagesOut output images
+ * @param[in] outNX, outNY size of the oversampled surfaces, which are 0
+ *   outside the window of \pm i_sincwindow*i_covs around the shifted center
  * @param[in] centerShift the shift of interpolation center
  * @param[in] rawOversamplingFactor the multiplier of the centerShift
- * @note rawOversamplingFactor is for the centerShift, not the signal oversampling factor
+ * @param[out] maxloc, maxval max location and value of each surface
+ * @note The 2D sinc kernel is the product of 1D kernels along x and y, so it
+ *   is applied separably. Only the window is computed and searched; the
+ *   zeros elsewhere enter the max explicitly.
  */
-
-void cuSincOverSamplerR2R::execute(cuArrays<float> *imagesIn, cuArrays<float> *imagesOut,
-    cuArrays<int2> *centerShift, int rawOversamplingFactor)
+void cuSincOverSamplerR2R::executeMaxloc(cuArrays<float> *imagesIn, int outNX, int outNY,
+    cuArrays<int2> *centerShift, int rawOversamplingFactor,
+    cuArrays<int2> *maxloc, cuArrays<float> *maxval)
 {
     const int nImages = imagesIn->count;
-    const int inNX = imagesIn->height;
-    const int inNY = imagesIn->width;
-    const int outNX = imagesOut->height;
-    const int outNY = imagesOut->width;
-
-    // only compute the overampled signals within a window
     const int i_int_range = i_sincwindow * i_covs;
-    // set the start pixel, will be shifted by centerShift*oversamplingFactor (from raw image)
-    const int i_int_startX = outNX/2 - i_int_range;
-    const int i_int_startY = outNY/2 - i_int_range;
-    const int i_int_size = 2*i_int_range + 1;
-    // preset all pixels in out image to 0
-    imagesOut->setZero(stream);
+    const SincGeometry g{imagesIn->height, imagesIn->width, outNX, outNY,
+        rawOversamplingFactor, i_covs, i_decfactor, i_intplength,
+        outNX / 2 - i_int_range, outNY / 2 - i_int_range, 2 * i_int_range + 1};
+    allocateWork(nImages, g.inNX);
 
-    static const int nthreads = 16;
-    dim3 threadsperblock(nthreads, nthreads, 1);
-    dim3 blockspergrid (IDIVUP(i_int_size, nthreads), IDIVUP(i_int_size, nthreads), nImages);
-    cuSincInterpolation_kernel<<<blockspergrid, threadsperblock, 0, stream>>>(nImages,
-        imagesIn->devData, inNX, inNY,
-        imagesOut->devData, outNX, outNY,
-        centerShift->devData, rawOversamplingFactor,
-        r_filter, i_covs, i_decfactor, i_intplength, i_int_startX, i_int_startY, i_int_size);
-    getLastCudaError("cuSincInterpolation_kernel");
+    cuSincTaps_kernel<<<dim3(IDIVUP(g.size, 128), 2, nImages), 128, 0, stream>>>(
+        centerShift->devData, r_filter, d_tapIndex, d_tapCoef, d_tapSum, g, nImages);
+    getLastCudaError("cuSincTaps_kernel");
+
+    const dim3 threads(NTHREADS2D, NTHREADS2D, 1);
+    cuSincRows_kernel<<<dim3(IDIVUP(g.size, NTHREADS2D), IDIVUP(g.inNX, NTHREADS2D), nImages),
+        threads, 0, stream>>>(imagesIn->devData, d_rows, d_tapIndex, d_tapCoef, g, nImages);
+    getLastCudaError("cuSincRows_kernel");
+
+    cuSincCols_kernel<<<dim3(IDIVUP(g.size, NTHREADS2D), IDIVUP(g.size, NTHREADS2D), nImages),
+        threads, 0, stream>>>(d_rows, d_window, d_tapIndex, d_tapCoef, d_tapSum, g, nImages);
+    getLastCudaError("cuSincCols_kernel");
+
+    cuSincMaxloc_kernel<256><<<nImages, 256, 0, stream>>>(
+        d_window, centerShift->devData, maxloc->devData, maxval->devData, g, nImages);
+    getLastCudaError("cuSincMaxloc_kernel");
 }
 
 // end of file

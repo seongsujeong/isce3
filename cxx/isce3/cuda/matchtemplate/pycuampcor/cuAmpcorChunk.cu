@@ -191,25 +191,25 @@ void cuAmpcorChunk::run(int idxDown_, int idxAcross_)
     r_corrBatchZoomInAdjust->outputToFile("r_corrBatchZoomInAdjust", stream);
 #endif
 
-    // oversample the correlation surface
+    // oversample the correlation surface and find the max again
     if(param->oversamplingMethod) {
         // sinc interpolator only computes (-i_sincwindow, i_sincwindow)*oversamplingfactor
         // we need the max loc as the center if shifted
-        corrSincOverSampler->execute(r_corrBatchZoomInAdjust, r_corrBatchZoomInOverSampled,
-            maxLocShift, param->oversamplingFactor*param->rawDataOversamplingFactor
-            );
+        corrSincOverSampler->executeMaxloc(r_corrBatchZoomInAdjust,
+            r_corrBatchZoomInOverSampled->height, r_corrBatchZoomInOverSampled->width,
+            maxLocShift, param->oversamplingFactor*param->rawDataOversamplingFactor,
+            offsetZoomIn, corrMaxValue);
     }
     else {
         corrOverSampler->execute(r_corrBatchZoomInAdjust, r_corrBatchZoomInOverSampled);
-    }
 
 #ifdef CUAMPCOR_DEBUG
-    // dump the oversampled correlation surface
-    r_corrBatchZoomInOverSampled->outputToFile("r_corrBatchZoomInOverSampled", stream);
+        // dump the oversampled correlation surface
+        r_corrBatchZoomInOverSampled->outputToFile("r_corrBatchZoomInOverSampled", stream);
 #endif
 
-    //find the max again
-    cuArraysMaxloc2D(r_corrBatchZoomInOverSampled, offsetZoomIn, corrMaxValue, stream);
+        cuArraysMaxloc2D(r_corrBatchZoomInOverSampled, offsetZoomIn, corrMaxValue, stream);
+    }
 
 #ifdef CUAMPCOR_DEBUG
     // dump the max location on oversampled correlation surface
