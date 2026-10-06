@@ -11,6 +11,8 @@
 #include "cuArrays.h"
 #include "cuAmpcorUtil.h"
 
+#include <vector>
+
 namespace isce3::matchtemplate::pycuampcor {
 
 /**
@@ -76,74 +78,31 @@ void cuSincOverSamplerR2R::cuSetupSincKernel()
 }
 
 
-// cuda kernel for cuSincOverSamplerR2R::execute
-void cuSincInterpolation_kernel(const int nImages,
-    const float * imagesIn, const int inNX, const int inNY,
-    float * imagesOut, const int outNX, const int outNY,
-    int2 *centerShift, int factor,
-    const float * r_filter_, const int i_covs_, const int i_decfactor_, const int i_intplength_,
-    const int i_startX, const int i_startY, const int i_int_size,
-    int idxImage, int idxX, int idxY)
+/**
+ * Sinc interpolation taps of one output coordinate along one axis
+ * @param[in] out output (oversampled) coordinate
+ * @param[in] inN input size along the axis (taps wrap around)
+ * @param[out] index input indices of the i_intplength taps
+ * @param[out] coef filter coefficients of the taps
+ * @return sum of the coefficients
+ */
+static float sincTaps(int out, int inN, const float *r_filter, int i_covs,
+    int i_decfactor, int i_intplength, int *index, float *coef)
 {
-    // decide the center shift
-    int2 shift = centerShift[idxImage];
-    // determine the output pixel indices
-    int outx = idxX + i_startX + shift.x*factor;
-    if (outx >= outNX) outx-=outNX;
-    int outy = idxY + i_startY +  shift.y*factor;
-    if (outy >= outNY) outy-=outNY;
-    // flattened to 1d
-    int idxOut = idxImage*outNX*outNY + outx*outNY + outy;
-
-    // index in input grids
-    float r_xout = (float)outx/i_covs_;
-     // integer part
-    int i_xout = int(r_xout);
-    // factional part
-    float r_xfrac = r_xout - i_xout;
-    // fractional part in terms of the interpolation kernel grids
-    int i_xfrac = int(r_xfrac*i_decfactor_);
-
-    // same procedure for y
-    float r_yout = (float)outy/i_covs_;
-    int i_yout = int(r_yout);
-    float r_yfrac = r_yout - i_yout;
-    int i_yfrac = int(r_yfrac*i_decfactor_);
-
-    // temp variables
-    float intpData = 0.0f; // interpolated value
-    float r_sincwgt = 0.0f; // total filter weight
-    float r_sinc_coef; // filter weight
-
-    // iterate over lines of input image
-    // i=0 -> -i_intplength/2
-    for(int i=0; i < i_intplength_; i++) {
-        // find the corresponding pixel in input(unsampled) image
-
-        int inx = i_xout - i + i_intplength_/2;
-
-        if(inx < 0) inx+= inNX;
-        if(inx >= inNX) inx-= inNY;
-
-        float r_xsinc_coef = r_filter_[i*i_decfactor_+i_xfrac];
-
-        for(int j=0; j< i_intplength_; j++) {
-            // find the corresponding pixel in input(unsampled) image
-            int iny = i_yout - j + i_intplength_/2;
-            if(iny < 0) iny += inNY;
-            if(iny >= inNY) iny -= inNY;
-
-            float r_ysinc_coef = r_filter_[j*i_decfactor_+i_yfrac];
-            // multiply the factors from xy
-            r_sinc_coef = r_xsinc_coef*r_ysinc_coef;
-            // add to total sinc weight
-            r_sincwgt += r_sinc_coef;
-            // multiply by the original signal and add to results
-            intpData += imagesIn[idxImage*inNX*inNY+inx*inNY+iny]*r_sinc_coef;
-
-        }
+    // index in input grid: integer part and fraction in kernel grid units
+    float r_out = (float)out/i_covs;
+    int i_out = int(r_out);
+    int i_frac = int((r_out - i_out)*i_decfactor);
+    float sum = 0.0f;
+    for(int i = 0; i < i_intplength; i++) {
+        int in = i_out - i + i_intplength/2;
+        if(in < 0) in += inN;
+        if(in >= inN) in -= inN;
+        index[i] = in;
+        coef[i] = r_filter[i*i_decfactor + i_frac];
+        sum += coef[i];
     }
-    imagesOut[idxOut] = intpData/r_sincwgt;
+    return sum;
 }
 
 /**
@@ -153,8 +112,10 @@ void cuSincInterpolation_kernel(const int nImages,
  * @param[in] centerShift the shift of interpolation center
  * @param[in] rawOversamplingFactor the multiplier of the centerShift
  * @note rawOversamplingFactor is for the centerShift, not the signal oversampling factor
+ *
+ * The 2D sinc kernel is the product of 1D kernels along x and y, so it is
+ * applied separably: first along y for every input row, then along x.
  */
-
 void cuSincOverSamplerR2R::execute(cuArrays<float> *imagesIn, cuArrays<float> *imagesOut,
     cuArrays<int2> *centerShift, int rawOversamplingFactor)
 {
@@ -170,18 +131,50 @@ void cuSincOverSamplerR2R::execute(cuArrays<float> *imagesIn, cuArrays<float> *i
     const int i_int_startX = outNX/2 - i_int_range;
     const int i_int_startY = outNY/2 - i_int_range;
     const int i_int_size = 2*i_int_range + 1;
+    const int L = i_intplength;
     // preset all pixels in out image to 0
     imagesOut->setZero();
 
+    std::vector<int> outx(i_int_size), outy(i_int_size);
+    std::vector<int> xIndex(i_int_size*L), yIndex(i_int_size*L);
+    std::vector<float> xCoef(i_int_size*L), yCoef(i_int_size*L);
+    std::vector<float> xSum(i_int_size), ySum(i_int_size);
+    std::vector<float> rows(inNX*i_int_size);  // y-interpolated input rows
+
     for (int idxImage = 0; idxImage < nImages; idxImage++) {
-        for (int idxX = 0; idxX < i_int_size; idxX++) {
-            for (int idxY = 0; idxY < i_int_size; idxY++) {
-                cuSincInterpolation_kernel(nImages,
-                    imagesIn->devData, inNX, inNY,
-                    imagesOut->devData, outNX, outNY,
-                    centerShift->devData, rawOversamplingFactor,
-                    r_filter, i_covs, i_decfactor, i_intplength, i_int_startX, i_int_startY, i_int_size,
-                    idxImage, idxX, idxY);
+        const int2 shift = centerShift->devData[idxImage];
+        const float *in = imagesIn->devData + (size_t)idxImage*inNX*inNY;
+        float *out = imagesOut->devData + (size_t)idxImage*outNX*outNY;
+
+        // output coordinates and taps along each axis
+        for (int k = 0; k < i_int_size; k++) {
+            outx[k] = k + i_int_startX + shift.x*rawOversamplingFactor;
+            if (outx[k] >= outNX) outx[k] -= outNX;
+            outy[k] = k + i_int_startY + shift.y*rawOversamplingFactor;
+            if (outy[k] >= outNY) outy[k] -= outNY;
+            xSum[k] = sincTaps(outx[k], inNX, r_filter, i_covs, i_decfactor, L,
+                &xIndex[k*L], &xCoef[k*L]);
+            ySum[k] = sincTaps(outy[k], inNY, r_filter, i_covs, i_decfactor, L,
+                &yIndex[k*L], &yCoef[k*L]);
+        }
+
+        // interpolate every input row along y
+        for (int r = 0; r < inNX; r++) {
+            for (int k = 0; k < i_int_size; k++) {
+                float v = 0.0f;
+                for (int j = 0; j < L; j++)
+                    v += in[r*inNY + yIndex[k*L+j]]*yCoef[k*L+j];
+                rows[r*i_int_size + k] = v;
+            }
+        }
+
+        // interpolate along x and normalize by the total filter weight
+        for (int kx = 0; kx < i_int_size; kx++) {
+            for (int ky = 0; ky < i_int_size; ky++) {
+                float v = 0.0f;
+                for (int i = 0; i < L; i++)
+                    v += rows[xIndex[kx*L+i]*i_int_size + ky]*xCoef[kx*L+i];
+                out[outx[kx]*outNY + outy[ky]] = v/(xSum[kx]*ySum[ky]);
             }
         }
     }
