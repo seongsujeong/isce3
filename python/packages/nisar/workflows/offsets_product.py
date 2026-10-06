@@ -13,6 +13,7 @@ from nisar.workflows.dense_offsets import create_empty_dataset
 from nisar.workflows.helpers import (copy_raster, get_cfg_freq_pols,
                                      get_ground_track_velocity_product)
 from nisar.workflows.offsets_product_runconfig import OffsetsProductRunConfig
+from nisar.workflows.velocity_offsets import gross_offset_path
 from nisar.products.insar.product_paths import ROFFGroupsPaths
 from nisar.workflows.yaml_argparse import YamlArgparse
 from osgeo import gdal
@@ -53,10 +54,6 @@ def run(cfg: dict, output_hdf5: str = None):
     if use_gpu:
         device = isce3.cuda.core.Device(cfg['worker']['gpu_id'])
         isce3.cuda.core.set_device(device)
-    else:
-        err_str = "Currently ISCE3 supports only GPU cross-correlation"
-        error_channel.log(err_str)
-        raise NotImplementedError(err_str)
 
     # Get the slant range and zero doppler time spacing
     ref_radar_grid = ref_slc.getRadarGrid()
@@ -91,6 +88,12 @@ def run(cfg: dict, output_hdf5: str = None):
         for freq, _, pol_list in get_cfg_freq_pols(cfg):
             off_scratch = scratch_path / f'offsets_product/freq{freq}'
 
+            # Per-frequency velocity-based gross offsets, if enabled
+            freq_params = offs_params
+            if cfg['processing']['velocity_gross_offset']['enabled']:
+                freq_params = {**offs_params, 'gross_offset_filepath':
+                               str(gross_offset_path(scratch_path, freq))}
+
             for pol in pol_list:
                 out_dir = off_scratch / pol
                 out_dir.mkdir(parents=True, exist_ok=True)
@@ -123,11 +126,13 @@ def run(cfg: dict, output_hdf5: str = None):
                     raise ValueError(err_str)
 
                 for key in layer_keys:
-                    # Create and initialize Ampcor object (only GPU for now)
+                    # Create and initialize Ampcor object
                     if use_gpu:
                         ampcor = isce3.cuda.matchtemplate.PyCuAmpcor()
                         ampcor.deviceID = cfg['worker']['gpu_id']
                         ampcor.useMmap = 1
+                    else:
+                        ampcor = isce3.matchtemplate.PyCPUAmpcor()
 
                     # Set parameters related to reference/secondary RSLC
                     ampcor.referenceImageName = str(out_dir / 'reference')
@@ -149,7 +154,7 @@ def run(cfg: dict, output_hdf5: str = None):
                             'half_search_range']
                     ampcor.halfSearchRangeDown = lay_cfg[
                             'half_search_azimuth']
-                    ampcor = set_ampcor_params(offs_params, ampcor)
+                    ampcor = set_ampcor_params(freq_params, ampcor)
 
                     # Create empty datasets to store Ampcor results
                     ampcor.offsetImageName = str(
@@ -304,8 +309,8 @@ def set_ampcor_params(cfg, ampcor_obj):
             error_channel.log(err_str)
             raise RuntimeError(err_str)
         gross_offset = gross_offset.reshape(windows_number, 2)
-        gross_azimuth = gross_offset[:, 0]
-        gross_range = gross_offset[:, 1]
+        gross_azimuth, gross_range = clip_gross_offsets(
+            ampcor_obj, gross_offset[:, 0], gross_offset[:, 1])
         ampcor_obj.setVaryingGrossOffset(gross_azimuth, gross_range)
     ampcor_obj.mergeGrossOffset = cfg['merge_gross_offset']
 
@@ -313,6 +318,57 @@ def set_ampcor_params(cfg, ampcor_obj):
     ampcor_obj.checkPixelInImageRange()
 
     return ampcor_obj
+
+
+def clip_gross_offsets(ampcor_obj, gross_azimuth, gross_range):
+    '''
+    Clip per-window gross offsets so that every secondary search window lies
+    inside the secondary image (ampcor does not check it and would read
+    outside the image)
+
+    Parameters
+    ----------
+    ampcor_obj: isce3.matchtemplate.PyCPUAmpcor or PyCuAmpcor
+        Ampcor object with windows, search ranges, skips, start pixels and
+        image sizes already set
+    gross_azimuth, gross_range: np.ndarray
+        Flattened per-window gross offsets (row-major, windows down x across)
+
+    Returns
+    -------
+    gross_azimuth, gross_range: np.ndarray
+        Clipped flattened gross offsets (int32)
+    '''
+    def clip(gross, start, skip, n_windows, half_search, window, size,
+             n_other, axis):
+        # reference start pixel of each window along this axis
+        ref = start + skip * np.arange(n_windows)
+        ref = np.expand_dims(ref, axis=1 - axis)
+        # secondary window [ref + g - half, ref + g + half + window) must
+        # stay within [0, size - 1)
+        low = half_search - ref
+        high = size - 1 - ref - half_search - window
+        shape = (n_windows, n_other) if axis == 0 else (n_other, n_windows)
+        return np.clip(gross.reshape(shape), low, high)
+
+    n_down = ampcor_obj.numberWindowDown
+    n_across = ampcor_obj.numberWindowAcross
+    az = clip(gross_azimuth, ampcor_obj.referenceStartPixelDownStatic,
+              ampcor_obj.skipSampleDown, n_down,
+              ampcor_obj.halfSearchRangeDown, ampcor_obj.windowSizeHeight,
+              ampcor_obj.secondaryImageHeight, n_across, 0)
+    rg = clip(gross_range, ampcor_obj.referenceStartPixelAcrossStatic,
+              ampcor_obj.skipSampleAcross, n_across,
+              ampcor_obj.halfSearchRangeAcross, ampcor_obj.windowSizeWidth,
+              ampcor_obj.secondaryImageWidth, n_down, 1)
+
+    n_clipped = np.count_nonzero((az.ravel() != gross_azimuth) |
+                                 (rg.ravel() != gross_range))
+    if n_clipped:
+        journal.warning('offsets_product.clip_gross_offsets').log(
+            f'{n_clipped} of {gross_azimuth.size} gross offsets clipped to '
+            'keep search windows inside the secondary image')
+    return az.ravel().astype(np.int32), rg.ravel().astype(np.int32)
 
 
 def get_offsets_shape(cfg, slc_lines, slc_cols):

@@ -135,6 +135,9 @@ runconfig:
             # Offset product options
             offsets_product: include('offsets_product_options', required=False)
 
+            # Per-window offsets product gross offsets from an ice velocity map
+            velocity_gross_offset: include('velocity_gross_offset_options', required=False)
+
             # Offset culling options
             rubbersheet: include('rubbersheet_options', required=False)
 
@@ -410,6 +413,35 @@ dense_offsets_options:
     # Number of offset estimates to process in batch along azimuth
     windows_batch_azimuth: int(min=1, required=False)
 
+
+velocity_gross_offset_options:
+    # Enable gross offsets predicted from a velocity map (default: False).
+    # Overrides offsets_product gross_offset_filepath and enables
+    # merge_gross_offset.
+    enabled: bool(required=False)
+
+    # GDAL-readable x and y velocity rasters, in map units per year
+    # (e.g. 'NETCDF:"velocity.nc":VX')
+    vx: str(required=False)
+    vy: str(required=False)
+
+    # EPSG code of the velocity rasters
+    epsg: int(required=False)
+
+    # Value marking missing velocity
+    nodata: num(required=False)
+
+    # Extra map area read around the scene footprint, in map units
+    read_margin: num(min=0, required=False)
+
+    # Gap filling (gdal.FillNodata, inverse distance): max search distance
+    # in velocity pixels; gaps farther than this from data are set to 0
+    fill_max_distance: num(min=0, required=False)
+    fill_smoothing_iterations: int(min=0, required=False)
+
+    # DEM block-averaging spacing (DEM map units) for the large-scale surface
+    # slope used to update the height of displaced points
+    dem_smoothing: num(min=0, required=False)
 
 offsets_product_options:
     # Flag to enable/disable offsets product computation (default: False)
