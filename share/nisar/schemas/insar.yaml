@@ -445,7 +445,7 @@ velocity_gross_offset_options:
 
     # Constrain the ampcor integer peak search to the predicted flow
     # direction through the gross offset, forward and backward (DLC,
-    # Jeong et al. 2017). CPU ampcor only.
+    # Jeong et al. 2017). CPU and Metal ampcor only.
     dlc_enabled: bool(required=False)
 
     # Windows whose predicted offset is below this (RSLC pixels) have no

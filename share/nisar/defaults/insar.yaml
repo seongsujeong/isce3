@@ -578,7 +578,8 @@ runconfig:
                 # slope applied to displaced points
                 dem_smoothing: 1000
                 # Constrain the ampcor integer peak search to the predicted
-                # flow direction, forward and backward (DLC). CPU only.
+                # flow direction, forward and backward (DLC). CPU/Metal
+                # ampcor only. Recommended: shear-dominant flow, hill climbing.
                 dlc_enabled: False
                 # Predicted offset [RSLC pixels] below which a window has no
                 # flow direction and uses the global correlation maximum
@@ -590,7 +591,7 @@ runconfig:
                 dlc_band_min_half_width: 1.0
                 # DLC only in shear-dominant flow: |lateral shear| > both
                 # normal strain rates and the min rate [1/yr]
-                dlc_shear_dominant_only: False
+                dlc_shear_dominant_only: True
                 dlc_min_shear_strain_rate: 0.05
                 # Gaussian sigma [velocity pixels] for the strain rates
                 dlc_strain_smoothing: 1.0
