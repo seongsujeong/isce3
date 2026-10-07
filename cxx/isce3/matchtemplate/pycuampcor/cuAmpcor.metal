@@ -686,6 +686,33 @@ kernel void maxlocDLC(device const float *images [[buffer(0)]],
     maxloc[img] = loc;
 }
 
+// cuArraysMaxlocBand (one thread per image): max within |direction| pixels
+// of the flow line through the image center; (0, 0) direction -> global max
+kernel void maxlocBand(device const float *images [[buffer(0)]],
+                       device const float2 *direction [[buffer(1)]],
+                       device int2 *maxloc [[buffer(2)]],
+                       device float *maxval [[buffer(3)]],
+                       constant int2 &shape [[buffer(4)]],
+                       constant int &count [[buffer(5)]],
+                       uint img [[thread_position_in_grid]])
+{
+    if ((int)img >= count) return;
+    const int nx = shape.x, ny = shape.y;
+    device const float *image = images + (size_t)img * nx * ny;
+    const float2 d = direction[img];
+    const float w = length(d);
+    const float2 u = w > 0.0f ? d / w : float2(0.0f);
+    float best = -INFINITY;
+    int2 loc = int2(nx / 2, ny / 2);
+    for (int i = 0; i < nx; i++)
+        for (int j = 0; j < ny; j++) {
+            if (w > 0.0f && fabs((i - nx / 2) * u.y - (j - ny / 2) * u.x) > w) continue;
+            if (image[i * ny + j] > best) { best = image[i * ny + j]; loc = int2(i, j); }
+        }
+    maxval[img] = best;
+    maxloc[img] = loc;
+}
+
 struct ExtractOffsetParams { int xOldRange, yOldRange, xNewRange, yNewRange, count; };
 
 // adjustOffset of cuOffset.cpp

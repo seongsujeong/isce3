@@ -11,6 +11,7 @@
 
 #include <string>
 #include <vector>
+#include "float2.h"
 
 namespace isce3::matchtemplate::pycuampcor {
 
@@ -128,6 +129,7 @@ public:
     int mergeGrossOffset;       ///< whether to merge gross offsets into the final offsets
     std::vector<float> flowDirectionDown;    ///< per-window flow direction (down) for DLC peak search; empty: global max
     std::vector<float> flowDirectionAcross;  ///< per-window flow direction (across) for DLC peak search; empty: global max
+    std::vector<float> flowBandHalfWidth;    ///< per-window band half-width for the DLC band search; empty: hill climbing
 
     std::vector<int> referenceChunkStartPixelDown;    ///< reference starting pixels for each chunk (down)
     std::vector<int> referenceChunkStartPixelAcross;  ///< reference starting pixels for each chunk (across)
@@ -164,7 +166,10 @@ public:
     // set starting pixels for each chunk
     void setChunkStartPixels();
     // set per-window flow directions enabling the DLC integer peak search
-    void setFlowDirection(const std::vector<float>& down, const std::vector<float>& across);
+    void setFlowDirection(const std::vector<float>& down, const std::vector<float>& across,
+                          const std::vector<float>& bandHalfWidth = {});
+    // flow direction of window w, scaled by its band half-width for the band search
+    float2 flowDirection(int w) const;
     // check whether all chunks/windows are within the image range
     void checkPixelInImageRange();
     // Process other parameters after Python Input

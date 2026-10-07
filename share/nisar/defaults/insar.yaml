@@ -583,6 +583,17 @@ runconfig:
                 # Predicted offset [RSLC pixels] below which a window has no
                 # flow direction and uses the global correlation maximum
                 dlc_min_offset: 1.0
+                # DLC peak search: 'hill_climbing' or 'band' (maximum within
+                # max(|offset| * tan(angle), min half-width) px of the flow line)
+                dlc_method: hill_climbing
+                dlc_band_angle: 10.0
+                dlc_band_min_half_width: 1.0
+                # DLC only in shear-dominant flow: |lateral shear| > both
+                # normal strain rates and the min rate [1/yr]
+                dlc_shear_dominant_only: False
+                dlc_min_shear_strain_rate: 0.05
+                # Gaussian sigma [velocity pixels] for the strain rates
+                dlc_strain_smoothing: 1.0
 
             rubbersheet:
                 # Path to dense offsets outputs (offsets, snr, covariance).

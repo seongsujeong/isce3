@@ -108,6 +108,38 @@ void cuArraysMaxlocDLC(cuArrays<float> *images, const float2 *direction,
 }
 
 /**
+ * Find the correlation peak of each 2D image within a band around the line
+ * through the image center (the gross offset) along the flow direction
+ * @param[in] images batch of correlation surfaces
+ * @param[in] direction flow direction (x: down, y: across) of each image,
+ *   its length the band half-width in pixels; (0, 0) falls back to the
+ *   global maximum
+ * @param[out] maxloc peak locations (x: down, y: across)
+ * @param[out] maxval peak values
+ */
+void cuArraysMaxlocBand(cuArrays<float> *images, const float2 *direction,
+                        cuArrays<int2> *maxloc, cuArrays<float> *maxval)
+{
+    const int nx = images->height, ny = images->width;
+    for (int bid = 0; bid < images->count; bid++) {
+        const float* image = &images->devData[(size_t)bid * nx * ny];
+        const float2 d = direction[bid];
+        const float w = std::hypot(d.x, d.y);
+        const float ux = w > 0.0f ? d.x / w : 0.0f, uy = w > 0.0f ? d.y / w : 0.0f;
+        float best = std::numeric_limits<float>::lowest();
+        int2 loc = make_int2(nx / 2, ny / 2);
+        for (int i = 0; i < nx; i++)
+            for (int j = 0; j < ny; j++) {
+                // distance from the flow line
+                if (w > 0.0f && std::abs((i - nx / 2) * uy - (j - ny / 2) * ux) > w) continue;
+                if (image[i * ny + j] > best) { best = image[i * ny + j]; loc = make_int2(i, j); }
+            }
+        maxval->devData[bid] = best;
+        maxloc->devData[bid] = loc;
+    }
+}
+
+/**
  * Determine the final offset value
  * @param[in] offsetInit max location (adjusted to the starting location for extraction) determined from
  *   the cross-correlation before oversampling, in dimensions of pixel

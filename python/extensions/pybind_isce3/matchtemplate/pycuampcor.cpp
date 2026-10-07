@@ -103,9 +103,13 @@ void addbinding_pycuampcor_cpu(pybind11::module& m)
                     vD.data(), vA.data());
         })
         .def("setFlowDirection", [](cls& self, std::vector<float> vD,
-                                               std::vector<float> vA) {
-            self.param->setFlowDirection(vD, vA);
-        }, "Per-window flow directions (down, across) enabling the DLC "
-           "integer peak search; call after setupParams")
+                                               std::vector<float> vA,
+                                               std::vector<float> vW) {
+            self.param->setFlowDirection(vD, vA, vW);
+        }, pybind11::arg("down"), pybind11::arg("across"),
+           pybind11::arg("band_half_width") = std::vector<float>{},
+           "Per-window flow directions (down, across) enabling the DLC "
+           "integer peak search; with band half-widths (pixels) the band "
+           "search replaces hill climbing; call after setupParams")
         ;
 }

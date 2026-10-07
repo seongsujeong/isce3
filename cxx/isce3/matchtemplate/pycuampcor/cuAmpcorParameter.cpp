@@ -315,14 +315,24 @@ cuAmpcorParameter::~cuAmpcorParameter() {}
 /**
  * Set per-window flow directions (down, across) for the DLC integer peak search.
  * Windows with a zero direction use the global maximum.
+ * With band half-widths (pixels), the peak is the maximum within the band
+ * around the flow line instead of the hill-climbing search.
  */
 void cuAmpcorParameter::setFlowDirection(const std::vector<float>& down,
-    const std::vector<float>& across)
+    const std::vector<float>& across, const std::vector<float>& bandHalfWidth)
 {
-    if(down.size() != (size_t)numberWindows || across.size() != (size_t)numberWindows)
+    if(down.size() != (size_t)numberWindows || across.size() != (size_t)numberWindows
+            || (!bandHalfWidth.empty() && bandHalfWidth.size() != (size_t)numberWindows))
         throw std::invalid_argument("flow direction size does not match the number of windows");
     flowDirectionDown = down;
     flowDirectionAcross = across;
+    flowBandHalfWidth = bandHalfWidth;
+}
+
+float2 cuAmpcorParameter::flowDirection(int w) const
+{
+    const float s = flowBandHalfWidth.empty() ? 1.0f : flowBandHalfWidth[w];
+    return make_float2(flowDirectionDown[w] * s, flowDirectionAcross[w] * s);
 }
 
 } // namespace

@@ -16,9 +16,12 @@ Outputs in <scratch>/velocity_offsets/freq<freq> (offsets grid geometry):
   velocity          ENVI float32, band 1 vx, band 2 vy [map units/yr]
   gross_offset.bin  int32 (azimuth, range) per window, the format of
                     offsets_product `gross_offset_filepath`
-  flow_direction.bin  float32 (azimuth, range) unit flow direction per
-                    window for the DLC peak search; (0, 0) where the
-                    predicted offset is below `dlc_min_offset` pixels
+  flow_direction.bin  float32 (azimuth, range, band half-width) per window
+                    for the DLC peak search: unit flow direction, (0, 0)
+                    where the predicted offset is below `dlc_min_offset`
+                    pixels or, with `dlc_shear_dominant_only`, outside
+                    shear-dominant flow; band half-width [pixels] of the
+                    band search
 '''
 import pathlib
 import time
@@ -33,7 +36,7 @@ from nisar.workflows.helpers import get_cfg_freq_pols, get_offset_radar_grid
 from nisar.workflows.rdr2geo import get_raster_obj
 from nisar.workflows.yaml_argparse import YamlArgparse
 from osgeo import gdal, osr
-from scipy.ndimage import map_coordinates
+from scipy.ndimage import gaussian_filter, map_coordinates
 
 SECONDS_PER_YEAR = 365.25 * 86400.0
 
@@ -50,16 +53,42 @@ def flow_direction_path(scratch_path, freq):
         'flow_direction.bin')
 
 
-def flow_direction(az_off, rg_off, min_offset):
+def flow_direction(az_off, rg_off, min_offset, use=True, band_angle=0.0,
+                   band_min_half_width=0.0):
     '''
     Unit (azimuth, range) direction of predicted offsets, (0, 0) where their
-    magnitude is below `min_offset` pixels or undefined
+    magnitude is below `min_offset` pixels, undefined or `use` is False, and
+    the band half-width max(|offset| * tan(band_angle [deg]),
+    band_min_half_width) in pixels
     '''
     mag = np.hypot(az_off, rg_off)
-    valid = np.isfinite(mag) & (mag >= min_offset)
+    valid = np.isfinite(mag) & (mag >= min_offset) & use
     scale = np.where(valid, 1.0 / np.where(valid, mag, 1.0), 0.0)
+    width = np.maximum(np.nan_to_num(mag) * np.tan(np.radians(band_angle)),
+                       band_min_half_width)
     return np.stack([np.nan_to_num(az_off) * scale,
-                     np.nan_to_num(rg_off) * scale], axis=-1)
+                     np.nan_to_num(rg_off) * scale, width], axis=-1)
+
+
+def shear_dominant(vx, vy, geotransform, x, y, sigma, min_rate):
+    '''
+    Whether the lateral shear strain rate of the velocity grid vx, vy
+    (Gaussian smoothed by `sigma` grid pixels) exceeds both normal strain
+    rates in the flow frame and `min_rate` [1/yr] at map points x, y
+    '''
+    _, dx, _, _, _, dy = geotransform
+    vx, vy = gaussian_filter(vx, sigma), gaussian_filter(vy, sigma)
+    exx = np.gradient(vx, axis=1) / dx
+    eyy = np.gradient(vy, axis=0) / dy
+    exy = 0.5 * (np.gradient(vx, axis=0) / dy + np.gradient(vy, axis=1) / dx)
+    th = np.arctan2(vy, vx)
+    c, s = np.cos(th), np.sin(th)
+    strain = [exx * c * c + eyy * s * s + 2 * exy * s * c,    # longitudinal
+              exx * s * s + eyy * c * c - 2 * exy * s * c,    # transverse
+              (eyy - exx) * s * c + exy * (c * c - s * s)]    # lateral shear
+    e_long, e_trans, e_shear = (sample(np.abs(e), geotransform, x, y)
+                                for e in strain)
+    return (e_shear > np.maximum(e_long, e_trans)) & (e_shear > min_rate)
 
 
 def time_interval_years(ref_grid, sec_grid):
@@ -232,14 +261,16 @@ def velocity_offsets(cfg, freq, outdir):
     m = vel_cfg['read_margin']
     bbox = (np.nanmin(x) - m, np.nanmax(x) + m, np.nanmin(y) - m,
             np.nanmax(y) + m)
-    velocity = []
+    grids = []
     for key in ('vx', 'vy'):
         data, gt = read_window(vel_cfg[key], *bbox, nodata=vel_cfg['nodata'])
         info.log(f'{key}: {np.isnan(data).mean() * 100:.1f}% gaps')
-        data = fill_gaps(data, vel_cfg['fill_max_distance'],
-                         vel_cfg['fill_smoothing_iterations'])
-        velocity.append(sample(data, gt, x, y))
-    vx, vy = velocity
+        grids.append(fill_gaps(data, vel_cfg['fill_max_distance'],
+                               vel_cfg['fill_smoothing_iterations']))
+    vx, vy = (sample(data, gt, x, y) for data in grids)
+    shear = shear_dominant(*grids, gt, x, y, vel_cfg['dlc_strain_smoothing'],
+                           vel_cfg['dlc_min_shear_strain_rate'])
+    info.log(f'shear-dominant flow: {shear.mean() * 100:.1f}% of windows')
     x_disp, y_disp = x + vx * dt, y + vy * dt
 
     # h' = h + S(P') - S(P), S smoothed DEM in the DEM projection
@@ -256,7 +287,7 @@ def velocity_offsets(cfg, freq, outdir):
                                  outdir)
     az_off *= ref_grid.prf / off_grid.prf
     rg_off *= off_grid.range_pixel_spacing / ref_grid.range_pixel_spacing
-    return az_off, rg_off, vx, vy
+    return az_off, rg_off, vx, vy, shear
 
 
 def run(cfg: dict):
@@ -271,14 +302,17 @@ def run(cfg: dict):
         outdir = out_path.parent
         outdir.mkdir(parents=True, exist_ok=True)
 
-        az_off, rg_off, vx, vy = velocity_offsets(cfg, freq, outdir)
+        az_off, rg_off, vx, vy, shear = velocity_offsets(cfg, freq, outdir)
         write_envi(outdir / 'velocity_offsets', [az_off, rg_off])
         write_envi(outdir / 'velocity', [vx, vy])
         gross = np.stack([np.nan_to_num(az_off), np.nan_to_num(rg_off)],
                          axis=-1)
         np.rint(gross).astype(np.int32).tofile(out_path)
         vel_cfg = cfg['processing']['velocity_gross_offset']
-        flow_direction(az_off, rg_off, vel_cfg['dlc_min_offset']).astype(
+        use = shear if vel_cfg['dlc_shear_dominant_only'] else True
+        flow_direction(az_off, rg_off, vel_cfg['dlc_min_offset'], use,
+                       vel_cfg['dlc_band_angle'],
+                       vel_cfg['dlc_band_min_half_width']).astype(
             np.float32).tofile(flow_direction_path(scratch_path, freq))
 
         info.log(f'freq{freq} azimuth offsets [px] min/max: '

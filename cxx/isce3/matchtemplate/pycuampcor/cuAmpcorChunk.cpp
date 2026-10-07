@@ -79,7 +79,10 @@ void cuAmpcorChunk::run(int idxDown_, int idxAcross_)
     } else {
         // constrain the peak to the flow direction through the gross offset
         getFlowDirection(flowDirection.data());
-        cuArraysMaxlocDLC(r_corrBatchRaw, flowDirection.data(), offsetInit, r_maxval);
+        if(param->flowBandHalfWidth.empty())
+            cuArraysMaxlocDLC(r_corrBatchRaw, flowDirection.data(), offsetInit, r_maxval);
+        else
+            cuArraysMaxlocBand(r_corrBatchRaw, flowDirection.data(), offsetInit, r_maxval);
     }
 
     // estimate variance
@@ -301,8 +304,7 @@ void cuAmpcorChunk::getFlowDirection(float2 *direction)
             int iAcross = std::min(j, nWindowsAcross-1);
             int idxInAll = (iDown+idxChunkDown*param->numberWindowDownInChunk)*param->numberWindowAcross
                 + idxChunkAcross*param->numberWindowAcrossInChunk+iAcross;
-            direction[i*param->numberWindowAcrossInChunk+j] = make_float2(
-                param->flowDirectionDown[idxInAll], param->flowDirectionAcross[idxInAll]);
+            direction[i*param->numberWindowAcrossInChunk+j] = param->flowDirection(idxInAll);
         }
     }
 }

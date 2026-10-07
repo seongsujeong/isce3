@@ -624,8 +624,7 @@ private:
                 secOffAcross.data()[k] = param->secondaryStartPixelAcross[w] -
                                          param->secondaryChunkStartPixelAcross[idxChunk];
                 if (dlc)
-                    flowDirection.data()[k] = make_float2(param->flowDirectionDown[w],
-                                                          param->flowDirectionAcross[w]);
+                    flowDirection.data()[k] = param->flowDirection(w);
             }
         }
         if (!reference->isComplex() || !secondary->isComplex())
@@ -691,7 +690,7 @@ private:
             maxloc(e, rCorrRaw, offsetInit, rMaxval);
         } else {
             const int shape[2] = {rCorrRaw.height, rCorrRaw.width};
-            e.kernel("maxlocDLC").buf(rCorrRaw).buf(flowDirection).buf(offsetInit).buf(rMaxval);
+            e.kernel(param->flowBandHalfWidth.empty() ? "maxlocDLC" : "maxlocBand").buf(rCorrRaw).buf(flowDirection).buf(offsetInit).buf(rMaxval);
             [e.enc setBytes:shape length:sizeof(shape) atIndex:4];
             [e.enc setBytes:&n length:sizeof(n) atIndex:5];
             e.grid(n);

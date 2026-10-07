@@ -59,6 +59,7 @@ void cuCorrNormalizeSAT(cuArrays<float> *correlation, cuArrays<float> *reference
 //in cuOffset.cu: utitilies for determining the max locaiton of cross correlations or the offset
 void cuArraysMaxloc2D(cuArrays<float> *images, cuArrays<int2> *maxloc, cuArrays<float> *maxval);
 void cuArraysMaxlocDLC(cuArrays<float> *images, const float2 *direction, cuArrays<int2> *maxloc, cuArrays<float> *maxval);
+void cuArraysMaxlocBand(cuArrays<float> *images, const float2 *direction, cuArrays<int2> *maxloc, cuArrays<float> *maxval);
 void cuSubPixelOffset(cuArrays<int2> *offsetInit, cuArrays<int2> *offsetZoomIn, cuArrays<float2> *offsetFinal,
                       int OverSampleRatioZoomin, int OverSampleRatioRaw,
                       int xHalfRangeInit,  int yHalfRangeInit);

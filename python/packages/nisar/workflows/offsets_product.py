@@ -98,6 +98,7 @@ def run(cfg: dict, output_hdf5: str = None):
                 if vel_cfg['dlc_enabled']:
                     freq_params['flow_direction_filepath'] = \
                         str(flow_direction_path(scratch_path, freq))
+                    freq_params['dlc_method'] = vel_cfg['dlc_method']
 
             for pol in pol_list:
                 out_dir = off_scratch / pol
@@ -327,9 +328,10 @@ def set_ampcor_params(cfg, ampcor_obj):
             error_channel.log(err_str)
             raise NotImplementedError(err_str)
         direction = np.fromfile(cfg['flow_direction_filepath'],
-                                dtype=np.float32).reshape(-1, 2)
+                                dtype=np.float32).reshape(-1, 3)
+        band = direction[:, 2] if cfg['dlc_method'] == 'band' else []
         ampcor_obj.setFlowDirection(direction[:, 0].tolist(),
-                                    direction[:, 1].tolist())
+                                    direction[:, 1].tolist(), list(band))
 
     # Check pixel in image range
     ampcor_obj.checkPixelInImageRange()

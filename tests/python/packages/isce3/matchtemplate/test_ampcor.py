@@ -197,10 +197,11 @@ def test_ampcor():
                 assert meandiff < meantol
 
 
-def run_cpu_ampcor(ref, sec, size, direction=None):
+def run_cpu_ampcor(ref, sec, size, direction=None, band=None, metal=False):
     '''CPU ampcor of two square complex rasters; returns (down, across) offsets'''
     ampcor = isce3.matchtemplate.PyCPUAmpcor()
     ampcor.useMmap = 1
+    ampcor.useMetal = int(metal)
     ampcor.referenceImageName, ampcor.secondaryImageName = ref, sec
     ampcor.referenceImageWidth = ampcor.referenceImageHeight = size
     ampcor.secondaryImageWidth = ampcor.secondaryImageHeight = size
@@ -219,7 +220,8 @@ def run_cpu_ampcor(ref, sec, size, direction=None):
     ampcor.setConstantGrossOffset(0, 0)
     n = ampcor.numberWindowDown * ampcor.numberWindowAcross
     if direction is not None:
-        ampcor.setFlowDirection([direction[0]] * n, [direction[1]] * n)
+        ampcor.setFlowDirection([direction[0]] * n, [direction[1]] * n,
+                                [] if band is None else [band] * n)
     for name, bands in (("dlc_offsets", 2), ("dlc_gross_offset", 2),
                         ("dlc_snr", 1), ("dlc_covariance", 3),
                         ("dlc_correlation_peak", 1)):
@@ -252,3 +254,15 @@ def test_ampcor_dlc():
     # DLC along the down direction: the true shift
     off = run_cpu_ampcor("dlc_ref", "dlc_sec", size, direction=(1.0, 0.0))
     assert numpy.allclose(numpy.median(off, axis=0), [6, 0], atol=0.1)
+
+    # band search along the down direction: the true shift in a narrow band,
+    # the decoy once the band covers it
+    metals = (False, True) if isce3.matchtemplate.metal_available() \
+        else (False,)
+    for metal in metals:
+        off = run_cpu_ampcor("dlc_ref", "dlc_sec", size, (1.0, 0.0), 2.0,
+                             metal)
+        assert numpy.allclose(numpy.median(off, axis=0), [6, 0], atol=0.1)
+        off = run_cpu_ampcor("dlc_ref", "dlc_sec", size, (1.0, 0.0), 10.0,
+                             metal)
+        assert numpy.allclose(numpy.median(off, axis=0), [0, 10], atol=0.1)

@@ -452,6 +452,25 @@ velocity_gross_offset_options:
     # flow direction and use the global correlation maximum
     dlc_min_offset: num(min=0, required=False)
 
+    # DLC peak search: 'hill_climbing' from pivots on the flow line, or
+    # 'band', the maximum within a band around the flow line
+    dlc_method: enum('hill_climbing', 'band', required=False)
+
+    # Band half-width (RSLC pixels): max(|predicted offset| *
+    # tan(dlc_band_angle [deg]), dlc_band_min_half_width)
+    dlc_band_angle: num(min=0, max=89, required=False)
+    dlc_band_min_half_width: num(min=0, required=False)
+
+    # Apply DLC only where the lateral shear strain rate of the velocity
+    # map exceeds both normal strain rates (flow frame) and
+    # dlc_min_shear_strain_rate (1/yr); elsewhere the global maximum
+    dlc_shear_dominant_only: bool(required=False)
+    dlc_min_shear_strain_rate: num(min=0, required=False)
+
+    # Gaussian smoothing sigma (velocity pixels) of the velocity map for the
+    # strain rates
+    dlc_strain_smoothing: num(min=0, required=False)
+
 offsets_product_options:
     # Flag to enable/disable offsets product computation (default: False)
     enabled: bool(required=False)
