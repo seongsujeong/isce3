@@ -18,8 +18,7 @@ from nisar.products.readers import SLC
 from nisar.workflows import h5_prep
 from nisar.workflows.compute_stats import compute_stats_real_hdf5_dataset
 from nisar.workflows.helpers import (get_cfg_freq_pols,
-                                     get_ground_track_velocity_product,
-                                     sum_gdal_rasters)
+                                     get_ground_track_velocity_product)
 from nisar.workflows.rubbersheet_runconfig import RubbersheetRunConfig
 from nisar.workflows.yaml_argparse import YamlArgparse
 from osgeo import gdal
@@ -231,18 +230,14 @@ def run_rubbersheet_with_polyfit(cfg: dict, output_hdf5: str = None):
                 rubber_offs = ['culled_az_offsets', 'culled_rg_offsets']
                 geo_offs = ['azimuth.off', 'range.off']
                 for rubber_off, geo_off in zip(rubber_offs, geo_offs):
-                    # Resample offsets to the size of the reference RSLC
-                    culled_off_path = str(out_dir / rubber_off)
-                    resamp_off_path = culled_off_path.replace('culled', 'resampled')
-                    _resample_offsets_to_slc(culled_off_path, resamp_off_path,
+                    # Resample offsets to the size of the reference RSLC and
+                    # sum them to the geometry offsets in one pass
+                    _resample_offsets_to_slc(str(out_dir / rubber_off),
+                                             str(out_dir / geo_off),
                                              off_az_pos, off_rg_pos,
                                              ref_radar_grid.length,
-                                             ref_radar_grid.width)
-                    # Sum resampled offsets to geometry offsets
-                    sum_off_path = str(out_dir / geo_off)
-                    sum_gdal_rasters(str(geo_offset_dir / geo_off),
-                                    resamp_off_path, sum_off_path,
-                                    invalid_value=-1e6)
+                                             ref_radar_grid.width,
+                                             geo_off_path=str(geo_offset_dir / geo_off))
 
     t_all_elapsed = time.time() - t_all
     info_channel.log(
@@ -416,18 +411,14 @@ def run_rubbersheet_with_interpolation(cfg: dict, output_hdf5: str = None):
                 rubber_offs = ['culled_az_offsets', 'culled_rg_offsets']
                 geo_offs = ['azimuth.off', 'range.off']
                 for rubber_off, geo_off in zip(rubber_offs, geo_offs):
-                    # Resample offsets to the size of the reference RSLC
-                    culled_off_path = str(out_dir / rubber_off)
-                    resamp_off_path = culled_off_path.replace('culled', 'resampled')
-                    _resample_offsets_to_slc(culled_off_path, resamp_off_path,
+                    # Resample offsets to the size of the reference RSLC and
+                    # sum them to the geometry offsets in one pass
+                    _resample_offsets_to_slc(str(out_dir / rubber_off),
+                                             str(out_dir / geo_off),
                                              off_az_pos, off_rg_pos,
                                              ref_radar_grid.length,
-                                             ref_radar_grid.width)
-                    # Sum resampled offsets to geometry offsets
-                    sum_off_path = str(out_dir / geo_off)
-                    sum_gdal_rasters(str(geo_offset_dir / geo_off),
-                                    resamp_off_path, sum_off_path,
-                                    invalid_value=-1e6)
+                                             ref_radar_grid.width,
+                                             geo_off_path=str(geo_offset_dir / geo_off))
 
     t_all_elapsed = time.time() - t_all
     info_channel.log(
@@ -480,11 +471,13 @@ def _write_to_disk(outpath, array, format='ENVI',
 
 
 def _resample_offsets_to_slc(off_path, out_path, off_az_pos, off_rg_pos,
-                             length, width, lines_per_block=512):
+                             length, width, lines_per_block=512,
+                             geo_off_path=None, invalid_value=-1e6):
     '''
     Bilinearly resample offsets from the offsets grid to the reference
     RSLC grid, block by block. Beyond the offsets grid, the edge values
-    are extended.
+    are extended. Optionally add geometry offsets on the RSLC grid in the
+    same pass (full-width line blocks; no intermediate raster).
 
     Parameters
     ----------
@@ -499,6 +492,10 @@ def _resample_offsets_to_slc(off_path, out_path, off_az_pos, off_rg_pos,
         Number of lines and columns of the reference RSLC
     lines_per_block: int
         Number of reference RSLC lines to resample per block
+    geo_off_path: str, optional
+        Path to geometry offsets on the reference RSLC grid to add
+    invalid_value: float
+        Invalid geometry/resampled offset value, kept invalid in the sum
     '''
     off = _open_raster(off_path)
 
@@ -518,16 +515,24 @@ def _resample_offsets_to_slc(off_path, out_path, off_az_pos, off_rg_pos,
     driver = gdal.GetDriverByName('ENVI')
     ds = driver.Create(out_path, width, length, 1, gdal.GDT_Float64)
     band = ds.GetRasterBand(1)
+    # keep the dataset referenced while its band is read
+    geo_ds = None if geo_off_path is None else \
+        gdal.Open(geo_off_path, gdal.GA_ReadOnly)
+    geo_band = None if geo_ds is None else geo_ds.GetRasterBand(1)
     for start in range(0, length, lines_per_block):
         rows = slice(start, min(start + lines_per_block, length))
         w = wr[rows, None]
         # Interpolate along azimuth, then along range
         off_az = off[r0[rows]] * (1 - w) + off[r1[rows]] * w
         block = off_az[:, c0] * (1 - wc) + off_az[:, c1] * wc
+        if geo_band is not None:
+            geo = geo_band.ReadAsArray(0, start, width, rows.stop - start)
+            invalid = (geo == invalid_value) | (block == invalid_value)
+            block = np.where(invalid, invalid_value, geo + block)
         band.WriteArray(block, 0, start)
     ds.FlushCache()
-    band = None
-    ds = None
+    band = geo_band = None
+    ds = geo_ds = None
 
 def identify_outliers(offsets_dir, rubbersheet_params, mask = None):
     '''

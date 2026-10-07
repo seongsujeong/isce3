@@ -89,6 +89,19 @@ def test_resample_offsets_to_slc(tmp_path):
         npt.assert_allclose(rubbersheet._open_raster(out_path), expected,
                             atol=1e-12)
 
+    # Sum to geometry offsets in the same pass; invalid geometry offsets stay
+    geo = np.full((length, width), 0.5)
+    geo[3, 4] = -1e6
+    geo_path = str(tmp_path / 'geo.off')
+    rubbersheet._write_to_disk(geo_path, geo)
+    out_path = str(tmp_path / 'sum.off')
+    rubbersheet._resample_offsets_to_slc(off_path, out_path, off_az_pos,
+                                         off_rg_pos, length, width, 7,
+                                         geo_off_path=geo_path)
+    npt.assert_allclose(rubbersheet._open_raster(out_path),
+                        np.where(geo == -1e6, -1e6, expected + 0.5),
+                        atol=1e-12)
+
 
 if __name__ == "__main__":
     test_run_rubbersheet()
