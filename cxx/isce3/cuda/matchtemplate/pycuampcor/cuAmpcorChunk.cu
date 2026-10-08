@@ -195,6 +195,7 @@ void cuAmpcorChunk::run(int idxDown_, int idxAcross_)
     if(param->oversamplingMethod) {
         // sinc interpolator only computes (-i_sincwindow, i_sincwindow)*oversamplingfactor
         // we need the max loc as the center if shifted
+        // r_corrBatchZoomInOverSampled is not filled on this path, only its size is used
         corrSincOverSampler->executeMaxloc(r_corrBatchZoomInAdjust,
             r_corrBatchZoomInOverSampled->height, r_corrBatchZoomInOverSampled->width,
             maxLocShift, param->oversamplingFactor*param->rawDataOversamplingFactor,

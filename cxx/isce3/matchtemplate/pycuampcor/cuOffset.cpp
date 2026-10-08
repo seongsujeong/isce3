@@ -82,12 +82,14 @@ void cuArraysMaxlocDLC(cuArrays<float> *images, const float2 *direction,
         } else {
             // one pixel step along the dominant axis avoids duplicate pivots
             const float sx = d.x / dmax, sy = d.y / dmax;
+            // enough steps to reach the image edges from the center
             const int nstep = std::max(nx, ny) / 2;
             for (int k = -nstep; k <= nstep; k++) {
                 int i = (int)std::lround(nx / 2 + k * sx);
                 int j = (int)std::lround(ny / 2 + k * sy);
                 if (i < 0 || i >= nx || j < 0 || j >= ny) continue;
-                // steepest ascent to a local maximum
+                // steepest ascent to a local maximum; the strict > keeps the
+                // current pixel on ties, so the climb terminates
                 while (true) {
                     int bi = i, bj = j;
                     for (int di = -1; di <= 1; di++)
@@ -130,7 +132,7 @@ void cuArraysMaxlocBand(cuArrays<float> *images, const float2 *direction,
         int2 loc = make_int2(nx / 2, ny / 2);
         for (int i = 0; i < nx; i++)
             for (int j = 0; j < ny; j++) {
-                // distance from the flow line
+                // distance from the flow line: |offset x unit direction|
                 if (w > 0.0f && std::abs((i - nx / 2) * uy - (j - ny / 2) * ux) > w) continue;
                 if (image[i * ny + j] > best) { best = image[i * ny + j]; loc = make_int2(i, j); }
             }

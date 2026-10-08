@@ -14,6 +14,7 @@
 
 namespace isce3::matchtemplate::pycuampcor {
 
+// a zero-byte request still gets one page (valid, unique pointer)
 void *pageAlignedAlloc(size_t bytes)
 {
     const size_t page = getpagesize();

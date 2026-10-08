@@ -60,6 +60,7 @@ def test_clip_gross_offsets():
     amp.secondaryImageHeight, amp.secondaryImageWidth = 120, 200
 
     n = 5 * 4
+    # far out-of-image offsets in both directions must be clipped
     for big in (-1000, 0, 3, 1000):
         az, rg = clip_gross_offsets(amp, np.full(n, big, np.int32),
                                     np.full(n, big, np.int32))
@@ -68,6 +69,7 @@ def test_clip_gross_offsets():
         sec_az = ref_az.ravel() + az - 16
         sec_rg = ref_rg.ravel() + rg - 8
         assert sec_az.min() >= 0 and sec_rg.min() >= 0
+        # window plus both search margins inside the image
         assert (sec_az + 32 + 2 * 16).max() < 120
         assert (sec_rg + 64 + 2 * 8).max() < 200
     # offsets that already fit are unchanged

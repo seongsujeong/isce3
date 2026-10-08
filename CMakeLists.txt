@@ -13,6 +13,7 @@ if(ISCE3_WITH_METAL)
     if(NOT APPLE)
         message(FATAL_ERROR "ISCE3_WITH_METAL requires Apple platforms")
     endif()
+    # the Metal host code (cuMetal.mm) is Objective-C++
     enable_language(OBJCXX)
 endif()
 

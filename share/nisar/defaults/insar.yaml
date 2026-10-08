@@ -573,6 +573,7 @@ runconfig:
                 # Gap filling (inverse distance) max search distance [velocity
                 # pixels]; farther gaps are set to 0
                 fill_max_distance: 20
+                # Smoothing passes over the filled gaps (gdal.FillNodata)
                 fill_smoothing_iterations: 0
                 # DEM block-averaging spacing [DEM map units] for the surface
                 # slope applied to displaced points

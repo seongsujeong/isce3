@@ -85,6 +85,8 @@ void cuSincOverSamplerR2R::cuSetupSincKernel()
  * @param[out] index input indices of the i_intplength taps
  * @param[out] coef filter coefficients of the taps
  * @return sum of the coefficients
+ * @note index/coef: i_intplength entries each; tap i covers input index
+ *   i_out - i + i_intplength/2, wrapped as in the original 2D kernel
  */
 static float sincTaps(int out, int inN, const float *r_filter, int i_covs,
     int i_decfactor, int i_intplength, int *index, float *coef)
@@ -135,11 +137,12 @@ void cuSincOverSamplerR2R::execute(cuArrays<float> *imagesIn, cuArrays<float> *i
     // preset all pixels in out image to 0
     imagesOut->setZero();
 
+    // per window coordinate k: output coordinate, taps [k*L + i] and tap sum
     std::vector<int> outx(i_int_size), outy(i_int_size);
     std::vector<int> xIndex(i_int_size*L), yIndex(i_int_size*L);
     std::vector<float> xCoef(i_int_size*L), yCoef(i_int_size*L);
     std::vector<float> xSum(i_int_size), ySum(i_int_size);
-    std::vector<float> rows(inNX*i_int_size);  // y-interpolated input rows
+    std::vector<float> rows(inNX*i_int_size);  // y-interpolated input rows, [row][ky]
 
     for (int idxImage = 0; idxImage < nImages; idxImage++) {
         const int2 shift = centerShift->devData[idxImage];
@@ -158,7 +161,7 @@ void cuSincOverSamplerR2R::execute(cuArrays<float> *imagesIn, cuArrays<float> *i
                 &yIndex[k*L], &yCoef[k*L]);
         }
 
-        // interpolate every input row along y
+        // interpolate every input row along y (the x taps may wrap to any row)
         for (int r = 0; r < inNX; r++) {
             for (int k = 0; k < i_int_size; k++) {
                 float v = 0.0f;
@@ -168,7 +171,8 @@ void cuSincOverSamplerR2R::execute(cuArrays<float> *imagesIn, cuArrays<float> *i
             }
         }
 
-        // interpolate along x and normalize by the total filter weight
+        // interpolate along x and normalize by the total filter weight, which
+        // for the separable kernel is the product of the 1D tap sums
         for (int kx = 0; kx < i_int_size; kx++) {
             for (int ky = 0; ky < i_int_size; ky++) {
                 float v = 0.0f;

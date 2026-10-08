@@ -98,6 +98,7 @@ def test_resample_offsets_to_slc(tmp_path):
     rubbersheet._resample_offsets_to_slc(off_path, out_path, off_az_pos,
                                          off_rg_pos, length, width, 7,
                                          geo_off_path=geo_path)
+    # 7 lines per block: last block is partial
     npt.assert_allclose(rubbersheet._open_raster(out_path),
                         np.where(geo == -1e6, -1e6, expected + 0.5),
                         atol=1e-12)

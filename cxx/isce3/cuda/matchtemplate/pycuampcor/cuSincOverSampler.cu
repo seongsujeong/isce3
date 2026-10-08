@@ -112,6 +112,9 @@ __device__ inline bool sincInWindow(int o, int start, int shift, int factor, int
     return k < size;
 }
 
+// sizes of the interpolation: input (inNX x inNY) and oversampled surface
+// (outNX x outNY); the computed window is size x size starting at
+// (startX, startY) before the center shift
 struct SincGeometry {
     int inNX, inNY, outNX, outNY;
     int factor, covs, decfactor, intplength;
@@ -188,7 +191,7 @@ __global__ void cuSincMaxloc_kernel(const float *window, const int2 *centerShift
     const int n = g.size * g.size;
     const float *w = window + (size_t)img * n;
     float best = -FLT_MAX;
-    int bestIdx = g.outNX * g.outNY;
+    int bestIdx = g.outNX * g.outNY;  // larger than any surface index
     for (int i = tid; i < n; i += BLOCKSIZE) {
         const int kx = i / g.size, ky = i - kx * g.size;
         const int idx = sincOut(kx, g.startX, shift.x, g.factor, g.outNX) * g.outNY +
@@ -210,6 +213,8 @@ __global__ void cuSincMaxloc_kernel(const float *window, const int2 *centerShift
     if (tid == 0) {
         best = vals[0];
         bestIdx = idxs[0];
+        // a non-positive window max may lose to (or tie with) the zeros
+        // outside the window, as with the full zero-filled surface
         if (best <= 0.0f) {
             // first surface index outside the window: (0, 0) if row 0 is
             // outside, else the first column of row 0 outside the window

@@ -299,6 +299,7 @@ void cuAmpcorChunk::getRelativeOffset(int *rStartPixel, const int *oStartPixel, 
 void cuAmpcorChunk::getFlowDirection(float2 *direction)
 {
     for(int i=0; i<param->numberWindowDownInChunk; ++i) {
+        // the last chunk may hold fewer windows; pad with its last window
         int iDown = std::min(i, nWindowsDown-1);
         for(int j=0; j<param->numberWindowAcrossInChunk; ++j) {
             int iAcross = std::min(j, nWindowsAcross-1);

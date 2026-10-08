@@ -25,6 +25,7 @@
 #ifdef _OPENMP
 #include <omp.h>
 #else
+// without OpenMP the parallel region below runs on one thread
 static int omp_get_thread_num() { return 0; }
 #endif
 #include "float2.h"
@@ -66,7 +67,10 @@ static int runChunksCPU(cuAmpcorParameter *param, GDALImage *referenceImage,
     #pragma omp parallel num_threads(nThreads)
     {
         cuAmpcorChunk &processor = *chunk[omp_get_thread_num()];
+        // k is the row-major chunk index (down, across)
         for(int k = nextChunk(); k >= 0; k = nextChunk()) {
+            // exceptions must not leave the OpenMP region: keep the first
+            // one, finish the loop, and rethrow after the region
             try {
                 processor.run(k / param->numberChunkAcross, k % param->numberChunkAcross);
             }
@@ -140,6 +144,8 @@ void cuAmpcorController::runAmpcor()
     // GPU), so faster processors take more of them
     const int nChunks = param->numberChunkDown * param->numberChunkAcross;
     std::atomic<int> next{0}, nDone{0};
+    // thread-safe: shared by the CPU threads and the GPU feeding threads;
+    // next may run past nChunks, which only yields -1
     auto nextChunk = [&]() { const int k = next++; return k < nChunks ? k : -1; };
     const int messageInterval = std::max(nChunks/10, 1);
     std::mutex messageMutex;
@@ -175,6 +181,8 @@ void cuAmpcorController::runAmpcor()
     std::vector<std::thread> gpuThreads;
 #ifdef ISCE3_METAL
     for(int t = 0; t < nGpuThreads; t++) {
+        // each feeding thread runs its own Metal pipeline and pulls chunks
+        // from the same counter as the CPU threads
         gpuThreads.emplace_back([&]() {
             try {
                 gpuChunks += runAmpcorMetal(param.get(), referenceImage, secondaryImage,

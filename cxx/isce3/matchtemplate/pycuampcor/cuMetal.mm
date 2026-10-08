@@ -63,7 +63,8 @@ constexpr int REDUCE_THREADS = 256;   // must match cuAmpcor.metal
 constexpr int MAX_FFT_LENGTH = 2048;  // 2n complex in 32 KB threadgroup memory
 constexpr int MAX_FFT_RADIX = 31;     // largest radix with a butterfly kernel
 
-// FFT factors: radix 4, 2, then odd factors
+// FFT factors: radix 4, 2, then odd factors (radix 4 first: fewer stages,
+// i.e. fewer threadgroup memory passes)
 std::vector<int> fftRadices(int n)
 {
     std::vector<int> radices;
@@ -75,6 +76,8 @@ std::vector<int> fftRadices(int n)
     return radices;
 }
 
+// whether fft1d can transform length n: fits threadgroup memory and every
+// prime factor has a butterfly
 bool fftSupported(int n)
 {
     if (n < 1 || n > MAX_FFT_LENGTH) return false;
@@ -95,7 +98,9 @@ double fftCost(int n)
 }
 
 // Cheapest supported FFT length in [n, 1.5 n]. Zero padding a correlation
-// beyond the search window size keeps the full-overlap lags exact.
+// beyond the search window size keeps the full-overlap lags exact: they
+// never wrap around, since the template is not larger than the window.
+// Returns -1 if no length in the range is supported.
 int correlationLength(int n)
 {
     int best = -1;
@@ -107,15 +112,19 @@ int correlationLength(int n)
 struct FFTPlan {
     int n = 0;
     std::vector<int> radices;
-    id<MTLBuffer> twiddles = nil;
-    id<MTLBuffer> radixBuffer = nil;
+    id<MTLBuffer> twiddles = nil;     // n roots (cos, sin)(2 pi k / n), shared by all stages
+    id<MTLBuffer> radixBuffer = nil;  // radices as int, read by fft1d
 };
 
+// Process-wide Metal state: device, queue, kernel library and caches of
+// pipelines and FFT plans. Several GPU feeding threads share it, so the
+// caches are guarded by a mutex; returned entries are never removed.
 class Context {
 public:
     id<MTLDevice> device = nil;
     id<MTLCommandQueue> queue = nil;
 
+    // initialized once, thread-safe; nullptr when no Metal device exists
     static Context *get()
     {
         static Context ctx;
@@ -125,6 +134,7 @@ public:
         return ok ? &ctx : nullptr;
     }
 
+    // compute pipeline of kernel `name`, built on first use
     id<MTLComputePipelineState> pipeline(const std::string &name)
     {
         std::lock_guard<std::mutex> lock(mutex);
@@ -172,6 +182,7 @@ private:
     std::map<std::string, id<MTLComputePipelineState>> pipelines;
     std::map<int, FFTPlan> plans;
 
+    // kernels are compiled from the source embedded by CMake (cuMetalSource.h)
     bool init()
     {
         @autoreleasepool {
@@ -197,7 +208,10 @@ size_t roundToPage(size_t bytes)
     return std::max<size_t>((bytes + page - 1) / page * page, page);
 }
 
-// Zero-copy buffer over page-aligned host memory (pageAlignedAlloc)
+// Zero-copy buffer over page-aligned host memory (pageAlignedAlloc). The
+// length is rounded up to whole pages, which pageAlignedAlloc also
+// allocates; the host keeps ownership (no deallocator) and must outlive
+// the buffer.
 id<MTLBuffer> wrap(const void *data, size_t bytes)
 {
     id<MTLBuffer> b = [Context::get()->device
@@ -216,6 +230,8 @@ struct Batch {
     Batch() = default;
     Batch(int h, int w, int n) : height(h), width(w), count(n)
     {
+        // shared storage: the CPU reads/writes data() directly; at least
+        // 4 bytes since Metal rejects empty buffers
         buffer = [Context::get()->device newBufferWithLength:std::max<size_t>(bytes(), 4)
                                                      options:MTLResourceStorageModeShared];
         if (!buffer) throw std::runtime_error("Metal buffer allocation failed");
@@ -227,7 +243,8 @@ struct Batch {
 };
 
 // Per-kernel GPU time (ISCE3_METAL_PROFILE=1): every kernel runs in its own
-// command buffer; totals are printed at the end of runAmpcorMetal
+// command buffer; totals are printed at the end of runAmpcorMetal.
+// Not synchronized: meant for runs with one GPU feeding thread.
 struct Profile {
     bool on = std::getenv("ISCE3_METAL_PROFILE") != nullptr;
     std::map<std::string, double> gpu;
@@ -235,7 +252,10 @@ struct Profile {
 };
 Profile profile;
 
-// Compute command encoder with dispatch helpers
+// Compute command encoder with dispatch helpers. Usage:
+// e.kernel(name).buf(...).bytes(...).grid(...); buffer indices follow the
+// call order of buf/bytes. The default (serial) compute encoder runs the
+// dispatches in order, so no barriers are needed between kernels.
 class Encoder {
 public:
     explicit Encoder(id<MTLCommandBuffer> c) : cmd(c), enc([c computeCommandEncoder]) {}
@@ -267,7 +287,8 @@ public:
     template <typename P>
     Encoder &bytes(const P &p) { [enc setBytes:&p length:sizeof(P) atIndex:nbuf++]; return *this; }
 
-    // one thread per (x, y, z)
+    // one thread per (x, y, z); threadgroups are one SIMD width along x
+    // (the contiguous image axis) and as many rows along y as fit
     void grid(int x, int y = 1, int z = 1)
     {
         if (x <= 0 || y <= 0 || z <= 0) return;
@@ -289,6 +310,8 @@ private:
     int nbuf = 0;
     std::string current;
 
+    // profiling: run the kernels encoded since the last label alone and
+    // add their GPU time; continue in a new command buffer
     void flushProfile()
     {
         if (current.empty()) return;
@@ -320,6 +343,7 @@ void fft2d(Encoder &e, const Batch<float2> &b, int sign, int rows = -1, bool row
         p.group = std::max(1, std::min(16, MAX_FFT_LENGTH / n));
         e.kernel("fft1d", "fft1d n=" + std::to_string(n) + (p.elemStride == 1 ? " rows" : " cols"))
             .buf(b).buf(plan.twiddles).buf(plan.radixBuffer).bytes(p);
+        // Stockham ping-pong buffers; Metal needs a multiple of 16 bytes
         [e.enc setThreadgroupMemoryLength:(2 * n * p.group * sizeof(float2) + 15) / 16 * 16
                                   atIndex:0];
         [e.enc dispatchThreadgroups:MTLSizeMake((lines + p.group - 1) / p.group, 1, 1)
@@ -327,26 +351,34 @@ void fft2d(Encoder &e, const Batch<float2> &b, int sign, int rows = -1, bool row
     };
     const int nx = b.height, ny = b.width, size = nx * ny;
     if (rows < 0) rows = nx;
+    // FFTParams {.., linesPerImage, imageSize, lineStride, elemStride, ..}:
+    // a row is ny contiguous elements, a column ny-strided
     auto rowPass = [&] { pass(ny, b.count * rows, FFTParams{0, 0, 0, rows, size, ny, 1, 0, 0}); };
     auto colPass = [&] { pass(nx, b.count * ny, FFTParams{0, 0, 0, ny, size, 1, ny, 0, 0}); };
     if (rowsFirst) { rowPass(); colPass(); }
     else { colPass(); rowPass(); }
 }
 
+// cuArraysAbs
 void complexAbs(Encoder &e, const Batch<float2> &in, const Batch<float> &out)
 {
     e.kernel("complexAbs").buf(in).buf(out).grid((int)in.elements());
 }
 
+// cuArraysSubtractMean, in place
 void subtractMean(Encoder &e, const Batch<float> &b)
 {
     e.kernel("subtractMean").buf(b).bytes((int)b.size()).groups(b.count);
 }
 
-// cuFreqCorrelator / cuCorrTimeDomain
+// cuFreqCorrelator / cuCorrTimeDomain: correlation of every template with
+// its search window over the full-overlap lags (results: (iNX - tNX + 1) x
+// (iNY - tNY + 1)); algorithm 0 = frequency domain
 struct Correlator {
     int algorithm;
-    Batch<float2> workT, workS;  // template / image spectra (frequency domain)
+    // workT: packed spectrum FFT(t + i s); workS: conj(T) S, then its
+    // inverse transform (both at the padded correlationLength size)
+    Batch<float2> workT, workS;
 
     Correlator(int algorithm_, int nx, int ny, int count) : algorithm(algorithm_)
     {
@@ -379,6 +411,7 @@ struct Correlator {
         const float coef = 1.0f / (nx * ny);
         e.kernel("mulConjPacked").buf(workT).buf(workS).bytes(Shape2{0, 0, nx, ny, 0, 0}).bytes(coef)
             .grid(ny, nx, images.count);
+        // inverse: columns first, then only the result rows
         fft2d(e, workS, +1, results.height, false);
         e.kernel("extractReal").buf(workS).buf(results)
             .bytes(Shape2{nx, ny, results.height, results.width, 0, 0})
@@ -386,9 +419,11 @@ struct Correlator {
     }
 };
 
-// cuNormalizeSAT
+// cuNormalizeSAT: divides the correlation by
+// sqrt(sum t^2 * (sum s^2 - (sum s)^2 / N)) over the template-sized box of
+// the secondary at each lag; box sums come from summed-area tables (SATs)
 struct Normalizer {
-    Batch<float> refSum2, sat, sat2;
+    Batch<float> refSum2, sat, sat2;  // per-image sum t^2, SATs of s and s^2
 
     Normalizer(int nx, int ny, int count)
         : refSum2(1, 1, count), sat(nx, ny, count), sat2(nx, ny, count) {}
@@ -399,6 +434,7 @@ struct Normalizer {
         e.kernel("sumSquare").buf(ref).buf(refSum2).bytes((int)ref.size()).groups(ref.count);
         const SatParams sp{sec.height, sec.width};
         e.kernel("satRows").buf(sec).buf(sat).buf(sat2).bytes(sp).bytes(ref.count);
+        // one SIMD group (32 threads) per row of every image
         [e.enc dispatchThreadgroups:MTLSizeMake(sec.height * ref.count, 1, 1)
               threadsPerThreadgroup:MTLSizeMake(32, 1, 1)];
         e.kernel("satCols").buf(sat).buf(sat2).bytes(sp).grid(sec.width, ref.count);
@@ -408,6 +444,7 @@ struct Normalizer {
     }
 };
 
+// GPU copy of `bytes` (a multiple of 4), ordered with the other kernels
 void copyBuffer(Encoder &e, id<MTLBuffer> in, id<MTLBuffer> out, size_t bytes)
 {
     e.kernel("copyWords").buf(in).buf(out).grid((int)(bytes / 4));
@@ -429,6 +466,7 @@ struct OverSamplerC2C {
 
     void encode(Encoder &e, const Batch<float2> &in, const Batch<float2> &out)
     {
+        // in-place FFT on a copy, leaving in unchanged
         copyBuffer(e, in.buffer, workIn.buffer, in.bytes());
         fft2d(e, workIn, +1);
         padSpectrum(e, workIn, out);
@@ -457,7 +495,8 @@ struct OverSamplerR2R {
     }
 };
 
-// Run images (full offset field) shared with the GPU
+// Run images (full offset field) shared with the GPU; chunks write disjoint
+// windows, so concurrent chunks need no synchronization
 struct RunImages {
     id<MTLBuffer> offset, snr, cov, corr;
     int width;  // windows across of the run images
@@ -465,7 +504,10 @@ struct RunImages {
 
 /**
  * Metal version of cuAmpcorChunk: same arrays and steps, one command
- * buffer per chunk
+ * buffer per chunk. Array names follow cuAmpcorChunk (c/r prefix: complex /
+ * real batches of nwd * nwa windows). A MetalChunk is reused for one chunk
+ * at a time: submit() may only follow wait() of its previous chunk, since
+ * load() overwrites buffers the GPU reads.
  */
 class MetalChunk {
 public:
@@ -509,6 +551,8 @@ public:
           ovsSec(cSecZoomIn.height, cSecZoomIn.width, nwd * nwa)
     {
         if (param->oversamplingMethod) {
+            // sinc: the CPU sampler provides the filter table; only a
+            // size x size window around the peak is computed (sincCols)
             sinc = std::make_unique<cuSincOverSamplerR2R>(param->oversamplingFactor);
             sincFilter = wrap(sinc->filter(), sinc->filterLength() * sizeof(float));
             const int size = 2 * sinc->sincWindow() * sinc->covs() + 1;
@@ -584,7 +628,7 @@ private:
     Batch<float> sincRowsBuf;    // y-interpolated rows of the separable sinc
     Batch<float> sincWindowBuf;  // oversampled window around the peak
     Batch<int> sincTapIndex;     // sinc taps of every window coordinate
-    Batch<float> sincTapCoef, sincTapSum;
+    Batch<float> sincTapCoef, sincTapSum;  // tap coefficients, their sum per coordinate
     std::unique_ptr<OverSamplerR2R> ovsCorr;
 
     // cuAmpcorChunk::setIndex
@@ -608,7 +652,9 @@ private:
                idxChunkAcross * nwa + iAcross;
     }
 
-    // Window offsets within the chunks, flow directions and chunk data (CPU)
+    // Window offsets within the chunks, flow directions and chunk data (CPU),
+    // written straight into the shared buffers. Windows past the last valid
+    // one of an edge chunk repeat it (windowIndex clamps).
     void load()
     {
         const bool dlc = !param->flowDirectionDown.empty();
@@ -639,6 +685,8 @@ private:
             param->secondaryChunkHeight[idxChunk], param->secondaryChunkWidth[idxChunk]);
     }
 
+    // windows of a chunk (row length lda) into a batch; amplitudes only
+    // without deramping (derampMethod 0), as the CPU
     void gather(Encoder &e, const Batch<float2> &chunk, int lda, const Batch<int> &offDown,
                 const Batch<int> &offAcross, const Batch<float2> &out)
     {
@@ -648,6 +696,7 @@ private:
             .grid(out.width, out.height, out.count);
     }
 
+    // cuDeramp, in place (derampMethod 1 only)
     void deramp(Encoder &e, const Batch<float2> &b)
     {
         if (param->derampMethod != 1) return;
@@ -655,6 +704,7 @@ private:
             .groups(b.count);
     }
 
+    // cuArraysMaxloc2D: peak location and value of every image
     void maxloc(Encoder &e, const Batch<float> &images, const Batch<int2> &loc,
                 const Batch<float> &val)
     {
@@ -664,6 +714,9 @@ private:
         e.groups(images.count);
     }
 
+    // chunk result (nwd x nwa elements of `words` 32-bit words) into a run
+    // image; full chunks also at the edges: the run images are sized to whole
+    // chunks (cuAmpcorController), as for cuAmpcorChunk
     void insert(Encoder &e, id<MTLBuffer> in, id<MTLBuffer> out, int words)
     {
         e.kernel("insertChunk").buf(in).buf(out)
@@ -689,6 +742,7 @@ private:
         if (param->flowDirectionDown.empty()) {
             maxloc(e, rCorrRaw, offsetInit, rMaxval);
         } else {
+            // DLC: peak constrained to the flow line (or to a band around it)
             const int shape[2] = {rCorrRaw.height, rCorrRaw.width};
             e.kernel(param->flowBandHalfWidth.empty() ? "maxlocDLC" : "maxlocBand").buf(rCorrRaw).buf(flowDirection).buf(offsetInit).buf(rMaxval);
             [e.enc setBytes:shape length:sizeof(shape) atIndex:4];
@@ -704,7 +758,9 @@ private:
         e.kernel("sumCorr").buf(rCorrRawZoomIn).buf(iCorrZoomInValid).buf(rCorrSum).buf(iCorrValidCount)
             .bytes((int)rCorrRawZoomIn.size()).groups(n);
         e.kernel("estimateSnr").buf(rCorrSum).buf(iCorrValidCount).buf(rMaxval).buf(rSnr).grid(n);
-        // secondary extraction around the peak for the zoomed-in search
+        // secondary extraction around the peak for the zoomed-in search:
+        // offsetInit becomes the extraction start, maxLocShift the shift of
+        // the peak from the zoom window center where it hits the edge
         e.kernel("secondaryExtractOffset").buf(offsetInit).buf(maxLocShift)
             .bytes(ExtractOffsetParams{param->halfSearchRangeDownRaw, param->halfSearchRangeAcrossRaw,
                                        param->halfZoomWindowSizeRaw, param->halfZoomWindowSizeRaw, n})
@@ -730,6 +786,8 @@ private:
             .grid(rCorrZoomInAdjust.width, rCorrZoomInAdjust.height, n);
         // correlation surface oversampling and its peak
         if (param->oversamplingMethod) {
+            // separable sinc: taps per coordinate (both axes), then y and x
+            // passes over a (2 range + 1)^2 window centered on the shifted peak
             const int range = sinc->sincWindow() * sinc->covs();
             const SincParams sp{rCorrZoomInAdjust.height, rCorrZoomInAdjust.width,
                                 rCorrZoomInOvs.height, rCorrZoomInOvs.width,
@@ -764,6 +822,7 @@ private:
 
 } // namespace
 
+// first call initializes the Metal context (compiles the kernels)
 bool metalAvailable()
 {
     return Context::get() != nullptr;
@@ -801,6 +860,8 @@ int runAmpcorMetal(cuAmpcorParameter *param, GDALImage *reference, GDALImage *se
     cuArrays<float3> *covImageRun, cuArrays<float> *corrImageRun,
     const std::function<int()> &nextChunk, const std::function<void()> &chunkDone)
 {
+    // May run on several threads at once, each with its own slots; nextChunk
+    // is shared with the CPU workers (hybrid scheduling)
     static_assert(sizeof(float3) == 12, "run cov image must be packed float3");
     const RunImages run{wrap(offsetImageRun->devData, offsetImageRun->getByteSize()),
                         wrap(snrImageRun->devData, snrImageRun->getByteSize()),
@@ -814,6 +875,8 @@ int runAmpcorMetal(cuAmpcorParameter *param, GDALImage *reference, GDALImage *se
     for (int s = 0; s < nSlots; s++)
         slots.push_back(std::make_unique<MetalChunk>(param, reference, secondary, run));
 
+    // round robin: a slot waits for its previous chunk before it is reused;
+    // then the remaining slots are drained oldest first
     int processed = 0;
     for (int k = nextChunk(); k >= 0; k = nextChunk(), processed++) {
         MetalChunk &slot = *slots[processed % nSlots];

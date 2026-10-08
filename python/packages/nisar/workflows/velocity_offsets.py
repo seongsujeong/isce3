@@ -81,6 +81,7 @@ def shear_dominant(vx, vy, geotransform, x, y, sigma, min_rate):
     exx = np.gradient(vx, axis=1) / dx
     eyy = np.gradient(vy, axis=0) / dy
     exy = 0.5 * (np.gradient(vx, axis=0) / dy + np.gradient(vy, axis=1) / dx)
+    # rotate the strain rate tensor into the local flow frame
     th = np.arctan2(vy, vx)
     c, s = np.cos(th), np.sin(th)
     strain = [exx * c * c + eyy * s * s + 2 * exy * s * c,    # longitudinal
@@ -258,6 +259,7 @@ def velocity_offsets(cfg, freq, outdir):
                           proc_cfg['rdr2geo'], outdir)
 
     # 2. velocity at P (gap filled) and displaced position P'
+    # margin keeps the displaced points P' inside the read window
     m = vel_cfg['read_margin']
     bbox = (np.nanmin(x) - m, np.nanmax(x) + m, np.nanmin(y) - m,
             np.nanmax(y) + m)
@@ -285,6 +287,7 @@ def velocity_offsets(cfg, freq, outdir):
     az_off, rg_off = run_geo2rdr(off_grid, orbit, ellipsoid, x_disp, y_disp,
                                  z_disp, vel_epsg, proc_cfg['geo2rdr'],
                                  outdir)
+    # offsets grid pixels are coarser than RSLC pixels by the window skip
     az_off *= ref_grid.prf / off_grid.prf
     rg_off *= off_grid.range_pixel_spacing / ref_grid.range_pixel_spacing
     return az_off, rg_off, vx, vy, shear
@@ -297,6 +300,7 @@ def run(cfg: dict):
     t_all = time.time()
     scratch_path = cfg['product_path_group']['scratch_path']
 
+    # unique frequencies in processing order (offsets do not depend on pol)
     for freq in dict.fromkeys(f for f, _, _ in get_cfg_freq_pols(cfg)):
         out_path = gross_offset_path(scratch_path, freq)
         outdir = out_path.parent
@@ -305,6 +309,7 @@ def run(cfg: dict):
         az_off, rg_off, vx, vy, shear = velocity_offsets(cfg, freq, outdir)
         write_envi(outdir / 'velocity_offsets', [az_off, rg_off])
         write_envi(outdir / 'velocity', [vx, vy])
+        # failed geo2rdr points get a zero gross offset
         gross = np.stack([np.nan_to_num(az_off), np.nan_to_num(rg_off)],
                          axis=-1)
         np.rint(gross).astype(np.int32).tofile(out_path)

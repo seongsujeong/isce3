@@ -32,6 +32,7 @@ inline float2 mulConj(float2 a, float2 b)
     return float2(a.x * b.x + a.y * b.y, a.y * b.x - a.x * b.y);
 }
 
+// buffer copy, one 32-bit word per thread
 kernel void copyWords(device const uint *in [[buffer(0)]],
                       device uint *out [[buffer(1)]],
                       uint i [[thread_position_in_grid]])
@@ -43,7 +44,9 @@ kernel void copyWords(device const uint *in [[buffer(0)]],
 
 struct GatherParams { int inNX, inNY, outNX, outNY, absolute; };
 
-// cuArraysCopyToBatch(Abs)WithOffset: windows of a chunk into a batch
+// cuArraysCopyToBatch(Abs)WithOffset: windows of a chunk into a batch;
+// per-window offsets, zeros outside the chunk, |v| if p.absolute.
+// gid.x runs along the contiguous axis (as in all 2D kernels here)
 kernel void gatherBatch(device const float2 *in [[buffer(0)]],
                         device float2 *out [[buffer(1)]],
                         device const int *offsetX [[buffer(2)]],
@@ -157,7 +160,8 @@ inline int padSource(int o, int inN, int outN)
 }
 
 // cuArraysPaddingMany: spectrum of in (inNX x inNY) into the corners of out,
-// zeros elsewhere (one thread per output element)
+// zeros elsewhere (one thread per output element); scaled by 1 / (inNX inNY)
+// to normalize the forward transform
 kernel void padSpectrum(device const float2 *in [[buffer(0)]],
                         device float2 *out [[buffer(1)]],
                         constant Shape2 &p [[buffer(2)]],
@@ -244,7 +248,8 @@ kernel void sumCorr(device const float *images [[buffer(0)]],
     if (tid == 0) { sum[img] = s; count[img] = c; }
 }
 
-// cuEstimateSnr
+// cuEstimateSnr: peak^2 over the mean squared correlation around the peak
+// excluding the peak itself
 kernel void estimateSnr(device const float *corrSum [[buffer(0)]],
                         device const int *validCount [[buffer(1)]],
                         device const float *maxval [[buffer(2)]],
@@ -258,7 +263,9 @@ kernel void estimateSnr(device const float *corrSum [[buffer(0)]],
 
 struct VarParams { int NX, NY, templateSize; };
 
-// cudaKernel_estimateVar
+// cudaKernel_estimateVar: offset covariance (xx, yy, xy) from the peak
+// curvature (finite differences) and the noise 1 - peak; 99 marks a peak on
+// the border or a degenerate curvature
 kernel void estimateVariance(device const float *corr [[buffer(0)]],
                              device const int2 *maxloc [[buffer(1)]],
                              device const float *maxval [[buffer(2)]],
@@ -319,12 +326,14 @@ kernel void satRows(device const float *data [[buffer(0)]],
         const float sum = carry + simd_prefix_inclusive_sum(val);
         const float sum2 = carry2 + simd_prefix_inclusive_sum(val * val);
         if (i < p.ny) { sat[base + i] = sum; sat2[base + i] = sum2; }
+        // running total of the block (lane 31) carries into the next one
         carry = simd_broadcast(sum, 31);
         carry2 = simd_broadcast(sum2, 31);
     }
 }
 
-// sat2d_kernel, second pass: running sums along columns
+// sat2d_kernel, second pass: running sums along columns, in place (one
+// thread per column of every image)
 kernel void satCols(device float *sat [[buffer(0)]],
                     device float *sat2 [[buffer(1)]],
                     constant SatParams &p [[buffer(2)]],
@@ -353,7 +362,8 @@ inline float boxSum(device const float *s, int tx, int ty, constant NormParams &
     return bottomright + topleft - topright - bottomleft;
 }
 
-// cuCorrNormalizeSAT_kernel
+// cuCorrNormalizeSAT_kernel: corr /= sqrt(sum t^2 * (sum s^2 - (sum s)^2 / N))
+// with the secondary sums over the reference-sized box at each lag
 kernel void normalizeSat(device float *corr [[buffer(0)]],
                          device const float *refSum2 [[buffer(1)]],
                          device const float *satBuf [[buffer(2)]],
@@ -390,8 +400,9 @@ kernel void packRealPair(device const float *templates [[buffer(0)]],
     out[((size_t)img * p.outNX + i) * p.outNY + j] = float2(t, v);
 }
 
-// From Z = FFT(t + i s): T = (Z_k + conj Z_-k) / 2, S = (Z_k - conj Z_-k) / 2i;
-// writes conj(T) S * coef (cuMulConj) for the inverse transform
+// From Z = FFT(t + i s): T = (Z_k + conj Z_-k) / 2, S = (Z_k - conj Z_-k) / 2i
+// (t, s real); writes conj(T) S * coef (cuMulConj) for the inverse transform.
+// -k is taken modulo the size along each axis.
 kernel void mulConjPacked(device const float2 *z [[buffer(0)]],
                           device float2 *out [[buffer(1)]],
                           constant Shape2 &p [[buffer(2)]],
@@ -410,7 +421,8 @@ kernel void mulConjPacked(device const float2 *z [[buffer(0)]],
         float2(t.x * s.x + t.y * s.y, -t.y * s.x + t.x * s.y) * coef;
 }
 
-// cuMulConj (template spectrum a, image spectrum b) scaled
+// cuMulConj (template spectrum a, image spectrum b) scaled, in place in a:
+// conj(a) b * coef (unpacked variant of mulConjPacked)
 kernel void mulConjScale(device float2 *a [[buffer(0)]],
                          device const float2 *b [[buffer(1)]],
                          constant float &coef [[buffer(2)]],
@@ -422,7 +434,8 @@ kernel void mulConjScale(device float2 *a [[buffer(0)]],
 
 struct TimeCorrParams { int tNX, tNY, iNX, iNY, rNX, rNY; };
 
-// cuCorrTimeDomain
+// cuCorrTimeDomain: direct sum over the template for each lag (one thread
+// per lag)
 kernel void corrTimeDomain(device const float *templates [[buffer(0)]],
                            device const float *images [[buffer(1)]],
                            device float *results [[buffer(2)]],
@@ -480,7 +493,7 @@ inline void butterfly(threadgroup const float2 *x, threadgroup float2 *y, int j,
     const int rootStep = n / R;  // tw index of exp(2 pi i / R)
     for (int q = 0; q < R; q++) {
         float2 acc = v[0];
-        int e = 0;
+        int e = 0;  // (q * rr) mod R, updated incrementally
         for (int rr = 1; rr < R; rr++) {
             e += q;
             if (e >= R) e -= R;
@@ -517,6 +530,10 @@ kernel void fft1d(device float2 *data [[buffer(0)]],
     }
     threadgroup_barrier(mem_flags::mem_threadgroup);
 
+    // Stockham stage s: x holds m-strided inputs; each butterfly j = jq ns + k
+    // combines r inputs x[j + rr m] with twiddles exp(2 pi i rr k / (ns r))
+    // = tw[rr k step] into y[jq ns r + k + q ns]; ns = product of the
+    // radices done so far. a/b swap after every stage.
     int ns = 1;
     for (int s = 0; s < p.nradix; s++) {
         const int r = radix[s], m = n / r, step = n / (ns * r);
@@ -527,6 +544,7 @@ kernel void fft1d(device float2 *data [[buffer(0)]],
             threadgroup float2 *x = a + c * n, *y = b + c * n;
             const int out = jq * ns * r + k;
             if (r == 4) {
+                // radix 4 without multiplications: w4 = i * sign
                 const float2 v0 = x[j];
                 const float2 v1 = twiddle(x[j + m], tw[k * step], p.sign);
                 const float2 v2 = twiddle(x[j + 2 * m], tw[2 * k * step], p.sign);
@@ -555,6 +573,7 @@ kernel void fft1d(device float2 *data [[buffer(0)]],
         threadgroup float2 *t = a; a = b; b = t;
         ns *= r;
     }
+    // result in a (after the last swap), stored back in place
     for (int idx = tid; idx < n * C; idx += nt) {
         const int c = contiguous ? idx / n : idx % C;
         const int i = contiguous ? idx % n : idx / C;
@@ -568,7 +587,10 @@ kernel void fft1d(device float2 *data [[buffer(0)]],
 
 struct DerampParams { int nx, ny, axis; };
 
-// cuLinearDeramp_kernel (one threadgroup per image)
+// cuLinearDeramp_kernel (one threadgroup per image): the phase ramp along
+// each axis is the angle of sum v_k conj(v_k+1), i.e. minus the ramp, so
+// multiplying by exp(i phase) removes it; axis 0: x only, 1: y only,
+// otherwise both
 kernel void deramp(device float2 *images [[buffer(0)]],
                    constant DerampParams &p [[buffer(1)]],
                    uint img [[threadgroup_position_in_grid]],
@@ -617,6 +639,8 @@ kernel void maxloc2D(device const float *images [[buffer(0)]],
     threadgroup int idxs[REDUCE_THREADS];
     const int n = shape.x * shape.y;
     device const float *data = images + (size_t)img * n;
+    // per-thread max over a strided subset (indices increase, so strict >
+    // keeps the first), then a tree reduction with the index as tie-break
     float best = -INFINITY;
     int bestIdx = n;
     for (int i = tid; i < n; i += REDUCE_THREADS) {
@@ -662,6 +686,8 @@ kernel void maxlocDLC(device const float *images [[buffer(0)]],
         for (int i = 0; i < nx * ny; i++)
             if (image[i] > best) { best = image[i]; loc = int2(i / ny, i % ny); }
     } else {
+        // pivots one pixel apart along the dominant axis of the direction;
+        // from each, climb to the best 8-neighbor until a local max
         const float sx = d.x / dmax, sy = d.y / dmax;
         const int nstep = max(nx, ny) / 2;
         for (int k = -nstep; k <= nstep; k++) {
@@ -706,6 +732,7 @@ kernel void maxlocBand(device const float *images [[buffer(0)]],
     int2 loc = int2(nx / 2, ny / 2);
     for (int i = 0; i < nx; i++)
         for (int j = 0; j < ny; j++) {
+            // distance from the line = |cross(pixel - center, u)|
             if (w > 0.0f && fabs((i - nx / 2) * u.y - (j - ny / 2) * u.x) > w) continue;
             if (image[i * ny + j] > best) { best = image[i * ny + j]; loc = int2(i, j); }
         }
@@ -715,7 +742,8 @@ kernel void maxlocBand(device const float *images [[buffer(0)]],
 
 struct ExtractOffsetParams { int xOldRange, yOldRange, xNewRange, yNewRange, count; };
 
-// adjustOffset of cuOffset.cpp
+// adjustOffset of cuOffset.cpp: (start of the new range centered on maxloc,
+// clamped to the old range; shift lost by the clamping)
 inline int2 adjustOffset(int oldRange, int newRange, int maxloc)
 {
     int start = maxloc - newRange;
@@ -741,7 +769,8 @@ kernel void secondaryExtractOffset(device int2 *maxLoc [[buffer(0)]],
 
 struct SubPixelParams { int ovsZoomIn, ovsRaw, xHalfRange, yHalfRange, count; };
 
-// cuSubPixelOffset
+// cuSubPixelOffset: integer start + oversampled peak / total oversampling,
+// relative to the zero-offset lag (half search range)
 kernel void subPixelOffset(device const int2 *offsetInit [[buffer(0)]],
                            device const int2 *offsetZoomIn [[buffer(1)]],
                            device float2 *offsetFinal [[buffer(2)]],
@@ -762,7 +791,9 @@ struct SincParams {
     int startX, startY, size;
 };
 
-// Output coordinate (wrapped as the CPU) of oversampled index k along an axis
+// Output coordinate (wrapped as the CPU) of oversampled index k along an axis:
+// the window starts at start (center - range), moved by the peak shift
+// from secondaryExtractOffset in oversampled pixels
 inline int sincOut(int k, int start, int shift, int factor, int outN)
 {
     int o = k + start + shift * factor;
@@ -770,7 +801,8 @@ inline int sincOut(int k, int start, int shift, int factor, int outN)
     return o;
 }
 
-// i-th sinc tap of output coordinate `out`: input index and coefficient
+// i-th sinc tap of output coordinate `out`: input index (wrapped) and
+// coefficient; the filter table holds decfactor fractional phases per tap
 inline float sincTap(int out, int i, int inN, device const float *filter,
                      constant SincParams &p, thread int &in)
 {

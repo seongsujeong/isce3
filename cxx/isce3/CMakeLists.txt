@@ -41,6 +41,8 @@ target_include_directories(${LISCE} PUBLIC
 # Metal (Apple GPU) steps of the CPU ampcor
 if(ISCE3_WITH_METAL)
     # Metal kernels are compiled at run time from source embedded in a header
+    # as a raw string literal (the source must not contain `)METAL"`);
+    # editing the .metal file re-runs configure to regenerate it
     set(METAL_SRC ${CMAKE_CURRENT_SOURCE_DIR}/matchtemplate/pycuampcor/cuAmpcor.metal)
     set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${METAL_SRC})
     file(READ ${METAL_SRC} ISCE3_METAL_SOURCE)

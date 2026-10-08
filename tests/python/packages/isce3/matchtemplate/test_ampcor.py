@@ -113,6 +113,8 @@ def test_ampcor():
             ampcor.setupParams()
             ampcor.setConstantGrossOffset(0, 0)
             if dlc:
+                # arbitrary unit direction; the zero gross offset keeps the
+                # search centered on the true peak
                 n = ampcor.numberWindowDown * ampcor.numberWindowAcross
                 ampcor.setFlowDirection([0.6] * n, [0.8] * n)
 
