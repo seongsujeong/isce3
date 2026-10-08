@@ -944,8 +944,8 @@ def cpu_run(cfg, input_hdf5, output_hdf5, input_product_type=InputProduct.RUNW):
                 desired = ['along_track_offset', 'slant_range_offset',
                            'along_track_offset_variance',
                            'correlation_surface_peak',
-                           'cross_offset_variance', 'slant_range_offset',
-                           'snr']
+                           'cross_offset_variance',
+                           'slant_range_offset_variance', 'snr']
                 invalid_values = [np.nan] * len(desired)
                 # Create list to tuples containing offset layer name with
                 # corresponding interpolation method and invalid value
@@ -1029,6 +1029,8 @@ def cpu_run(cfg, input_hdf5, output_hdf5, input_product_type=InputProduct.RUNW):
             if freq.upper() == 'B':
                 continue
 
+    # release the radar positions reused across the geocoded rasters
+    isce3.geocode.clear_geometry_cache()
     t_all_elapsed = time.time() - t_all
     info_channel.log(f"Successfully ran geocode in {t_all_elapsed:.3f} seconds")
 

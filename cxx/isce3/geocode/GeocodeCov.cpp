@@ -4,8 +4,13 @@
 #include <chrono>
 #include <cmath>
 #include <cpl_virtualmem.h>
+#include <cstdlib>
 #include <limits>
 #include <ios>
+#include <memory>
+#include <mutex>
+#include <string>
+#include <vector>
 
 #include <isce3/core/Basis.h>
 #include <isce3/core/DenseMatrix.h>
@@ -30,6 +35,77 @@ using isce3::core::Vec3;
 using isce3::core::GeocodeMemoryMode;
 
 namespace isce3 { namespace geocode {
+
+namespace {
+
+// Everything the radar positions of the geogrid pixels in geocodeInterp
+// depend on
+struct GeometryKey {
+    // radar grid, geogrid, ellipsoid, geo2rdr and DEM parameters
+    std::vector<double> values;
+    // DEM identified by its GDAL description (file path)
+    std::string ref_epoch, dem;
+    isce3::core::Orbit orbit;
+    std::vector<isce3::core::LUT2d<double>> luts;
+};
+
+// Exact LUT comparison: LUT2d::operator== compares only the grid and data
+// (with a 1-ulp tolerance), not haveData, refValue or the bounds/interp mode
+bool sameLut(const isce3::core::LUT2d<double>& a,
+             const isce3::core::LUT2d<double>& b)
+{
+    if (a.haveData() != b.haveData() || a.boundsError() != b.boundsError() ||
+            a.interpMethod() != b.interpMethod() ||
+            !(a.refValue() == b.refValue()))
+        return false;
+    if (!a.haveData())
+        return true;
+    return a.width() == b.width() && a.length() == b.length() &&
+           a.xStart() == b.xStart() && a.yStart() == b.yStart() &&
+           a.xSpacing() == b.xSpacing() && a.ySpacing() == b.ySpacing() &&
+           std::equal(a.data().data(), a.data().data() + a.data().size(),
+                      b.data().data());
+}
+
+bool operator==(const GeometryKey& a, const GeometryKey& b)
+{
+    if (a.values != b.values || a.ref_epoch != b.ref_epoch || a.dem != b.dem ||
+            !(a.orbit == b.orbit) || a.luts.size() != b.luts.size())
+        return false;
+    for (size_t i = 0; i < a.luts.size(); ++i)
+        if (!sameLut(a.luts[i], b.luts[i]))
+            return false;
+    return true;
+}
+
+// Radar positions (column, line) of all geogrid pixels of one geometry,
+// NaN where not geocoded. Geocoding several rasters of the same radar grid
+// onto the same geogrid (e.g. the layers of an InSAR product) then runs
+// geo2rdr once instead of once per raster.
+struct GeometryCache {
+    GeometryKey key;
+    std::vector<double> radar_x, radar_y;
+};
+
+// Single-entry cache. Readers take a shared_ptr copy under the mutex, so a
+// cache replaced by another call stays valid while they use it.
+std::mutex geometry_cache_mutex;
+std::shared_ptr<const GeometryCache> geometry_cache;
+
+// Max. cache size; ISCE3_GEOCODE_GEOMETRY_CACHE_MB overrides, 0 disables
+size_t geometryCacheMaxBytes()
+{
+    const char* env = std::getenv("ISCE3_GEOCODE_GEOMETRY_CACHE_MB");
+    return (env ? std::strtoull(env, nullptr, 10) : 4096ULL) << 20;
+}
+
+} // namespace
+
+void clearGeocodeGeometryCache()
+{
+    std::lock_guard<std::mutex> lock(geometry_cache_mutex);
+    geometry_cache.reset();
+}
 
 template<class T>
 void Geocode<T>::updateGeoGrid(
@@ -626,6 +702,44 @@ void Geocode<T>::geocodeInterp(
     info << "block length: " << block_length << pyre::journal::newline;
     info << pyre::journal::newline;
 
+    // Radar positions of a previous call with the same geometry, or a new
+    // cache filled by this call (not when the per-pixel DEM/radar position
+    // outputs are requested, since they are computed with the positions)
+    GeometryKey geometry_key {
+            {radar_grid.sensingStart(), radar_grid.prf(),
+             radar_grid.startingRange(), radar_grid.rangePixelSpacing(),
+             radar_grid.wavelength(), (double) radar_grid.length(),
+             (double) radar_grid.width(), (double) (int) radar_grid.lookSide(),
+             geogrid.startX(), geogrid.startY(), geogrid.spacingX(),
+             geogrid.spacingY(), (double) geogrid.width(),
+             (double) geogrid.length(), (double) geogrid.epsg(),
+             _ellipsoid.a(), _ellipsoid.e2(), _threshold, (double) _numiter,
+             (double) (int) dem_interp_method, (double) demRaster.width(),
+             (double) demRaster.length()},
+            radar_grid.refEpoch().isoformat(),
+            demRaster.dataset()->GetDescription(), _orbit,
+            {_doppler, _nativeDoppler, az_time_correction,
+             slant_range_correction}};
+    std::shared_ptr<const GeometryCache> cached;
+    std::shared_ptr<GeometryCache> new_cache;
+    const size_t geogrid_size = (size_t) geogrid.length() * geogrid.width();
+    if (out_geo_rdr == nullptr && out_geo_dem == nullptr) {
+        std::lock_guard<std::mutex> lock(geometry_cache_mutex);
+        if (geometry_cache && geometry_cache->key == geometry_key) {
+            cached = geometry_cache;
+        } else if (2 * sizeof(double) * geogrid_size <= geometryCacheMaxBytes()) {
+            // drop the stale entry before allocating the new one to bound
+            // peak memory
+            geometry_cache.reset();
+            new_cache = std::make_shared<GeometryCache>();
+            new_cache->key = geometry_key;
+            new_cache->radar_x.resize(geogrid_size);
+            new_cache->radar_y.resize(geogrid_size);
+        }
+    }
+    info << "geometry from cache (0:false, 1:true): " << (cached != nullptr)
+         << pyre::journal::newline;
+
     info << "starting geocoding" << pyre::journal::endl;
     // loop over the blocks of the geocoded Grid
     for (int block = 0; block < nBlocks; ++block) {
@@ -657,10 +771,6 @@ void Geocode<T>::geocodeInterp(
        // load a block of DEM for the current geocoded grid with a margin of
         // 50 DEM pixels
         int dem_margin_in_pixels = 50;
-        isce3::geometry::DEMInterpolator demInterp =
-            isce3::geometry::DEMRasterToInterpolator(
-                demRaster, geogrid, lineStart, geoBlockLength, geogrid.width(),
-                dem_margin_in_pixels, dem_interp_method);
 
         // X and Y indices (in the radar coordinates) for the
         // geocoded pixels (after geo2rdr computation)
@@ -672,6 +782,38 @@ void Geocode<T>::geocodeInterp(
         int azimuthLastLine = 0;
         int rangeFirstPixel = radar_grid.width() - 1;
         int rangeLastPixel = 0;
+
+        const size_t cacheStart = (size_t) lineStart * geogrid.width();
+        if (cached) {
+            // positions and their radar bounds from the cache
+#pragma omp parallel for reduction(                                            \
+        min                                                                    \
+        : azimuthFirstLine, rangeFirstPixel)                         \
+        reduction(max                                                          \
+                  : azimuthLastLine, rangeLastPixel)
+            for (int kk = 0; kk < blockSize; ++kk) {
+                const double rdrX = cached->radar_x[cacheStart + kk];
+                const double rdrY = cached->radar_y[cacheStart + kk];
+                if (std::isnan(rdrX))
+                    continue;
+                radarX[kk] = rdrX;
+                radarY[kk] = rdrY;
+                azimuthFirstLine = std::min(azimuthFirstLine,
+                        static_cast<int>(std::floor(rdrY)));
+                azimuthLastLine = std::max(azimuthLastLine,
+                        static_cast<int>(std::ceil(rdrY)));
+                rangeFirstPixel = std::min(rangeFirstPixel,
+                        static_cast<int>(std::floor(rdrX)));
+                rangeLastPixel = std::max(rangeLastPixel,
+                        static_cast<int>(std::ceil(rdrX)));
+            }
+        } else {
+        // no cached positions: geo2rdr of the block (body kept at its
+        // original indentation)
+        isce3::geometry::DEMInterpolator demInterp =
+            isce3::geometry::DEMRasterToInterpolator(
+                demRaster, geogrid, lineStart, geoBlockLength, geogrid.width(),
+                dem_margin_in_pixels, dem_interp_method);
 
         // Loop over lines, samples of the output grid
 #pragma omp parallel for reduction(                                            \
@@ -783,6 +925,16 @@ void Geocode<T>::geocodeInterp(
             radarY[blockLine * geogrid.width() + pixel] = rdrY;
 
         } // end loops over lines and pixel of output grid
+
+        // store this block's positions (NaN where geo2rdr failed or out of
+        // the radar grid) at its offset in the full geogrid
+        if (new_cache) {
+            std::copy(std::begin(radarX), std::end(radarX),
+                      new_cache->radar_x.begin() + cacheStart);
+            std::copy(std::begin(radarY), std::end(radarY),
+                      new_cache->radar_y.begin() + cacheStart);
+        }
+        } // end of geo2rdr of the block
 
         // (optional arg) flush rdr position values
         if (out_geo_rdr != nullptr)
@@ -971,6 +1123,13 @@ void Geocode<T>::geocodeInterp(
 
         }
     } // end loop over block of output grid
+
+    // publish the radar positions once all blocks are computed, so a
+    // partially filled cache is never visible to other calls
+    if (new_cache) {
+        std::lock_guard<std::mutex> lock(geometry_cache_mutex);
+        geometry_cache = std::move(new_cache);
+    }
 
     double geotransform[] = {geogrid.startX(), geogrid.spacingX(), 0,
             geogrid.startY(), 0, geogrid.spacingY()};

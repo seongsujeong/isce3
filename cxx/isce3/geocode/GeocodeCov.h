@@ -864,6 +864,11 @@ private:
             isce3::core::dataInterpMethod::BIQUINTIC_METHOD;
 };
 
+/** Release the radar positions that geocodeInterp keeps to reuse for
+ * later rasters with the same geometry (radar grid, geogrid, DEM, orbit,
+ * Doppler, timing corrections) */
+void clearGeocodeGeometryCache();
+
 }} // namespace isce3::geocode
 
 

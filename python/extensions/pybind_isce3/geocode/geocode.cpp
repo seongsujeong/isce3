@@ -49,4 +49,8 @@ void addsubmodule_geocode(py::module & m)
 
     addbinding(pyGeocodeOutputMode);
 
+    geocode.def("clear_geometry_cache", &isce3::geocode::clearGeocodeGeometryCache,
+                "Release the radar positions kept by Geocode*.geocode (interp "
+                "mode) to reuse for rasters with the same geometry");
+
 }
