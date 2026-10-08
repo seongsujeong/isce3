@@ -426,9 +426,13 @@ runconfig:
                 offsets_dir:
                 # Number of lines and columns per tile to resample in batch.
                 # If columns_per_tile is 0, the tiles will span across all columns of
-                # the raster.
-                lines_per_tile: 1000
-                columns_per_tile: 1000
+                # the raster. Tiles are rounded to whole chunks of the secondary
+                # RSLC; full-width tiles of one chunk row read the offsets and
+                # write the output sequentially and decompress each RSLC chunk
+                # once (PIG, 512x512 chunks: 405 s with 1000x1000, 216 s with
+                # 512x0)
+                lines_per_tile: 512
+                columns_per_tile: 0
 
             dense_offsets:
                 # Flag to enable/disable dense offsets estimation
@@ -610,6 +614,9 @@ runconfig:
                 geo2rdr_offsets_path:
                 # Flag to enable/disable rubbersheet step
                 enabled: True
+                # Also write full-resolution azimuth.off/range.off (fine
+                # resampling computes them on read from the offsets grid)
+                full_resolution_offsets_enabled: False
                 # Metric used to identify offsets outliers
                 culling_metric: median_filter
                 # Size of median and moving average filter in range. Median filter is used
@@ -696,8 +703,8 @@ runconfig:
                 offsets_dir:
                 # Number of lines and columns per tile to resample in batch.
                 # If columns_per_tile is 0, the tiles will span across all columns of
-                # the raster.
-                lines_per_tile: 100
+                # the raster. Rounded to whole RSLC chunks (see coarse_resample)
+                lines_per_tile: 512
                 columns_per_tile: 0
 
             crossmul:

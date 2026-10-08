@@ -15,6 +15,7 @@ from isce3.splitspectrum import splitspectrum
 from nisar.h5 import cp_h5_meta_data
 from nisar.products.insar.product_paths import CommonPaths
 from nisar.products.readers import RSLC
+from nisar.workflows.helpers import chunk_aligned_lines
 from nisar.workflows.bandpass_insar_runconfig import BandpassRunConfig
 from nisar.workflows.yaml_argparse import YamlArgparse
 
@@ -232,6 +233,10 @@ def run(cfg: dict):
                 target_slc_raster = isce3.io.Raster(target_raster_str)
                 rows = target_slc_raster.length
                 cols = target_slc_raster.width
+                # whole chunk rows of the RSLC per block
+                blocksize = chunk_aligned_lines(
+                    cfg['processing']['bandpass']['lines_per_block'],
+                    target_slc.getSlcDataset(freq, pol).chunks)
                 nblocks = int(np.ceil(rows / blocksize))
                 if fft_size is None:
                     fft_size = next_fast_len(cols)

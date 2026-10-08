@@ -148,3 +148,25 @@ class TestDeepUpdate:
         user_dict = {"foo": {"x": None, "y": None}}
         output_dict = deep_update(default_dict, user_dict, False)
         assert output_dict == default_dict
+
+
+@pytest.mark.parametrize("dtype", ["float32", "complex64", "uint8"])
+@pytest.mark.parametrize("shuffle", [True, False])
+def test_write_hdf5_dataset_parallel(tmp_path, dtype, shuffle):
+    '''
+    Chunks compressed in parallel and written directly read back the same
+    as the data, including partial edge chunks
+    '''
+    import h5py
+    import numpy as np
+    from nisar.workflows.helpers import write_hdf5_dataset_parallel
+
+    rng = np.random.default_rng(0)
+    data = (rng.normal(size=(1100, 700)) * 10).astype(dtype)
+    with h5py.File(tmp_path / 'test.h5', 'w') as f:
+        dset = f.create_dataset('x', data.shape, dtype, chunks=(256, 256),
+                                compression='gzip', compression_opts=1,
+                                shuffle=shuffle)
+        write_hdf5_dataset_parallel(dset, data, num_threads=3, chunk_rows=2)
+    with h5py.File(tmp_path / 'test.h5', 'r') as f:
+        np.testing.assert_array_equal(f['x'][()], data)

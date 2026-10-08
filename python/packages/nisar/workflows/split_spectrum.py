@@ -14,6 +14,7 @@ from isce3.splitspectrum import splitspectrum
 from nisar.h5 import cp_h5_meta_data
 from nisar.products.readers import RSLC
 
+from nisar.workflows.helpers import chunk_aligned_lines
 from nisar.workflows.split_spectrum_runconfig import SplitSpectrumRunConfig
 from nisar.products.insar.product_paths import CommonPaths
 from nisar.workflows.yaml_argparse import YamlArgparse
@@ -181,6 +182,10 @@ def run(cfg: dict):
                     raster_str = f'HDF5:{hdf5_str}:/{slc_product.slcPath(freq, pol)}'
                     slc_raster = isce3.io.Raster(raster_str)
                     rows, cols = slc_raster.length, slc_raster.width
+                    # whole chunk rows of the RSLC per block
+                    blocksize = chunk_aligned_lines(
+                        split_cfg['lines_per_block'],
+                        slc_product.getSlcDataset(freq, pol).chunks)
                     nblocks = int(np.ceil(rows / blocksize))
                     fft_size = next_fast_len(cols)
 

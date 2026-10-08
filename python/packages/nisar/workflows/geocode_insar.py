@@ -25,9 +25,10 @@ from nisar.workflows.compute_stats import compute_stats_real_data
 from nisar.products.insar.utils import compute_valid_pixel_fraction
 from nisar.workflows.geocode_corrections import get_az_srg_corrections
 from nisar.workflows.geocode_insar_runconfig import GeocodeInsarRunConfig
-from nisar.workflows.helpers import get_cfg_freq_pols, get_offset_radar_grid
+from nisar.workflows.helpers import (get_cfg_freq_pols, get_offset_radar_grid,
+                                     write_hdf5_dataset_parallel)
 from nisar.workflows.yaml_argparse import YamlArgparse
-from osgeo import gdal
+from osgeo import gdal, gdal_array
 
 
 class InputProduct(Enum):
@@ -673,12 +674,24 @@ def cpu_geocode_rasters(cpu_geo_obj, geo_datasets, desired, invalid_values,
                          possible_invalid_values=invalid_values)
 
     if input_rasters:
-        geocode_tuples = zip(input_rasters, geocoded_rasters, fill_values)
-        for input_raster, geocoded_raster, fill_value in geocode_tuples:
+        # Geocode into uncompressed scratch rasters, then write them to the
+        # HDF5 datasets with the chunks compressed in parallel (writing
+        # through GDAL into the HDF5 datasets deflates serially)
+        tmp_dir = pathlib.Path(scratch_path) / 'geocode_tmp'
+        tmp_dir.mkdir(parents=True, exist_ok=True)
+        geocode_tuples = zip(input_rasters, geocoded_rasters, fill_values,
+                             geocoded_datasets)
+        for k, (input_raster, geocoded_raster, fill_value, ds) in enumerate(
+                geocode_tuples):
+            tmp_path = str(tmp_dir / f'geocoded_{k}')
+            length, width = ds.shape
+            tmp_raster = isce3.io.Raster(
+                tmp_path, width, length, 1,
+                gdal_array.NumericTypeCodeToGDALTypeCode(ds.dtype), 'ENVI')
             cpu_geo_obj.geocode(
                 radar_grid=radar_grid,
                 input_raster=input_raster,
-                output_raster=geocoded_raster,
+                output_raster=tmp_raster,
                 dem_raster=dem_raster,
                 output_mode=isce3.geocode.GeocodeOutputMode.INTERP,
                 min_block_size=block_size,
@@ -689,11 +702,14 @@ def cpu_geocode_rasters(cpu_geo_obj, geo_datasets, desired, invalid_values,
                 sub_swaths=subswaths,
                 fill_value=fill_value)
 
-        if compute_stats:
-            for raster, ds in zip(geocoded_rasters, geocoded_datasets):
-                if os.path.basename(ds.name) not in ['wrappedInterferogram',
-                                                     'connectedComponents']:
-                    compute_stats_real_data(raster, ds)
+            if compute_stats and os.path.basename(ds.name) not in [
+                    'wrappedInterferogram', 'connectedComponents']:
+                compute_stats_real_data(tmp_raster, ds)
+            tmp_raster.close_dataset()
+            write_hdf5_dataset_parallel(ds, np.memmap(
+                tmp_path, dtype=ds.dtype, mode='r', shape=ds.shape))
+            for f in (tmp_path, f'{tmp_path}.hdr', f'{tmp_path}.aux.xml'):
+                pathlib.Path(f).unlink(missing_ok=True)
 
 def cpu_run(cfg, input_hdf5, output_hdf5, input_product_type=InputProduct.RUNW):
     """ Geocode RUNW products on CPU
@@ -796,6 +812,13 @@ def cpu_run(cfg, input_hdf5, output_hdf5, input_product_type=InputProduct.RUNW):
     geocode_mask_obj.threshold_geo2rdr = threshold_geo2rdr
     geocode_mask_obj.numiter_geo2rdr = iteration_geo2rdr
     geocode_mask_obj.data_interpolator = "NEAREST"
+
+    # geogrids too large for the in-memory geometry cache cache the radar
+    # positions in a memory-mapped scratch file instead
+    geometry_cache_dir = scratch_path / 'geocode_tmp'
+    geometry_cache_dir.mkdir(parents=True, exist_ok=True)
+    os.environ.setdefault('ISCE3_GEOCODE_GEOMETRY_CACHE_DIR',
+                          str(geometry_cache_dir))
 
     t_all = time.time()
     with HDF5OptimizedReader(name=output_hdf5, mode="a") as dst_h5:

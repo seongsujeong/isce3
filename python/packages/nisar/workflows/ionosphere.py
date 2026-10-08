@@ -39,6 +39,7 @@ from nisar.workflows.compute_stats import compute_stats_real_hdf5_dataset
 from nisar.workflows.qfsp_ionosphere import (check_qfsp_flag,
                                              correct_qfsp_phase_artifact)
 from nisar.workflows.ionosphere_runconfig import InsarIonosphereRunConfig
+from nisar.workflows.rubbersheet import open_resample_offsets
 from nisar.workflows.yaml_argparse import YamlArgparse
 from osgeo import gdal
 
@@ -190,24 +191,19 @@ def decimate_freq_a_offset(iono_insar_cfg, original_dict):
                 offsets_path = f'{freq_offsets_path}/VV'
                 offsets_b_path = f'{freq_offsets_b_path}/VV'
 
-        rg_off_path = str(f'{offsets_path}/range.off')
-        az_off_path = str(f'{offsets_path}/azimuth.off')
-
         rg_b_off_path = str(f'{offsets_b_path}/range.off')
         az_b_off_path = str(f'{offsets_b_path}/azimuth.off')
 
         # create new offset directory in ionosphere scratch
         os.makedirs(offsets_b_path, exist_ok=True)
 
-        # open raster as GDAL datasets for decimation
-        rg_off_obj = gdal.Open(rg_off_path)
-        az_off_obj = gdal.Open(az_off_path)
-
-        band = rg_off_obj.GetRasterBand(1)
-        datatype = band.DataType
-        # get dimensions for block processing
-        rows_main = rg_off_obj.RasterYSize
-        cols_main = rg_off_obj.RasterXSize
+        # offsets of the frequency A reference RSLC grid (float64), for
+        # rubbersheet offsets possibly computed on read from the offsets grid
+        rows_main = slc_swath_obj_freqa.lines
+        cols_main = slc_swath_obj_freqa.samples
+        az_off_obj, rg_off_obj = open_resample_offsets(
+            offsets_path, (rows_main, cols_main))
+        datatype = gdal.GDT_Float64
         nblocks = int(np.ceil(rows_main / blocksize))
 
         for off_obj, b_off_path in zip([rg_off_obj, az_off_obj],
@@ -222,9 +218,7 @@ def decimate_freq_a_offset(iono_insar_cfg, original_dict):
                 else:
                     block_rows_data = blocksize
 
-                offset_arr = off_obj.ReadAsArray(0, row_start,
-                                                 cols_main,
-                                                 block_rows_data)
+                offset_arr = off_obj[row_start:row_start + block_rows_data, :]
 
                 off_side = decimate_freq_a_array(
                                 main_slant,

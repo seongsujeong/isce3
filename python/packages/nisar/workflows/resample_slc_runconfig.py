@@ -61,7 +61,13 @@ class ResampleSlcRunConfig(RunConfig):
                                           'rubbersheet_offsets',
                                           f'freq{freq}', pol, 'range.off')
                     az_off = rg_off.replace('range', 'azimuth')
-                    if not os.path.exists(rg_off) or not os.path.exists(az_off):
+                    # rubbersheet may save only the offsets grid, from which
+                    # fine resampling computes the offsets on read
+                    spec = os.path.join(os.path.dirname(rg_off),
+                                        'resample_offsets.npz')
+                    if not os.path.exists(spec) and (
+                            not os.path.exists(rg_off) or
+                            not os.path.exists(az_off)):
                         err_str = f"{rg_off} and {az_off} files do not exists. HH and" \
                                   f"VV rubbersheet offsets required to run fine resampling"
                         error_channel.log(err_str)

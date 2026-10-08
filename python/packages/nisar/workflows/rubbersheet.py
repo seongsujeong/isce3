@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import pathlib
 import time
+from concurrent.futures import ThreadPoolExecutor
 import warnings
 
 import isce3
@@ -226,18 +227,11 @@ def run_rubbersheet_with_polyfit(cfg: dict, output_hdf5: str = None):
                 for dataset in datasets:
                     compute_stats_real_hdf5_dataset(dataset)
 
-                # Compute the offsets for fine resampling of secondary RSLC
-                rubber_offs = ['culled_az_offsets', 'culled_rg_offsets']
-                geo_offs = ['azimuth.off', 'range.off']
-                for rubber_off, geo_off in zip(rubber_offs, geo_offs):
-                    # Resample offsets to the size of the reference RSLC and
-                    # sum them to the geometry offsets in one pass
-                    _resample_offsets_to_slc(str(out_dir / rubber_off),
-                                             str(out_dir / geo_off),
-                                             off_az_pos, off_rg_pos,
-                                             ref_radar_grid.length,
-                                             ref_radar_grid.width,
-                                             geo_off_path=str(geo_offset_dir / geo_off))
+                # Offsets for fine resampling of the secondary RSLC
+                _save_rubbersheet_offsets(
+                    out_dir, geo_offset_dir, off_az_pos, off_rg_pos,
+                    ref_radar_grid.length, ref_radar_grid.width,
+                    rubbersheet_params['full_resolution_offsets_enabled'])
 
     t_all_elapsed = time.time() - t_all
     info_channel.log(
@@ -407,18 +401,11 @@ def run_rubbersheet_with_interpolation(cfg: dict, output_hdf5: str = None):
                 for dataset in datasets:
                     compute_stats_real_hdf5_dataset(dataset)
 
-                # Compute the offsets for fine resampling of secondary RSLC
-                rubber_offs = ['culled_az_offsets', 'culled_rg_offsets']
-                geo_offs = ['azimuth.off', 'range.off']
-                for rubber_off, geo_off in zip(rubber_offs, geo_offs):
-                    # Resample offsets to the size of the reference RSLC and
-                    # sum them to the geometry offsets in one pass
-                    _resample_offsets_to_slc(str(out_dir / rubber_off),
-                                             str(out_dir / geo_off),
-                                             off_az_pos, off_rg_pos,
-                                             ref_radar_grid.length,
-                                             ref_radar_grid.width,
-                                             geo_off_path=str(geo_offset_dir / geo_off))
+                # Offsets for fine resampling of the secondary RSLC
+                _save_rubbersheet_offsets(
+                    out_dir, geo_offset_dir, off_az_pos, off_rg_pos,
+                    ref_radar_grid.length, ref_radar_grid.width,
+                    rubbersheet_params['full_resolution_offsets_enabled'])
 
     t_all_elapsed = time.time() - t_all
     info_channel.log(
@@ -470,6 +457,147 @@ def _write_to_disk(outpath, array, format='ENVI',
     ds.FlushCache()
 
 
+# Files of rubbersheet_offsets/freq<f>/<pol>: offsets on the offsets grid,
+# their RSLC grid positions, and (optional) full-resolution offsets
+RUBBERSHEET_SPEC = 'resample_offsets.npz'
+RUBBERSHEET_OFFSETS = (('culled_az_offsets', 'azimuth.off'),
+                       ('culled_rg_offsets', 'range.off'))
+
+
+def _index_weight(pos, n):
+    """
+    Fractional offsets grid index and bilinear weight of each of the n RSLC
+    lines/columns, clamped to the grid edges: (i0, i1, weight of i1)
+    """
+    idx = np.interp(np.arange(n), pos, np.arange(len(pos)))
+    i0 = np.clip(np.floor(idx).astype(int), 0, max(len(pos) - 2, 0))
+    i1 = np.minimum(i0 + 1, len(pos) - 1)
+    return i0, i1, idx - i0
+
+
+class RubbersheetOffsets:
+    """
+    Rubbersheet offsets on the reference RSLC grid, computed when read: the
+    offsets on the offsets grid bilinearly resampled to the RSLC grid (edge
+    values extended), plus the geo2rdr offsets. Reads like a (length, width)
+    float64 array sliced by (rows, columns) slices (DatasetReader protocol),
+    so the full-resolution offsets never need to be written to disk.
+
+    Parameters
+    ----------
+    off: numpy.ndarray
+        Offsets on the offsets grid
+    off_az_pos, off_rg_pos: numpy.ndarray
+        Reference RSLC line/column (fractional) of each offsets grid
+        row/column
+    length, width: int
+        Number of lines and columns of the reference RSLC
+    geo_off_path: str, optional
+        Path to the geometry offsets (ENVI float64) on the reference RSLC
+        grid to add
+    invalid_value: float
+        Invalid geometry/resampled offset value, kept invalid in the sum
+    """
+
+    def __init__(self, off, off_az_pos, off_rg_pos, length, width,
+                 geo_off_path=None, invalid_value=-1e6):
+        self._off = off
+        self._c0, self._c1, self._wc = _index_weight(off_rg_pos, width)
+        self._r0, self._r1, self._wr = _index_weight(off_az_pos, length)
+        self._geo = None if geo_off_path is None else np.memmap(
+            geo_off_path, dtype=np.float64, mode='r', shape=(length, width))
+        self._invalid = invalid_value
+        self.shape = (length, width)
+        self.ndim = 2
+        self.dtype = np.dtype(np.float64)
+
+    def __getitem__(self, key):
+        rows, cols = key
+        w = self._wr[rows, None]
+        # Interpolate along azimuth, then along range
+        off_az = self._off[self._r0[rows]] * (1 - w) + \
+            self._off[self._r1[rows]] * w
+        columns = np.arange(self.shape[1])[cols]
+        block = np.empty((len(off_az), len(columns)))
+
+        # Range interpolation and geometry offsets of a group of columns;
+        # the groups run in threads (numpy releases the GIL), element-wise
+        # identical to doing all columns at once
+        def fill(part):
+            c = columns[part]
+            wc = self._wc[None, c]
+            out = off_az[:, self._c0[c]] * (1 - wc) + off_az[:, self._c1[c]] * wc
+            if self._geo is not None:
+                geo = np.asarray(self._geo[rows, c[0]:c[-1] + 1][:, c - c[0]])
+                invalid = (geo == self._invalid) | (out == self._invalid)
+                out = np.where(invalid, self._invalid, geo + out)
+            block[:, part] = out
+
+        step = 4096
+        parts = [slice(i, i + step) for i in range(0, len(columns), step)]
+        with ThreadPoolExecutor() as executor:
+            list(executor.map(fill, parts))
+        return block
+
+
+def open_resample_offsets(offsets_dir, shape):
+    """
+    (azimuth, range) readers of the resampling offsets in a directory: for a
+    rubbersheet_offsets/freq<f>/<pol> directory where rubbersheet saved only
+    the offsets grid, computed on read; otherwise (e.g. geo2rdr offsets, or
+    full-resolution rubbersheet offsets) the azimuth.off/range.off rasters,
+    memory-mapped
+
+    Parameters
+    ----------
+    offsets_dir: path-like
+        Directory of the offsets
+    shape: tuple of int
+        (length, width) of the reference RSLC
+    """
+    offsets_dir = pathlib.Path(offsets_dir)
+    spec_path = offsets_dir / RUBBERSHEET_SPEC
+    if not spec_path.is_file():
+        return tuple(np.memmap(offsets_dir / full, dtype=np.float64,
+                               mode='r', shape=tuple(shape))
+                     for _, full in RUBBERSHEET_OFFSETS)
+    spec = np.load(spec_path)
+    spec_shape = (int(spec['length']), int(spec['width']))
+    if tuple(shape) != spec_shape:
+        raise ValueError(f'{spec_path} is for shape {spec_shape}, '
+                         f'not {tuple(shape)}')
+    return tuple(RubbersheetOffsets(
+        _open_raster(str(offsets_dir / culled)), spec['off_az_pos'],
+        spec['off_rg_pos'], *spec_shape,
+        geo_off_path=str(spec[f'geo_{full}']))
+        for culled, full in RUBBERSHEET_OFFSETS)
+
+
+def _save_rubbersheet_offsets(out_dir, geo_offset_dir, off_az_pos, off_rg_pos,
+                              length, width, full_resolution):
+    """
+    Save what fine resampling needs to compute the rubbersheet offsets on
+    read (the RSLC grid positions of the offsets grid and the geo2rdr offset
+    paths, next to the culled offsets) and, if full_resolution, also the
+    full-resolution azimuth.off/range.off rasters
+    """
+    out_dir = pathlib.Path(out_dir)
+    geo_offset_dir = pathlib.Path(geo_offset_dir).resolve()
+    np.savez(out_dir / RUBBERSHEET_SPEC, off_az_pos=off_az_pos,
+             off_rg_pos=off_rg_pos, length=length, width=width,
+             **{f'geo_{full}': str(geo_offset_dir / full)
+                for _, full in RUBBERSHEET_OFFSETS})
+    for culled, full in RUBBERSHEET_OFFSETS:
+        if full_resolution:
+            _resample_offsets_to_slc(str(out_dir / culled), str(out_dir / full),
+                                     off_az_pos, off_rg_pos, length, width,
+                                     geo_off_path=str(geo_offset_dir / full))
+        else:
+            # stale full-resolution offsets of a previous run
+            (out_dir / full).unlink(missing_ok=True)
+            (out_dir / f'{full}.hdr').unlink(missing_ok=True)
+
+
 def _resample_offsets_to_slc(off_path, out_path, off_az_pos, off_rg_pos,
                              length, width, lines_per_block=512,
                              geo_off_path=None, invalid_value=-1e6):
@@ -497,42 +625,18 @@ def _resample_offsets_to_slc(off_path, out_path, off_az_pos, off_rg_pos,
     invalid_value: float
         Invalid geometry/resampled offset value, kept invalid in the sum
     '''
-    off = _open_raster(off_path)
-
-    # Fractional offsets grid index and bilinear weight of each
-    # RSLC pixel, clamped to the grid edges
-    def _index_weight(pos, n):
-        idx = np.interp(np.arange(n), pos, np.arange(len(pos)))
-        i0 = np.clip(np.floor(idx).astype(int), 0, max(len(pos) - 2, 0))
-        i1 = np.minimum(i0 + 1, len(pos) - 1)
-        return i0, i1, idx - i0
-
-    c0, c1, wc = _index_weight(off_rg_pos, width)
-    r0, r1, wr = _index_weight(off_az_pos, length)
-    # Reshape column weights to (1, width) for flawless 2D broadcasting
-    wc = wc[None, :]
-
+    offsets = RubbersheetOffsets(_open_raster(off_path), off_az_pos,
+                                 off_rg_pos, length, width, geo_off_path,
+                                 invalid_value)
     driver = gdal.GetDriverByName('ENVI')
     ds = driver.Create(out_path, width, length, 1, gdal.GDT_Float64)
     band = ds.GetRasterBand(1)
-    # keep the dataset referenced while its band is read
-    geo_ds = None if geo_off_path is None else \
-        gdal.Open(geo_off_path, gdal.GA_ReadOnly)
-    geo_band = None if geo_ds is None else geo_ds.GetRasterBand(1)
     for start in range(0, length, lines_per_block):
         rows = slice(start, min(start + lines_per_block, length))
-        w = wr[rows, None]
-        # Interpolate along azimuth, then along range
-        off_az = off[r0[rows]] * (1 - w) + off[r1[rows]] * w
-        block = off_az[:, c0] * (1 - wc) + off_az[:, c1] * wc
-        if geo_band is not None:
-            geo = geo_band.ReadAsArray(0, start, width, rows.stop - start)
-            invalid = (geo == invalid_value) | (block == invalid_value)
-            block = np.where(invalid, invalid_value, geo + block)
-        band.WriteArray(block, 0, start)
+        band.WriteArray(offsets[rows, :], 0, start)
     ds.FlushCache()
-    band = geo_band = None
-    ds = geo_ds = None
+    band = None
+    ds = None
 
 def identify_outliers(offsets_dir, rubbersheet_params, mask = None):
     '''

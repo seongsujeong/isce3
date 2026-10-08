@@ -3,6 +3,14 @@ import h5py
 import numpy as np
 
 
+def _next_prime(n):
+    '''Smallest prime >= n (n >= 2)'''
+    n = max(int(n), 2)
+    while any(n % d == 0 for d in range(2, int(n ** 0.5) + 1)):
+        n += 1
+    return n
+
+
 class HDF5OptimizedReader(h5py.File):
     """
     The HDF5 optimizer reader class inheriting from h5py.File
@@ -31,6 +39,8 @@ class HDF5OptimizedReader(h5py.File):
 
         # The minimum chunk cache size is set to 1 Mb
         largest_chunk_cache_size = 1024 ** 2
+        # Number of chunks that fit in that cache
+        largest_cache_chunks = 1
 
         # Get the largest chunk cache size
         def _get_largest_chunk_cache_size(ds_name, ds):
@@ -48,7 +58,7 @@ class HDF5OptimizedReader(h5py.File):
             # nonlocal so largest_chunk_cache_size declared
             # above can be altered when this helper function
             # is iteratively applied to h5py datasets below
-            nonlocal largest_chunk_cache_size
+            nonlocal largest_chunk_cache_size, largest_cache_chunks
 
             if isinstance(ds, h5py.Dataset):
                 ds_ndims = len(ds.shape)
@@ -70,13 +80,20 @@ class HDF5OptimizedReader(h5py.File):
                         float(num_rows + ds.chunks[i_length_dim] - 1.0)/
                          ds.chunks[i_length_dim])
 
-                    largest_chunk_cache_size = \
-                        max(largest_chunk_cache_size, chunk_cache_size)
+                    if chunk_cache_size > largest_chunk_cache_size:
+                        largest_chunk_cache_size = chunk_cache_size
+                        largest_cache_chunks = chunk_cache_size // (
+                            np.prod(ds.chunks) * ds.dtype.itemsize)
 
         with h5py.File(hdf5_file, **new_kwds) as h5:
             h5.visititems(_get_largest_chunk_cache_size)
 
         new_kwds['rdcc_nbytes'] = largest_chunk_cache_size
+        # Hash table size of the chunk cache: HDF5 recommends a prime about
+        # 100 times the number of cached chunks; h5py's default (521) is
+        # too small for a cache of hundreds of chunks, whose collisions
+        # evict chunks that are then decompressed again
+        new_kwds.setdefault('rdcc_nslots', _next_prime(100 * largest_cache_chunks))
 
         # Initialize the h5py File object
         super().__init__(hdf5_file,**new_kwds)

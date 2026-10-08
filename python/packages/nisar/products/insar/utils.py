@@ -662,7 +662,37 @@ def _subswath_numbers(length, width, intervals, azi_idx, rg_idx):
     return numbers
 
 
-def generate_insar_mask(ref_rslc_obj,
+# Masks of the last few generate_insar_mask calls: the RIFG, RUNW and ROFF
+# writers ask for the same grids (interferogram, offsets) more than once
+_INSAR_MASK_CACHE = {}
+_INSAR_MASK_CACHE_SIZE = 2
+
+
+def generate_insar_mask(ref_rslc_obj, sec_rslc_obj, ref_rslc_h5_obj,
+                        sec_rslc_h5_obj, range_offset_path,
+                        azimuth_offset_path, freq, azi_idx_arr, rg_idx_arr):
+    """
+    Cached _generate_insar_mask (see there): returns copies of the masks of
+    an earlier call with the same RSLCs, geo2rdr offsets, frequency and
+    output grid indices
+    """
+    import os
+    key = (ref_rslc_h5_obj.filename, sec_rslc_h5_obj.filename,
+           str(range_offset_path), os.path.getmtime(range_offset_path),
+           str(azimuth_offset_path), os.path.getmtime(azimuth_offset_path),
+           freq, np.asarray(azi_idx_arr).tobytes(),
+           np.asarray(rg_idx_arr).tobytes())
+    if key not in _INSAR_MASK_CACHE:
+        if len(_INSAR_MASK_CACHE) >= _INSAR_MASK_CACHE_SIZE:
+            _INSAR_MASK_CACHE.pop(next(iter(_INSAR_MASK_CACHE)))
+        _INSAR_MASK_CACHE[key] = _generate_insar_mask(
+            ref_rslc_obj, sec_rslc_obj, ref_rslc_h5_obj, sec_rslc_h5_obj,
+            range_offset_path, azimuth_offset_path, freq, azi_idx_arr,
+            rg_idx_arr)
+    return tuple(m.copy() for m in _INSAR_MASK_CACHE[key])
+
+
+def _generate_insar_mask(ref_rslc_obj,
                         sec_rslc_obj,
                         ref_rslc_h5_obj,
                         sec_rslc_h5_obj,

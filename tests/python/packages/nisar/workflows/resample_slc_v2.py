@@ -36,6 +36,18 @@ def test_resample_slc_v2_run():
     resample_slc_v2.run(runconfig.cfg, 'coarse')
 
 
+def test_align_tile_to_chunks():
+    """Resample tiles are whole RSLC chunks, or full width"""
+    align = resample_slc_v2.align_tile_to_chunks
+    width = 52873
+    assert align(512, width, (512, 512), width) == (512, width)
+    assert align(512, width, (256, 256), width) == (512, width)
+    assert align(512, width, (1024, 1024), width) == (1024, width)
+    assert align(100, width, (512, 512), width) == (512, width)
+    assert align(1000, 1000, (512, 512), width) == (1024, 1024)
+    assert align(700, width, None, width) == (700, width)
+
+
 def test_resample_slc_v2_validate():
     '''
     Validate resample_slc output VS golden dataset

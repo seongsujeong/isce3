@@ -202,9 +202,12 @@ def calculate_solid_earth_tides(ref_epoch : datetime.datetime,
 
     # Using the multiprocessing to speed up the process
     num_processes = multiprocessing.cpu_count()
+    # A few tasks per process instead of one pixel per task: the per-task
+    # pickling and inter-process overhead otherwise rivals the computation
+    chunksize = max(1, -(-azimuth_time_datacube.size // (4 * num_processes)))
     with multiprocessing.Pool(processes=num_processes) as pool:
         results = list(pool.map(solid_grid_pixel_parallel_task,
-                                input_data))
+                                input_data, chunksize=chunksize))
 
     datacube_shape = height_datacube.shape
     tide_e, tide_n, tide_u = (np.array(arr).reshape(datacube_shape)

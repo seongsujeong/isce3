@@ -16,6 +16,7 @@ from isce3.io import HDF5OptimizedReader
 from isce3.io.gdal.gdal_raster import GDALRaster
 
 from nisar.products.readers import RSLC
+from nisar.workflows.rubbersheet import open_resample_offsets
 from nisar.workflows.resample_slc_runconfig import ResampleSlcRunConfig
 from nisar.workflows.yaml_argparse import YamlArgparse
 
@@ -118,6 +119,34 @@ def run(cfg: dict, resample_type: str) -> None:
     info_channel.log(f"successfully ran resample in {t_all_elapsed:.3f} seconds")
 
 
+def align_tile_to_chunks(lines, columns, chunks, width):
+    """
+    Round a tile size to a nonzero multiple of the HDF5 chunk shape of the
+    RSLC it is read from; columns equal to the full width stay so.
+
+    Parameters
+    ----------
+    lines, columns : int
+        Requested tile size
+    chunks : tuple of int or None
+        Chunk shape (lines, columns) of the RSLC dataset; None (contiguous
+        dataset) keeps the requested size
+    width : int
+        Number of columns of the output (full-width tiles)
+
+    Returns
+    -------
+    tuple of int
+        Tile (lines, columns)
+    """
+    if chunks is None:
+        return lines, columns
+    lines = max(1, round(lines / chunks[0])) * chunks[0]
+    if columns < width:
+        columns = min(width, max(1, round(columns / chunks[1])) * chunks[1])
+    return lines, columns
+
+
 def resample_secondary_rslc_onto_reference(
     ref_file_path: str | os.PathLike,
     sec_file_path: str | os.PathLike,
@@ -177,19 +206,13 @@ def resample_secondary_rslc_onto_reference(
         block_size_rg = out_width
 
     # Initialize the data reader objects.
-    # First, initialize the azimuth and range offset readers.
-    az_off_reader = np.memmap(
-        filename=az_off_file,
-        shape=out_shape,
-        dtype=np.float64,
-        mode='r+',
-    )
-    rg_off_reader = np.memmap(
-        filename=rg_off_file,
-        shape=out_shape,
-        dtype=np.float64,
-        mode='r+',
-    )
+    # First, initialize the azimuth and range offset readers: memory-mapped
+    # azimuth.off/range.off, or rubbersheet offsets computed on read from the
+    # offsets grid when rubbersheet did not write them at full resolution
+    if Path(az_off_file).parent != Path(rg_off_file).parent:
+        raise ValueError("azimuth and range offsets must share a directory")
+    az_off_reader, rg_off_reader = open_resample_offsets(
+        Path(az_off_file).parent, out_shape)
 
     # For each polarization being output, create a GDALRaster to write to it.
     out_writers: list[GDALRaster] = []
@@ -220,9 +243,19 @@ def resample_secondary_rslc_onto_reference(
         for pol in pols:
             ds_path = sec_slc_obj.imageDatasetPath(freq, pol)
             dataset = sec_h5[ds_path]
+            chunks = dataset.chunks
             if is_complex32(dataset):
                 dataset = ComplexFloat16Decoder(dataset)
             sec_readers.append(dataset)
+
+        # Tiles of whole secondary RSLC chunks: each chunk is then
+        # decompressed once, and full-width tiles also read the offsets and
+        # write the output sequentially
+        block_size_az, block_size_rg = align_tile_to_chunks(
+            block_size_az, block_size_rg, chunks, out_width)
+        journal.info("resample_slc_v2.resample_secondary_rslc_onto_reference"
+                     ).log(f"tile size (lines x columns) aligned to the RSLC "
+                           f"chunks {chunks}: {block_size_az} x {block_size_rg}")
 
         # Resample the secondary RSLC onto the reference coordinate system.
         # Because this function receives GDALRasters in its output, it will write

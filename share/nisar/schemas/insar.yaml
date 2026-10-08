@@ -298,10 +298,12 @@ coarse_resample_options:
     # Path to coarse/fine offset directory
     offsets_dir: str(required=False)
 
-    # Number of lines per tile to resample in batch
+    # Number of lines per tile to resample in batch, rounded to a multiple of
+    # the secondary RSLC chunk height
     lines_per_tile: int(min=1, required=False)
 
-    # Number of columns per tile to resample in batch. If 0, the tiles will span across
+    # Number of columns per tile to resample in batch, rounded to a multiple
+    # of the secondary RSLC chunk width. If 0, the tiles will span across
     # all columns of the raster.
     columns_per_tile: int(min=0, required=False)
 
@@ -312,10 +314,12 @@ fine_resample_options:
     # Path to coarse/fine offset directory
     offsets_dir: str(required=False)
 
-    # Number of lines per tile to resample in batch
+    # Number of lines per tile to resample in batch, rounded to a multiple of
+    # the secondary RSLC chunk height
     lines_per_tile: int(min=1, required=False)
 
-    # Number of columns per tile to resample in batch. If 0, the tiles will span across
+    # Number of columns per tile to resample in batch, rounded to a multiple
+    # of the secondary RSLC chunk width. If 0, the tiles will span across
     # all columns of the raster.
     columns_per_tile: int(min=0, required=False)
 
@@ -591,6 +595,12 @@ rubbersheet_options:
 
     # Flag to enable/disable rubbersheet step
     enabled: bool(required=False)
+
+    # Also write the full-resolution (reference RSLC grid) azimuth.off and
+    # range.off rasters. Fine resampling and ionosphere processing compute
+    # them on read from the offsets grid, so they are only needed by
+    # external tools. Default False
+    full_resolution_offsets_enabled: bool(required=False)
 
     # Metric used to identify offsets outliers
     culling_metric: enum('snr', 'median_filter', 'covariance', required=False)

@@ -468,6 +468,83 @@ def check_hdf5_freq_pols(h5_path: str, freq_pols: dict):
                     raise ValueError(err_str)
 
 
+def chunk_aligned_lines(lines, chunks):
+    """
+    Lines per block rounded to a nonzero multiple of the HDF5 chunk height,
+    so that full-width line blocks read (and write) whole chunk rows: each
+    compressed chunk is then decompressed (compressed) once instead of once
+    per block it straddles.
+
+    Parameters
+    ----------
+    lines : int
+        Requested lines per block
+    chunks : tuple of int or None
+        Chunk shape of the dataset (None: not chunked, lines unchanged)
+    """
+    if not chunks:
+        return lines
+    return max(1, round(lines / chunks[0])) * chunks[0]
+
+
+def write_hdf5_dataset_parallel(dset, data, num_threads=None, chunk_rows=8):
+    """
+    Write a 2-D array into an HDF5 dataset, compressing its chunks in
+    parallel threads (the HDF5 library deflates serially, which dominates the
+    time of writing large geocoded layers). The chunks are written as
+    pre-filtered chunks (shuffle, then deflate, as the dataset's filter
+    pipeline defines), so the stored data are the same as with dset[...] =
+    data. Datasets that are not chunked, or use other filters, are written
+    with dset[...] = data.
+
+    Parameters
+    ----------
+    dset: h5py.Dataset
+        2-D output dataset
+    data: numpy.ndarray
+        Array (e.g. numpy.memmap) of the dataset's shape
+    num_threads: int, optional
+        Compression threads (default: CPU count)
+    chunk_rows: int
+        Rows of chunks compressed per batch (bounds the memory held)
+    """
+    import zlib
+    from concurrent.futures import ThreadPoolExecutor
+
+    plist = dset.id.get_create_plist()
+    filters = [plist.get_filter(i) for i in range(plist.get_nfilters())]
+    ids = [f[0] for f in filters]
+    if dset.chunks is None or dset.ndim != 2 or ids not in (
+            [h5py.h5z.FILTER_DEFLATE],
+            [h5py.h5z.FILTER_SHUFFLE, h5py.h5z.FILTER_DEFLATE]):
+        dset[...] = data
+        return
+    level = filters[-1][2][0] if filters[-1][2] else 6
+    shuffle = ids[0] == h5py.h5z.FILTER_SHUFFLE
+    dtype = dset.dtype
+    cy, cx = dset.chunks
+    ny, nx = dset.shape
+
+    def chunk_bytes(origin):
+        i, j = origin
+        # Edge chunks are stored at full chunk size
+        block = np.zeros((cy, cx), dtype=dtype)
+        part = np.asarray(data[i:i + cy, j:j + cx], dtype=dtype)
+        block[:part.shape[0], :part.shape[1]] = part
+        raw = block.tobytes()
+        if shuffle:
+            raw = np.frombuffer(raw, np.uint8).reshape(
+                -1, dtype.itemsize).T.tobytes()
+        return origin, zlib.compress(raw, level)
+
+    with ThreadPoolExecutor(num_threads or os.cpu_count()) as executor:
+        for row0 in range(0, ny, cy * chunk_rows):
+            origins = [(i, j) for i in range(row0, min(row0 + cy * chunk_rows, ny), cy)
+                       for j in range(0, nx, cx)]
+            for origin, raw in executor.map(chunk_bytes, origins):
+                dset.id.write_direct_chunk(origin, raw)
+
+
 def copy_raster(infile, freq, pol,
                 lines_per_block, outfile, file_type="ENVI"):
     '''
@@ -502,8 +579,9 @@ def copy_raster(infile, freq, pol,
     out_ds = driver.Create(outfile, rslc_width, rslc_length,
                            1, gdal.GDT_CFloat32)
 
-    # Start block processing
-    lines_per_block = min(rslc_length, lines_per_block)
+    # Start block processing, in whole chunk rows of the RSLC
+    lines_per_block = min(rslc_length,
+                          chunk_aligned_lines(lines_per_block, hdf5_ds.chunks))
     num_blocks = int(np.ceil(rslc_length / lines_per_block))
 
     # Iterate over blocks to convert and write

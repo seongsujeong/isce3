@@ -103,6 +103,29 @@ def test_resample_offsets_to_slc(tmp_path):
                         np.where(geo == -1e6, -1e6, expected + 0.5),
                         atol=1e-12)
 
+    # Offsets computed on read (fine resampling) equal the written ones
+    # bit for bit, for any row/column block
+    full = rubbersheet._open_raster(out_path)
+    out_dir = tmp_path / 'rubbersheet'
+    out_dir.mkdir()
+    for culled, name in rubbersheet.RUBBERSHEET_OFFSETS:
+        rubbersheet._write_to_disk(str(out_dir / culled), offset(
+            *np.meshgrid(off_az_pos, off_rg_pos, indexing='ij')))
+        rubbersheet._write_to_disk(str(tmp_path / name), geo)
+    rubbersheet._save_rubbersheet_offsets(out_dir, tmp_path, off_az_pos,
+                                          off_rg_pos, length, width, False)
+    az, rg = rubbersheet.open_resample_offsets(out_dir, (length, width))
+    for reader in (az, rg):
+        assert reader.shape == (length, width)
+        npt.assert_array_equal(reader[:, :], full)
+        npt.assert_array_equal(reader[10:17, 33:90], full[10:17, 33:90])
+    # Without the on-read spec: the full-resolution rasters
+    rubbersheet._save_rubbersheet_offsets(out_dir, tmp_path, off_az_pos,
+                                          off_rg_pos, length, width, True)
+    (out_dir / rubbersheet.RUBBERSHEET_SPEC).unlink()
+    az, _ = rubbersheet.open_resample_offsets(out_dir, (length, width))
+    npt.assert_array_equal(az[:, :], full)
+
 
 if __name__ == "__main__":
     test_run_rubbersheet()

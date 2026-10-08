@@ -12,6 +12,11 @@
 #include <string>
 #include <vector>
 
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <sys/statvfs.h>
+#include <unistd.h>
+
 #include <isce3/core/Basis.h>
 #include <isce3/core/DenseMatrix.h>
 #include <isce3/core/Projections.h>
@@ -82,9 +87,59 @@ bool operator==(const GeometryKey& a, const GeometryKey& b)
 // NaN where not geocoded. Geocoding several rasters of the same radar grid
 // onto the same geogrid (e.g. the layers of an InSAR product) then runs
 // geo2rdr once instead of once per raster.
+// Storage of the cached positions: memory, or, for a geogrid above the
+// memory limit, a memory-mapped scratch file (removed from the directory on
+// creation, so it is freed when unmapped, even after a crash)
+class PositionBuffer {
+public:
+    // n doubles in memory if within mem_bytes, else in a file in file_dir
+    // (if given and the disk has room); data() is null if neither
+    PositionBuffer(size_t n, size_t mem_bytes, const char* file_dir)
+        : _bytes(n * sizeof(double))
+    {
+        if (_bytes <= mem_bytes) {
+            _mem.resize(n);
+            _data = _mem.data();
+            return;
+        }
+        struct statvfs fs;
+        if (file_dir == nullptr || statvfs(file_dir, &fs) != 0 ||
+                (double) fs.f_bavail * fs.f_frsize < 1.1 * _bytes)
+            return;
+        std::string path = std::string(file_dir) + "/geocode_geometry_XXXXXX";
+        const int fd = mkstemp(path.data());
+        if (fd < 0)
+            return;
+        unlink(path.c_str());
+        if (ftruncate(fd, _bytes) == 0) {
+            void* map = mmap(nullptr, _bytes, PROT_READ | PROT_WRITE,
+                             MAP_SHARED, fd, 0);
+            if (map != MAP_FAILED)
+                _data = static_cast<double*>(map);
+        }
+        close(fd);
+    }
+    ~PositionBuffer()
+    {
+        if (_data != nullptr && _mem.empty())
+            munmap(_data, _bytes);
+    }
+    PositionBuffer(const PositionBuffer&) = delete;
+    PositionBuffer& operator=(const PositionBuffer&) = delete;
+    double* data() const { return _data; }
+
+private:
+    size_t _bytes;
+    std::vector<double> _mem;
+    double* _data = nullptr;
+};
+
 struct GeometryCache {
     GeometryKey key;
-    std::vector<double> radar_x, radar_y;
+    // radar columns of the geogrid pixels, then their radar lines
+    std::unique_ptr<PositionBuffer> positions;
+    double* radar_x;
+    double* radar_y;
 };
 
 // Single-entry cache. Readers take a shared_ptr copy under the mutex, so a
@@ -92,7 +147,10 @@ struct GeometryCache {
 std::mutex geometry_cache_mutex;
 std::shared_ptr<const GeometryCache> geometry_cache;
 
-// Max. cache size; ISCE3_GEOCODE_GEOMETRY_CACHE_MB overrides, 0 disables
+// Max. in-memory cache size; ISCE3_GEOCODE_GEOMETRY_CACHE_MB overrides,
+// 0 keeps it out of memory. Larger caches go to a memory-mapped file in
+// ISCE3_GEOCODE_GEOMETRY_CACHE_DIR if that is set (and has room), else
+// there is no cache.
 size_t geometryCacheMaxBytes()
 {
     const char* env = std::getenv("ISCE3_GEOCODE_GEOMETRY_CACHE_MB");
@@ -727,14 +785,19 @@ void Geocode<T>::geocodeInterp(
         std::lock_guard<std::mutex> lock(geometry_cache_mutex);
         if (geometry_cache && geometry_cache->key == geometry_key) {
             cached = geometry_cache;
-        } else if (2 * sizeof(double) * geogrid_size <= geometryCacheMaxBytes()) {
-            // drop the stale entry before allocating the new one to bound
-            // peak memory
+        } else {
+            // drop the previous geometry first to bound peak memory/disk
             geometry_cache.reset();
-            new_cache = std::make_shared<GeometryCache>();
-            new_cache->key = geometry_key;
-            new_cache->radar_x.resize(geogrid_size);
-            new_cache->radar_y.resize(geogrid_size);
+            auto positions = std::make_unique<PositionBuffer>(
+                    2 * geogrid_size, geometryCacheMaxBytes(),
+                    std::getenv("ISCE3_GEOCODE_GEOMETRY_CACHE_DIR"));
+            if (positions->data() != nullptr) {
+                new_cache = std::make_shared<GeometryCache>();
+                new_cache->key = geometry_key;
+                new_cache->radar_x = positions->data();
+                new_cache->radar_y = positions->data() + geogrid_size;
+                new_cache->positions = std::move(positions);
+            }
         }
     }
     info << "geometry from cache (0:false, 1:true): " << (cached != nullptr)
@@ -930,9 +993,9 @@ void Geocode<T>::geocodeInterp(
         // the radar grid) at its offset in the full geogrid
         if (new_cache) {
             std::copy(std::begin(radarX), std::end(radarX),
-                      new_cache->radar_x.begin() + cacheStart);
+                      new_cache->radar_x + cacheStart);
             std::copy(std::begin(radarY), std::end(radarY),
-                      new_cache->radar_y.begin() + cacheStart);
+                      new_cache->radar_y + cacheStart);
         }
         } // end of geo2rdr of the block
 
