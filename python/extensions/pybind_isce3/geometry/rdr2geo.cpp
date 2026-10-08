@@ -261,6 +261,10 @@ void addbinding(py::class_<Topo>& pyRdr2Geo)
             .def_property("extraiter",
                     py::overload_cast<>(&Topo::extraiter, py::const_),
                     py::overload_cast<int>(&Topo::extraiter))
+            .def_property("mixed_precision",
+                    py::overload_cast<>(&Topo::mixedPrecision, py::const_),
+                    py::overload_cast<bool>(&Topo::mixedPrecision),
+                    "FP32 residual height iterations with an FP64 finish")
             .def_property("dem_interp_method",
                     py::overload_cast<>(&Topo::demMethod, py::const_),
                     py::overload_cast<dataInterpMethod>(&Topo::demMethod))

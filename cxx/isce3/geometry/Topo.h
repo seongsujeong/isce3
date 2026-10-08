@@ -98,6 +98,18 @@ public:
     void extraiter(int n) { _extraiter = n; }
 
     /**
+     * Set mixed-precision height iterations
+     *
+     * If set, each pixel iterates in FP32 on residuals around an FP64
+     * starting point and finishes with a few FP64 iterations (see
+     * detail/Rdr2GeoMixed.h); pixels whose FP32 iteration does not converge
+     * use the FP64 iteration. Results agree to well below a millimeter.
+     *
+     * @param[in] enabled Whether to use mixed precision
+     */
+    void mixedPrecision(bool enabled) { _mixedPrecision = enabled; }
+
+    /**
      * Set the DEM interpolation method while checking its validity
      *
      * @param[in] DEM inerpolation method
@@ -159,6 +171,9 @@ public:
 
     /** Get number of secondary iterations used for processing*/
     int extraiter() const { return _extraiter; }
+
+    /** Get whether mixed-precision height iterations are used */
+    bool mixedPrecision() const { return _mixedPrecision; }
 
     /** Get the output coordinate system used for processing */
     int epsgOut() const { return _epsgOut; }
@@ -290,6 +305,13 @@ private:
                           isce3::core::Vec3& pos, isce3::core::Vec3& vel,
                           isce3::core::Basis& TCNbasis);
 
+    // Mixed-precision rdr2geo of one pixel (see mixedPrecision())
+    int _rdr2geoMixed(const isce3::core::Pixel& pixel,
+                      const isce3::core::Basis& TCNbasis,
+                      const isce3::core::Vec3& pos, const isce3::core::Vec3& vel,
+                      const DEMInterpolator& demInterp,
+                      isce3::core::Vec3& llh) const;
+
     /**
      * Write to output layers
      *
@@ -344,6 +366,7 @@ private:
     double _threshold = 1.0e-8;   //Threshold for convergence of slant range
     int _numiter = 25;            //Number of primary iterations
     int _extraiter = 10;          //Number of secondary iterations
+    bool _mixedPrecision = false; //FP32 residual iterations + FP64 finish
     double _minH = isce3::core::GLOBAL_MIN_HEIGHT;   //Lowest altitude in scene (global minimum default)
     double _maxH = isce3::core::GLOBAL_MAX_HEIGHT;   //Highest altitude in scene (global maximum default)
     double _margin = 0.15;        //Margin for bounding box in decimal degrees

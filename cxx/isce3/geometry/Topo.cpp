@@ -1,4 +1,5 @@
 #include "Topo.h"
+#include "detail/Rdr2GeoMixed.h"
 
 #include <algorithm>
 #include <cassert>
@@ -226,9 +227,10 @@ topo(Raster & demRaster, TopoLayers & layers)
                     Pixel pixel(rng, dopfact, rbin);
 
                     // Perform rdr->geo iterations
-                    int geostat = rdr2geo(
-                        pixel, TCNbasis, pos, vel, _ellipsoid, demInterp, llh,
-                        _radarGrid.lookSide(), _threshold, _numiter, _extraiter);
+                    int geostat = _mixedPrecision ?
+                        _rdr2geoMixed(pixel, TCNbasis, pos, vel, demInterp, llh) :
+                        rdr2geo(pixel, TCNbasis, pos, vel, _ellipsoid, demInterp, llh,
+                                _radarGrid.lookSide(), _threshold, _numiter, _extraiter);
                     totalconv_thread += geostat;
 
                     // Save data in output arrays
@@ -290,6 +292,35 @@ void isce3::geometry::Topo::topo(
     _topo(demRaster, xRaster, yRaster, heightRaster, incRaster, hdgRaster,
           localIncRaster, localPsiRaster, simRaster, maskRaster,
           groundToSatEastRaster, groundToSatNorthRaster);
+}
+
+/** Mixed-precision rdr2geo of one pixel from the starting estimate in llh
+ * (see detail/Rdr2GeoMixed.h): FP32 residual iterations to a 1 mm height
+ * change, then the FP64 iteration (with its convergence test) from there;
+ * the FP64 iteration alone where the FP32 one does not converge.
+ * Returns 1 if converged. */
+int isce3::geometry::Topo::
+_rdr2geoMixed(const Pixel& pixel, const Basis& TCNbasis, const Vec3& pos,
+              const Vec3& vel, const DEMInterpolator& demInterp,
+              Vec3& llh) const
+{
+    constexpr float tolFp32 = 1e-3f;  // m, height change of the FP32 iteration
+    detail::Rdr2GeoResidualSetup setup;
+    const double h0 = std::isnan(llh[2]) ? demInterp.refHeight() : llh[2];
+    double h = std::numeric_limits<double>::quiet_NaN();
+    if (detail::rdr2geoResidualSetup(setup, pixel, TCNbasis, pos, vel,
+                                     _ellipsoid, *demInterp.proj(),
+                                     _radarGrid.lookSide(), h0))
+        h = detail::rdr2geoResidualIterate(setup,
+                [&](double x, double y) { return demInterp.interpolateXY(x, y); },
+                _numiter, tolFp32);
+    if (std::isnan(h))
+        return rdr2geo(pixel, TCNbasis, pos, vel, _ellipsoid, demInterp, llh,
+                       _radarGrid.lookSide(), _threshold, _numiter, _extraiter);
+    llh[2] = h;
+    // FP64 finish from the FP32 solution, with the FP64 convergence test
+    return rdr2geo(pixel, TCNbasis, pos, vel, _ellipsoid, demInterp, llh,
+                   _radarGrid.lookSide(), _threshold, _numiter, _extraiter);
 }
 
 void isce3::geometry::Topo::
