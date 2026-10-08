@@ -18,7 +18,7 @@ from nisar.workflows import h5_prep
 from nisar.workflows.compute_stats import compute_stats_real_data
 from nisar.workflows.crossmul_runconfig import CrossmulRunConfig
 from nisar.workflows.helpers import (copy_raster,
-                                     get_cfg_freq_pols)
+                                     get_cfg_freq_pols, reference_slc_copy)
 from nisar.products.insar.product_paths import RIFGGroupsPaths
 from nisar.workflows.yaml_argparse import YamlArgparse
 
@@ -148,10 +148,10 @@ def run(cfg: dict, output_hdf5: str = None, resample_type='coarse',
                         f"IH5:::ID={coh_dataset.id.id}".encode("utf-8"),
                         update=True)
 
-                # prepare reference input raster
-                copy_raster(ref_hdf5, freq, pol,
-                            lines_per_block, str(output_dir / 'reference.slc'), file_type='ENVI')
-                ref_slc_raster = isce3.io.Raster(str(output_dir / 'reference.slc'))
+                # prepare reference input raster (ENVI copy shared with the
+                # offsets steps)
+                ref_slc_raster = isce3.io.Raster(
+                    reference_slc_copy(cfg, freq, pol, lines_per_block))
 
                 # prepare secondary input raster
                 if coregistered_is_file:

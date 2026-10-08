@@ -529,6 +529,30 @@ def copy_raster(infile, freq, pol,
     out_ds.FlushCache()
 
 
+def reference_slc_copy(cfg, freq, pol, lines_per_block):
+    '''
+    Path of the memory-mappable (ENVI) copy of the reference RSLC shared by
+    the dense offsets, offsets product and crossmul steps, in
+    <scratch>/reference_slc/freq<freq>/<pol>. The copy is made on first use
+    and reused while it is complete and newer than the reference RSLC.
+    '''
+    ref_hdf5 = cfg['input_file_group']['reference_rslc_file']
+    out_dir = pathlib.Path(cfg['product_path_group']['scratch_path']) / \
+        f'reference_slc/freq{freq}/{pol}'
+    out_path = out_dir / 'reference.slc'
+    # written only after a complete copy
+    done = out_dir / 'reference.slc.done'
+    if not done.is_file() or \
+            done.stat().st_mtime < os.path.getmtime(ref_hdf5):
+        out_dir.mkdir(parents=True, exist_ok=True)
+        # drop the marker first so an interrupted copy is redone
+        done.unlink(missing_ok=True)
+        copy_raster(ref_hdf5, freq, pol, lines_per_block, str(out_path),
+                    file_type='ENVI')
+        done.touch()
+    return str(out_path)
+
+
 def complex_raster_path_from_h5(slc, freq, pol, hdf5_path, lines_per_block,
                                 c32_output_path):
     '''

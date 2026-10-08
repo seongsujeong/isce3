@@ -10,7 +10,8 @@ import numpy as np
 import isce3
 from osgeo import gdal
 from nisar.products.readers import SLC
-from nisar.workflows.helpers import copy_raster, get_cfg_freq_pols
+from nisar.workflows.helpers import (copy_raster, get_cfg_freq_pols,
+                                     reference_slc_copy)
 from nisar.workflows.yaml_argparse import YamlArgparse
 from nisar.workflows.dense_offsets_runconfig import \
     DenseOffsetsRunConfig
@@ -66,14 +67,13 @@ def run(cfg: dict):
             out_dir = offset_scratch / pol
             out_dir.mkdir(parents=True, exist_ok=True)
 
-            # Create a memory mappable copy of reference SLC
-            copy_raster(ref_hdf5, freq, pol,
-                        offset_params['lines_per_block'],
-                        str(out_dir / 'reference.slc'), file_type='ENVI')
+            # Memory mappable copy of reference SLC
+            ref_copy = reference_slc_copy(cfg, freq, pol,
+                                          offset_params['lines_per_block'])
 
             ref_raster_str = f'HDF5:{ref_hdf5}:/{ref_slc.slcPath(freq, pol)}'
             ref_raster = isce3.io.Raster(ref_raster_str)
-            ampcor.referenceImageName = str(out_dir / 'reference.slc')
+            ampcor.referenceImageName = ref_copy
             ampcor.referenceImageHeight = ref_raster.length
             ampcor.referenceImageWidth = ref_raster.width
 

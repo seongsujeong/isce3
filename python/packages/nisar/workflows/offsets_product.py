@@ -11,6 +11,7 @@ from nisar.workflows.compute_stats import (compute_stats_real_data,
                                            compute_stats_real_hdf5_dataset)
 from nisar.workflows.dense_offsets import create_empty_dataset
 from nisar.workflows.helpers import (copy_raster, get_cfg_freq_pols,
+                                     reference_slc_copy,
                                      get_ground_track_velocity_product)
 from nisar.workflows.offsets_product_runconfig import OffsetsProductRunConfig
 from nisar.workflows.velocity_offsets import (flow_direction_path,
@@ -90,6 +91,8 @@ def run(cfg: dict, output_hdf5: str = None):
             off_scratch = scratch_path / f'offsets_product/freq{freq}'
 
             # Per-frequency velocity-based gross offsets, if enabled
+            # (copy, so per-frequency file paths do not leak into
+            # offs_params shared by all frequencies)
             freq_params = offs_params
             vel_cfg = cfg['processing']['velocity_gross_offset']
             if vel_cfg['enabled']:
@@ -104,10 +107,9 @@ def run(cfg: dict, output_hdf5: str = None):
                 out_dir = off_scratch / pol
                 out_dir.mkdir(parents=True, exist_ok=True)
 
-                # Create a memory-mappable (ENVI) version of the ref SLC
-                copy_raster(ref_hdf5, freq, pol,
-                            offs_params['lines_per_block'],
-                            str(out_dir / 'reference'), file_type='ENVI')
+                # Memory-mappable (ENVI) version of the ref SLC
+                ref_copy = reference_slc_copy(cfg, freq, pol,
+                                              offs_params['lines_per_block'])
                 ref_str = f'HDF5:{ref_hdf5}:/{ref_slc.slcPath(freq, pol)}'
                 ref_raster = isce3.io.Raster(ref_str)
 
@@ -138,11 +140,12 @@ def run(cfg: dict, output_hdf5: str = None):
                         ampcor.deviceID = cfg['worker']['gpu_id']
                         ampcor.useMmap = 1
                     else:
+                        # CPU ampcor, optionally with Metal (macOS GPU)
                         ampcor = isce3.matchtemplate.PyCPUAmpcor()
                         ampcor.useMetal = int(cfg['worker']['metal_enabled'])
 
                     # Set parameters related to reference/secondary RSLC
-                    ampcor.referenceImageName = str(out_dir / 'reference')
+                    ampcor.referenceImageName = ref_copy
                     ampcor.referenceImageHeight = ref_raster.length
                     ampcor.referenceImageWidth = ref_raster.width
                     ampcor.secondaryImageName = sec_path
@@ -329,6 +332,8 @@ def set_ampcor_params(cfg, ampcor_obj):
             raise NotImplementedError(err_str)
         direction = np.fromfile(cfg['flow_direction_filepath'],
                                 dtype=np.float32).reshape(-1, 3)
+        # columns: unit azimuth/range direction, band half-width; the
+        # half-widths are passed only for the band search
         band = direction[:, 2] if cfg['dlc_method'] == 'band' else []
         ampcor_obj.setFlowDirection(direction[:, 0].tolist(),
                                     direction[:, 1].tolist(), list(band))

@@ -56,6 +56,7 @@ def run(cfg: dict, out_paths: dict, run_steps: dict):
             (cfg['processing']['dense_offsets']['enabled']):
         dense_offsets.run(cfg)
 
+    # gross offsets read by the offsets product, so run it first
     if (run_steps['velocity_offsets']) and \
             (cfg['processing']['velocity_gross_offset']['enabled']):
         velocity_offsets.run(cfg)
@@ -107,9 +108,10 @@ def run(cfg: dict, out_paths: dict, run_steps: dict):
     if run_steps['unwrap'] and 'RUNW' in out_paths:
         unwrap.run(cfg, out_paths['RIFG'], out_paths['RUNW'])
 
-    # Remove the 'fine_resample_slc','crossmul', 'coarse_resample_slc', 'unwrap' scratch folders
+    # Remove the 'fine_resample_slc','crossmul', 'coarse_resample_slc',
+    # 'unwrap', 'reference_slc' scratch folders
     for workflow_name in ['fine_resample_slc','coarse_resample_slc',
-                          'crossmul','unwrap']:
+                          'crossmul','unwrap','reference_slc']:
         workflow_scratch_path = pathlib.Path(f"{scratch_path}/{workflow_name}")
         _remove_intermediate_dir(workflow_scratch_path,
                                  intermediate_files_removal_flag,
