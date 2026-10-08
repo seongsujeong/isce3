@@ -27,7 +27,8 @@ namespace isce3::cuda::core {
  */
 template<class T>
 __global__ void init_interp(DeviceInterp<T>** interp,
-        isce3::core::dataInterpMethod interp_method, double* filter)
+        isce3::core::dataInterpMethod interp_method,
+        gpuInterpWeight_t<T>* filter)
 {
     if (threadIdx.x == 0 && blockIdx.x == 0) {
         // Choose interpolator
@@ -84,7 +85,7 @@ InterpolatorHandle<T>::InterpolatorHandle(
     // Pointer to sinc interpolator filter. Defaults to nullptr except for sinc
     // interpolator. If sinc interpolator, then compute filter and assign
     // pointer to filter.
-    double* filter_ptr = nullptr;
+    gpuInterpWeight_t<T>* filter_ptr = nullptr;
     if (interp_method == isce3::core::SINC_METHOD) {
         // Temporary host_vector storing normalized sinc filter coefficients
         thrust::host_vector<double> h_filter(SINC_SUB * SINC_LEN, 0.0);
@@ -92,8 +93,8 @@ InterpolatorHandle<T>::InterpolatorHandle(
         compute_normalized_coefficients(
                 1.0, SINC_LEN, SINC_SUB, 0.0, h_filter);
 
-        // Copy to device_vector class member to persist beyond scope of
-        // constructor
+        // Copy to device_vector class member (converted to the weight
+        // precision) to persist beyond scope of constructor
         d_sinc_filter = h_filter;
 
         // Set sinc interpolator filter pointer to device_vector class member

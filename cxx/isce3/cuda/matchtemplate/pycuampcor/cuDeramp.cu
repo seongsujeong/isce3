@@ -43,6 +43,8 @@ template <const int nthreads>
 __device__ void complexSumReduceBlock(float2& sum, volatile float *shmem)
 {
     const int tid = threadIdx.x;
+    // wait until every thread has read shmem[0] of a previous reduction
+    __syncthreads();
     copyToShared(shmem, tid, sum, nthreads);
     __syncthreads();
 
@@ -50,14 +52,19 @@ __device__ void complexSumReduceBlock(float2& sum, volatile float *shmem)
     if (nthreads >= 512) { if (tid < 256) { addInShared(shmem, tid, 256, nthreads); } __syncthreads(); }
     if (nthreads >= 256) { if (tid < 128) { addInShared(shmem, tid, 128, nthreads); } __syncthreads(); }
     if (nthreads >= 128) { if (tid <  64) { addInShared(shmem, tid,  64, nthreads); } __syncthreads(); }
+    // last warp: shuffles instead of implicit warp-synchronous shared memory,
+    // which is undefined on Volta+ (independent thread scheduling);
+    // same summation order as before (lane i adds lane i+offset)
     if (tid < 32)
     {
         addInShared(shmem, tid, 32, nthreads);
-        addInShared(shmem, tid, 16, nthreads);
-        addInShared(shmem, tid,  8, nthreads);
-        addInShared(shmem, tid,  4, nthreads);
-        addInShared(shmem, tid,  2, nthreads);
-        addInShared(shmem, tid,  1, nthreads);
+        float2 v;
+        copyFromShared(v, shmem, tid, nthreads);
+        for (int offset = 16; offset > 0; offset >>= 1) {
+            v.x += __shfl_down_sync(0xffffffff, v.x, offset);
+            v.y += __shfl_down_sync(0xffffffff, v.y, offset);
+        }
+        if (tid == 0) copyToShared(shmem, 0, v, nthreads);
     }
     __syncthreads();
     copyFromShared(sum, shmem, 0, nthreads);
@@ -77,7 +84,7 @@ __global__ void cuLinearDeramp_kernel(float2 *images, const int imageNX, int con
     const int tid = threadIdx.x;
 
     // average phase ramp along row/range direction
-    double phaseY = 0.0;
+    float phaseY = 0.0f;
     if (axis != 0)
     {
         float2 phaseDiffY  = make_float2(0.0f, 0.0f);
@@ -91,11 +98,11 @@ __global__ void cuLinearDeramp_kernel(float2 *images, const int imageNX, int con
         }
         complexSumReduceBlock<nthreads>(phaseDiffY, shmem);
         //phaseDiffY *= normCoef;
-        phaseY=atan2(phaseDiffY.y, phaseDiffY.x);
+        phaseY = atan2f(phaseDiffY.y, phaseDiffY.x);
     }
 
     // average phase ramp along column/azimuth direction
-    double phaseX = 0.0;
+    float phaseX = 0.0f;
     if (axis != 1)
     {
         float2 phaseDiffX  = make_float2(0.0f, 0.0f);
@@ -111,17 +118,18 @@ __global__ void cuLinearDeramp_kernel(float2 *images, const int imageNX, int con
         complexSumReduceBlock<nthreads>(phaseDiffX, shmem);
 
         //phaseDiffX *= normCoef;
-        phaseX = atan2(phaseDiffX.y, phaseDiffX.x);  //+FLT_EPSILON
+        phaseX = atan2f(phaseDiffX.y, phaseDiffX.x);  //+FLT_EPSILON
     }
     // deramp with the estimated phase ramps
     for (int i = tid; i < imageSize; i += nthreads)
     {
         pixelIdxX = i / imageNY;
         pixelIdxY = i % imageNY;
-        // use double to improve accuracy
-        double phase = pixelIdxX*phaseX + pixelIdxY*phaseY;
-        double phase_sin, phase_cos;
-        sincos(phase, &phase_sin, &phase_cos);
+        // float suffices: |phase| <~ 1e3 rad gives ~1e-4 rad error,
+        // far below the 1/128 px offset precision
+        const float phase = pixelIdxX*phaseX + pixelIdxY*phaseY;
+        float phase_sin, phase_cos;
+        sincosf(phase, &phase_sin, &phase_cos);
         image[i] = make_float2(
             image[i].x*phase_cos - image[i].y*phase_sin,
             image[i].x*phase_sin + image[i].y*phase_cos);

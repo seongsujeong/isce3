@@ -51,6 +51,6 @@ public:
     // Member specifically for sinc interpolator filter. Allows filter on
     // device memory to persist when the sinc interpolator constructor is
     // called on device.
-    thrust::device_vector<double> d_sinc_filter;
+    thrust::device_vector<gpuInterpWeight_t<T>> d_sinc_filter;
 };
 } // namespace isce3::cuda::core

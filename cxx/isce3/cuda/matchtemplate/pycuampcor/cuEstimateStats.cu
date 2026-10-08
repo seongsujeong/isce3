@@ -79,11 +79,11 @@ __global__ void cudaKernel_estimateVar(const float* corrBatchRaw, const int NX, 
         int idx22 = offset + (px + 1) * NY + py + 1;
 
         // second-order derivatives
-        float dxx = - ( corrBatchRaw[idx21] + corrBatchRaw[idx01] - 2.0*corrBatchRaw[idx11] );
-        float dyy = - ( corrBatchRaw[idx12] + corrBatchRaw[idx10] - 2.0*corrBatchRaw[idx11] ) ;
-        float dxy = ( corrBatchRaw[idx22] + corrBatchRaw[idx00] - corrBatchRaw[idx20] - corrBatchRaw[idx02] ) *0.25;
+        float dxx = - ( corrBatchRaw[idx21] + corrBatchRaw[idx01] - 2.0f*corrBatchRaw[idx11] );
+        float dyy = - ( corrBatchRaw[idx12] + corrBatchRaw[idx10] - 2.0f*corrBatchRaw[idx11] ) ;
+        float dxy = ( corrBatchRaw[idx22] + corrBatchRaw[idx00] - corrBatchRaw[idx20] - corrBatchRaw[idx02] ) *0.25f;
 
-        float n2 = fmaxf(1.0 - peak, 0.0);
+        float n2 = fmaxf(1.0f - peak, 0.0f);
 
         dxx = dxx * templateSize;
         dyy = dyy * templateSize;
@@ -91,13 +91,13 @@ __global__ void cudaKernel_estimateVar(const float* corrBatchRaw, const int NX, 
 
         float n4 = n2*n2;
         n2 = n2 * 2;
-        n4 = n4 * 0.5 * templateSize;
+        n4 = n4 * 0.5f * templateSize;
 
         float u = dxy * dxy - dxx * dyy;
         float u2 = u*u;
 
         // if the Gaussian curvature is too small
-        if (fabsf(u) < 1e-2) {
+        if (fabsf(u) < 1e-2f) {
             covValue[idxImage] = make_float3(99.0, 99.0, 0.0);
         }
         else {

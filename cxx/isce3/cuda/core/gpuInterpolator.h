@@ -3,12 +3,21 @@
 #include <isce3/core/forward.h>
 #include <isce3/core/Common.h>
 
+#include <thrust/complex.h>
 #include <thrust/host_vector.h>
 
 using isce3::core::Matrix;
 
 /** base interpolator is an abstract base class */
 namespace isce3{ namespace cuda{ namespace core{
+
+/** Real scalar type for interpolation weights: float for float and
+ *  complex<float> data (float weights suffice and keep the arithmetic in
+ *  FP32), double otherwise (unchanged behavior). */
+template<class T> struct gpuInterpWeight { using type = double; };
+template<> struct gpuInterpWeight<float> { using type = float; };
+template<> struct gpuInterpWeight<thrust::complex<float>> { using type = float; };
+template<class T> using gpuInterpWeight_t = typename gpuInterpWeight<T>::type;
 template <class U>
     class gpuInterpolator {
         public:
@@ -54,7 +63,8 @@ class gpuSpline2dInterpolator : public isce3::cuda::core::gpuInterpolator<U> {
 template <class U>
 class gpuSinc2dInterpolator : public isce3::cuda::core::gpuInterpolator<U> {
     protected:
-        double *_kernel;
+        // Filter table, float for float/complex<float> data
+        gpuInterpWeight_t<U> *_kernel;
         // Number of divisions per sample (total number samples in the lookup
         // table is kernel length * decimation factor)
         int _decimationFactor;
@@ -92,7 +102,7 @@ class gpuSinc2dInterpolator : public isce3::cuda::core::gpuInterpolator<U> {
          *                              number samples in the lookup table is
          *                              kernel length * decimation factor)
          */
-        CUDA_DEV gpuSinc2dInterpolator(double *device_filter, int kernelLength,
+        CUDA_DEV gpuSinc2dInterpolator(gpuInterpWeight_t<U> *device_filter, int kernelLength,
                 int decimationFactor) :
             _kernel(device_filter),
             _decimationFactor(decimationFactor),

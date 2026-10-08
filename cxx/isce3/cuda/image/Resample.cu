@@ -53,7 +53,7 @@ void _resampleToCoordsGlobal(
     // done with a multiple of the thrd_per_block pixels, but the output data size will
     // typically be smaller than this multiple. So, some calls to this function on
     // the device will be for non-existent pixels which must be discarded.
-    if (pixel_index > resampled_block_width * resampled_block_length) return;
+    if (pixel_index >= resampled_block_width * resampled_block_length) return;
 
     const auto chip_size = static_cast<size_t>(SINC_ONE);
 
@@ -118,6 +118,9 @@ void _resampleToCoordsGlobal(
     // unit: frequency (radians per sample)
     const auto doppler_freq =
         native_doppler_lut.eval(az_time, rg_distance) * 2.0 * M_PI * pri;
+    // float suffices for the doppler phasors: |doppler_freq| <= pi and the
+    // phases below are at most pi * SINC_HALF
+    const float doppler_freq_f = static_cast<float>(doppler_freq);
 
     // Read data chip
     for (int chip_az = 0; chip_az < SINC_ONE; ++chip_az){
@@ -127,9 +130,9 @@ void _resampleToCoordsGlobal(
 
         // Compute doppler phase to be removed from radar data.
         // (i.e. as a unit vector on the complex plane.)
-        const double doppler_phase = doppler_freq * (chip_az - SINC_HALF);
-        const thrust::complex<float> doppler_phase_conj(
-            std::cos(doppler_phase), -std::sin(doppler_phase));
+        float doppler_sin, doppler_cos;
+        sincosf(doppler_freq_f * (chip_az - SINC_HALF), &doppler_sin, &doppler_cos);
+        const thrust::complex<float> doppler_phase_conj(doppler_cos, -doppler_sin);
 
         for (int chip_rg = 0; chip_rg < SINC_ONE; ++chip_rg) {
             // Column to read from in Range coordinates
@@ -150,12 +153,10 @@ void _resampleToCoordsGlobal(
 
     // Interpolation performed on data stripped of doppler.
     // Calculate the doppler phase shift to be reintroduced.
-    const double doppler_resampled_phase =
-        doppler_freq * azimuth_input_index_remainder;
-    const thrust::complex<float> doppler_resampled_phasor(
-        std::cos(doppler_resampled_phase),
-        std::sin(doppler_resampled_phase)
-    );
+    float doppler_sin, doppler_cos;
+    sincosf(doppler_freq_f * static_cast<float>(azimuth_input_index_remainder),
+            &doppler_sin, &doppler_cos);
+    const thrust::complex<float> doppler_resampled_phasor(doppler_cos, doppler_sin);
 
     // Interpolate chip
     const thrust::complex<float> interpolated_complex_val =

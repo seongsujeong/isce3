@@ -90,13 +90,17 @@ __host__ gpuSinc2dInterpolator<T>::gpuSinc2dInterpolator(
     compute_normalized_coefficients(1.0, kernelLength, decimationFactor, 0.0,
             h_filter);
 
+    // Coefficients computed in double, stored in the weight precision
+    using S = gpuInterpWeight_t<T>;
+    const thrust::host_vector<S> h_kernel(h_filter);
+
     // Malloc device-side memory (this API is host-side only)
-    checkCudaErrors(cudaMalloc(&_kernel, h_filter.size() * sizeof(double)));
+    checkCudaErrors(cudaMalloc(&_kernel, h_kernel.size() * sizeof(S)));
 
     // Copy kernel from host to device
     checkCudaErrors(cudaMemcpy(_kernel,
-                thrust::raw_pointer_cast(h_filter.data()),
-                h_filter.size() * sizeof(double), cudaMemcpyHostToDevice));
+                thrust::raw_pointer_cast(h_kernel.data()),
+                h_kernel.size() * sizeof(S), cudaMemcpyHostToDevice));
 }
 
 template<class T>
@@ -136,13 +140,17 @@ __device__ T gpuSinc2dInterpolator<T>::interpolate(
         int ifracx = min(max(0, int(frpx * _decimationFactor)), _decimationFactor - 1);
         int ifracy = min(max(0, int(frpy * _decimationFactor)), _decimationFactor - 1);
 
-        // Compute weighted sum
+        // Compute weighted sum: x-weighted row sums, then one y weight per
+        // row. Real weights (not T) avoid complex*complex products.
+        const auto* kx = _kernel + ifracx * _kernelLength;
+        const auto* ky = _kernel + ifracy * _kernelLength;
         for (int i = 0; i < _kernelLength; i++) {
+            const T* row = chip + (intpy - i) * nx + intpx;
+            T row_sum(0.0);
             for (int j = 0; j < _kernelLength; j++) {
-                interp_val += chip[(intpy - i) * nx + intpx - j] *
-                              T(_kernel[ifracy * _kernelLength + i]) *
-                              T(_kernel[ifracx * _kernelLength + j]);
+                row_sum += row[-j] * kx[j];
             }
+            interp_val += row_sum * ky[i];
         }
     }
     // Done

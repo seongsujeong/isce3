@@ -172,12 +172,15 @@ void transformTile(thrust::complex<float> *resampledSlc,
         }
 
         // Read data chip without the carrier phases
+        // float suffices: |dop| <= pi, so |phase| <= pi * chipHalf
+        const float dopf = static_cast<float>(dop);
         for (int iChipRow = 0; iChipRow < chipSize; ++iChipRow) {
             // Row in original tile to read from
             const long long int iTileRow = iRowResamp + iChipRow - chipHalf;
             // Carrier phase
-            const double phase = dop * (iChipRow - chipHalf);
-            const thrust::complex<float> cval(cos(phase), -sin(phase));
+            float sinPhase, cosPhase;
+            sincosf(dopf * (iChipRow - chipHalf), &sinPhase, &cosPhase);
+            const thrust::complex<float> cval(cosPhase, -sinPhase);
 
             // Set the data values after removing doppler in azimuth
             for (int iChipCol = 0; iChipCol < chipSize; ++iChipCol) {
@@ -196,8 +199,13 @@ void transformTile(thrust::complex<float> *resampledSlc,
             chipSize
         );
 
-        // Add doppler to interpolated value and save
-        resampledSlc[iTileOut] = cval * thrust::complex<float>(cos(phase), sin(phase));
+        // Add doppler to interpolated value and save.
+        // phase can be large (flattening, ~1e7 rad): wrap to [-pi, pi] in
+        // double, then float sincos is accurate enough.
+        phase -= 2.0 * M_PI * rint(phase * (0.5 / M_PI));
+        float sinPhase, cosPhase;
+        sincosf(static_cast<float>(phase), &sinPhase, &cosPhase);
+        resampledSlc[iTileOut] = cval * thrust::complex<float>(cosPhase, sinPhase);
     }
 }
 

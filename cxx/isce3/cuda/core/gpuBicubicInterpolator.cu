@@ -83,8 +83,8 @@ __device__ T gpuBicubicInterpolator<T>::interpolate(
         double x, double y, const T* z, size_t nx, size_t ny = 0)
 {
 
-    // The bicubic interpolation weights
-    const double weights[] = {
+    // The bicubic interpolation weights (small integers, exact in float)
+    const float weights[] = {
         1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
        -3.0, 0.0, 0.0, 3.0, 0.0, 0.0, 0.0, 0.0,-2.0, 0.0, 0.0,-1.0, 0.0, 0.0, 0.0, 0.0,

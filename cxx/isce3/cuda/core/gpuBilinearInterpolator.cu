@@ -92,19 +92,21 @@ __device__ T gpuBilinearInterpolator<T>::interpolate(
     T q21 = z[y1 * nx + x2];
     T q22 = z[y2 * nx + x2];
 
+    // Fractional weights in the weight precision (float for float data).
+    // x2 - x1 == 1 whenever x1 != x2 (same for y), so no division is needed.
+    using S = gpuInterpWeight_t<T>;
+    const S wx1 = x2 - x, wx2 = x - x1;
+    const S wy1 = y2 - y, wy2 = y - y1;
+
     if ((y1 == y2) && (x1 == x2)) {
         return q11;
     } else if (y1 == y2) {
-        return ((T)((x2 - x) / (x2 - x1)) * q11) +
-               ((T)((x - x1) / (x2 - x1)) * q21);
+        return ((T)wx1 * q11) + ((T)wx2 * q21);
     } else if (x1 == x2) {
-        return ((T)((y2 - y) / (y2 - y1)) * q11) +
-               ((T)((y - y1) / (y2 - y1)) * q12);
+        return ((T)wy1 * q11) + ((T)wy2 * q12);
     } else {
-        return ((q11 * (T)((x2 - x) * (y2 - y))) / (T)((x2 - x1) * (y2 - y1))) +
-               ((q21 * (T)((x - x1) * (y2 - y))) / (T)((x2 - x1) * (y2 - y1))) +
-               ((q12 * (T)((x2 - x) * (y - y1))) / (T)((x2 - x1) * (y2 - y1))) +
-               ((q22 * (T)((x - x1) * (y - y1))) / (T)((x2 - x1) * (y2 - y1)));
+        return (q11 * (T)(wx1 * wy1)) + (q21 * (T)(wx2 * wy1)) +
+               (q12 * (T)(wx1 * wy2)) + (q22 * (T)(wx2 * wy2));
     }
 }
 

@@ -30,6 +30,8 @@ template <const int Nthreads>
 __device__ float sumReduceBlock(float sum, volatile float *shmem)
 {
     const int tid = threadIdx.x;
+    // wait until every thread has read shmem[0] of a previous reduction
+    __syncthreads();
     shmem[tid] = sum;
     __syncthreads();
 
@@ -37,14 +39,15 @@ __device__ float sumReduceBlock(float sum, volatile float *shmem)
     if (Nthreads >= 512) { if (tid < 256) { shmem[tid] += shmem[tid + 256]; } __syncthreads(); }
     if (Nthreads >= 256) { if (tid < 128) { shmem[tid] += shmem[tid + 128]; } __syncthreads(); }
     if (Nthreads >= 128) { if (tid <  64) { shmem[tid] += shmem[tid +  64]; } __syncthreads(); }
+    // last warp: shuffles instead of implicit warp-synchronous shared memory,
+    // which is undefined on Volta+ (independent thread scheduling);
+    // same summation order as before (lane i adds lane i+offset)
     if (tid < 32)
     {
-        shmem[tid] += shmem[tid + 32];
-        shmem[tid] += shmem[tid + 16];
-        shmem[tid] += shmem[tid +  8];
-        shmem[tid] += shmem[tid +  4];
-        shmem[tid] += shmem[tid +  2];
-        shmem[tid] += shmem[tid +  1];
+        float v = shmem[tid] + shmem[tid + 32];
+        for (int offset = 16; offset > 0; offset >>= 1)
+            v += __shfl_down_sync(0xffffffff, v, offset);
+        if (tid == 0) shmem[0] = v;
     }
 
     __syncthreads();

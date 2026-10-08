@@ -80,15 +80,18 @@ __host__ void gpuSpline2dInterpolator<T>::interpolate_h(
     checkCudaErrors(cudaFree(d_m));
 }
 
+// Constants are typed S (float for float/complex<float> data) so that
+// float data is not promoted to double; double instantiations unchanged.
 template<class T>
 __device__ void _initSpline(T* Y, int n, T* R, T* Q)
 {
+    using S = gpuInterpWeight_t<T>;
     Q[0] = 0.0;
     R[0] = 0.0;
     for (int i = 1; i < n - 1; ++i) {
-        const auto p = 1.0 / (0.5 * Q[i - 1] + 2.0);
-        Q[i] = -0.5 * p;
-        R[i] = (3 * (Y[i + 1] - 2 * Y[i] + Y[i - 1]) - 0.5 * R[i - 1]) * p;
+        const auto p = S(1) / (S(0.5) * Q[i - 1] + S(2));
+        Q[i] = -S(0.5) * p;
+        R[i] = (3 * (Y[i + 1] - 2 * Y[i] + Y[i - 1]) - S(0.5) * R[i - 1]) * p;
     }
     R[n - 1] = 0.0;
     for (int i = (n - 2); i > 0; --i)
@@ -96,17 +99,20 @@ __device__ void _initSpline(T* Y, int n, T* R, T* Q)
 }
 
 template<class T>
-__device__ T _spline(double x, T* Y, int n, T* R)
+__device__ T _spline(double xd, T* Y, int n, T* R)
 {
-    if (x < 1.0) {
-        return Y[0] + (x - 1.0) * (Y[1] - Y[0] - (R[1] / 6.0));
+    // xd is a small position within the spline window, so S is precise enough
+    using S = gpuInterpWeight_t<T>;
+    const S x = xd;
+    if (x < S(1)) {
+        return Y[0] + (x - S(1)) * (Y[1] - Y[0] - (R[1] / S(6)));
     } else if (x > n) {
-        return Y[n - 1] + ((x - n) * (Y[n - 1] - Y[n - 2] + (R[n - 2] / 6.)));
+        return Y[n - 1] + ((x - n) * (Y[n - 1] - Y[n - 2] + (R[n - 2] / S(6))));
     } else {
         int j = int(floor(x));
         auto xx = x - j;
-        auto t0 = Y[j] - Y[j - 1] - (R[j - 1] / 3.0) - (R[j] / 6.0);
-        auto t1 = xx * ((R[j - 1] / 2.0) + (xx * ((R[j] - R[j - 1]) / 6)));
+        auto t0 = Y[j] - Y[j - 1] - (R[j - 1] / S(3)) - (R[j] / S(6));
+        auto t1 = xx * ((R[j - 1] / S(2)) + (xx * ((R[j] - R[j - 1]) / 6)));
         return Y[j - 1] + (xx * (t0 + t1));
     }
 }

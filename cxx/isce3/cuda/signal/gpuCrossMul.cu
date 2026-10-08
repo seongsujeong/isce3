@@ -111,8 +111,12 @@ __global__ void flatten_g(thrust::complex<T> *ifg,
     const auto i = static_cast<size_t>(blockIdx.x) * blockDim.x + threadIdx.x;
 
     if (i < n_elements) {
-        auto range_offset_phase = rg2phase_conversion_factor * rg_offset[i];
-        thrust::complex<T> shift(std::cos(range_offset_phase), -std::sin(range_offset_phase));
+        double range_offset_phase = rg2phase_conversion_factor * rg_offset[i];
+        // phase can be large: wrap to [-pi, pi] in double so that the
+        // T-precision (float) cos/sin below stays accurate
+        range_offset_phase -= 2.0 * M_PI * rint(range_offset_phase * (0.5 / M_PI));
+        const T phase = static_cast<T>(range_offset_phase);
+        thrust::complex<T> shift(std::cos(phase), -std::sin(phase));
         ifg[i] *= shift;
     }
 }
