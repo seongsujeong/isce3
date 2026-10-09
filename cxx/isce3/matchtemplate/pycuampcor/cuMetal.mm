@@ -42,7 +42,7 @@ namespace isce3::matchtemplate::pycuampcor {
 namespace {
 
 // Kernel parameter structs; layouts match cuAmpcor.metal
-struct GatherParams { int inNX, inNY, outNX, outNY, absolute; };
+struct GatherParams { int inNX, inNY, outNX, outNY, absolute, withMagnitude; };
 struct Shape2 { int inNX, inNY, outNX, outNY, offsetX, offsetY; };
 struct PackParams { int tNX, tNY, iNX, iNY, outNX, outNY; };
 struct InsertParams { int inNX, inNY, outNY, offsetX, offsetY, elemWords; };
@@ -50,7 +50,12 @@ struct VarParams { int NX, NY, templateSize; };
 struct SatParams { int nx, ny; };
 struct NormParams { int corNX, corNY, refNX, refNY, secNX, secNY; };
 struct TimeCorrParams { int tNX, tNY, iNX, iNY, rNX, rNY; };
-struct FFTParams { int n, nradix, sign, linesPerImage, imageSize, lineStride, elemStride, lines, group; };
+struct FFTParams {
+    int n, nradix, sign, linesPerImage, imageSize, lineStride, elemStride, lines, group;
+    int nx, ny, loadMode, storeMode;
+    int srcNX, srcNY, src2NX, src2NY, dstNX, dstNY, validRows;
+    float coef;
+};
 struct DerampParams { int nx, ny, axis; };
 struct ExtractOffsetParams { int xOldRange, yOldRange, xNewRange, yNewRange, count; };
 struct SubPixelParams { int ovsZoomIn, ovsRaw, xHalfRange, yHalfRange, count; };
@@ -328,13 +333,53 @@ private:
 
 // -------------------------------------------------------------- operations
 
+// Input of the first pass of fft2d instead of the batch itself (fft1d
+// fftLoad): 1 copy of a complex batch c, 2 its spectrum padded to the batch
+// size (padSpectrum, c of nx x ny), 3 real pair f + i f2 zero padded
+// (packRealPair, f of nx x ny, f2 of nx2 x ny2), 5 conj(T) S * coef of the
+// packed spectrum c of the batch size (mulConjPacked)
+struct FFTLoad {
+    int mode = 0;
+    id<MTLBuffer> c = nil, f = nil, f2 = nil;
+    int nx = 0, ny = 0, nx2 = 0, ny2 = 0;
+    float coef = 1.0f;
+};
+
+// Output of the last pass of fft2d instead of the batch (fft1d fftStore):
+// 1 magnitudes into f (complexAbs, same size), 2 real parts of the top-left
+// nx x ny into f (extractReal)
+struct FFTStore {
+    int mode = 0;
+    id<MTLBuffer> f = nil;
+    int nx = 0, ny = 0;
+};
+
 // Unnormalized 2D DFT of every image, in place (sign -1 = FFTW_FORWARD).
 // rows: rows transformed by the row pass (all by default); with
 // rowsFirst = false, columns go first and only those rows of the result are
-// valid; with rowsFirst, the other rows must be zero on input.
-void fft2d(Encoder &e, const Batch<float2> &b, int sign, int rows = -1, bool rowsFirst = true)
+// valid; with rowsFirst, the other rows must be zero on input (or are taken
+// as zero with a load). load/store replace the input of the first pass and
+// the output of the last one.
+void fft2d(Encoder &e, const Batch<float2> &b, int sign, int rows = -1, bool rowsFirst = true,
+           const FFTLoad &load = {}, const FFTStore &store = {})
 {
-    auto pass = [&](int n, int lines, FFTParams p) {
+    auto pass = [&](int n, int lines, FFTParams p, bool first, bool last) {
+        p.nx = b.height;
+        p.ny = b.width;
+        if (first && load.mode) {
+            p.loadMode = load.mode;
+            p.srcNX = load.nx; p.srcNY = load.ny;
+            p.src2NX = load.nx2; p.src2NY = load.ny2;
+            p.coef = load.coef;
+        } else if (!first && load.mode && rowsFirst && rows < b.height) {
+            // rows the first pass did not write are zero
+            p.loadMode = 4;
+            p.validRows = rows;
+        }
+        if (last && store.mode) {
+            p.storeMode = store.mode;
+            p.dstNX = store.nx; p.dstNY = store.ny;
+        }
         const FFTPlan &plan = Context::get()->fftPlan(n);
         p.n = n;
         p.nradix = (int)plan.radices.size();
@@ -343,7 +388,9 @@ void fft2d(Encoder &e, const Batch<float2> &b, int sign, int rows = -1, bool row
         // lines per threadgroup: 2 n group complex fit in 32 KB
         p.group = std::max(1, std::min(16, MAX_FFT_LENGTH / n));
         e.kernel("fft1d", "fft1d n=" + std::to_string(n) + (p.elemStride == 1 ? " rows" : " cols"))
-            .buf(b).buf(plan.twiddles).buf(plan.radixBuffer).bytes(p);
+            .buf(b).buf(plan.twiddles).buf(plan.radixBuffer).bytes(p)
+            .buf(load.c ? load.c : b.buffer).buf(load.f ? load.f : b.buffer)
+            .buf(load.f2 ? load.f2 : b.buffer).buf(store.f ? store.f : b.buffer);
         // Stockham ping-pong buffers; Metal needs a multiple of 16 bytes
         [e.enc setThreadgroupMemoryLength:(2 * n * p.group * sizeof(float2) + 15) / 16 * 16
                                   atIndex:0];
@@ -354,10 +401,14 @@ void fft2d(Encoder &e, const Batch<float2> &b, int sign, int rows = -1, bool row
     if (rows < 0) rows = nx;
     // FFTParams {.., linesPerImage, imageSize, lineStride, elemStride, ..}:
     // a row is ny contiguous elements, a column ny-strided
-    auto rowPass = [&] { pass(ny, b.count * rows, FFTParams{0, 0, 0, rows, size, ny, 1, 0, 0}); };
-    auto colPass = [&] { pass(nx, b.count * ny, FFTParams{0, 0, 0, ny, size, 1, ny, 0, 0}); };
-    if (rowsFirst) { rowPass(); colPass(); }
-    else { colPass(); rowPass(); }
+    auto rowPass = [&](bool first) {
+        pass(ny, b.count * rows, FFTParams{0, 0, 0, rows, size, ny, 1, 0, 0}, first, !first);
+    };
+    auto colPass = [&](bool first) {
+        pass(nx, b.count * ny, FFTParams{0, 0, 0, ny, size, 1, ny, 0, 0}, first, !first);
+    };
+    if (rowsFirst) { rowPass(true); colPass(false); }
+    else { colPass(true); rowPass(false); }
 }
 
 // cuArraysAbs
@@ -400,23 +451,27 @@ struct Correlator {
                 .grid(results.width, results.height, results.count);
             return;
         }
-        // both real inputs through one complex FFT (t + i s) of the padded size
+        // both real inputs through one complex FFT (t + i s) of the padded
+        // size, packed by the first pass; rows beyond the inputs are zero
         const int nx = workT.height, ny = workT.width;
-        e.kernel("packRealPair").buf(templates).buf(images).buf(workT)
-            .bytes(PackParams{templates.height, templates.width, images.height, images.width, nx, ny})
-            .grid(ny, nx, images.count);
-        // rows beyond the inputs are zero; only the result rows are needed back
-        fft2d(e, workT, -1, std::max(templates.height, images.height));
+        FFTLoad pack;
+        pack.mode = 3;
+        pack.f = templates.buffer; pack.nx = templates.height; pack.ny = templates.width;
+        pack.f2 = images.buffer; pack.nx2 = images.height; pack.ny2 = images.width;
+        fft2d(e, workT, -1, std::max(templates.height, images.height), true, pack);
         // unnormalized forward and inverse transforms scale by nx * ny: the
         // result is the linear correlation, as cuFreqCorrelator for nx x ny
-        const float coef = 1.0f / (nx * ny);
-        e.kernel("mulConjPacked").buf(workT).buf(workS).bytes(Shape2{0, 0, nx, ny, 0, 0}).bytes(coef)
-            .grid(ny, nx, images.count);
-        // inverse: columns first, then only the result rows
-        fft2d(e, workS, +1, results.height, false);
-        e.kernel("extractReal").buf(workS).buf(results)
-            .bytes(Shape2{nx, ny, results.height, results.width, 0, 0})
-            .grid(results.width, results.height, results.count);
+        // inverse of conj(T) S (computed by the first pass): columns first,
+        // then only the result rows, whose real parts the last pass stores
+        // into the results
+        FFTLoad mulConj;
+        mulConj.mode = 5;
+        mulConj.c = workT.buffer;
+        mulConj.coef = 1.0f / (nx * ny);
+        FFTStore real;
+        real.mode = 2;
+        real.f = results.buffer; real.nx = results.height; real.ny = results.width;
+        fft2d(e, workS, +1, results.height, false, mulConj, real);
     }
 };
 
@@ -465,13 +520,26 @@ struct OverSamplerC2C {
 
     OverSamplerC2C(int nx, int ny, int count) : workIn(nx, ny, count) {}
 
-    void encode(Encoder &e, const Batch<float2> &in, const Batch<float2> &out)
+    // oversampled in into out, or only its magnitudes into outAbs if given
+    // (complexAbs fused into the last pass; out is then scratch)
+    void encode(Encoder &e, const Batch<float2> &in, const Batch<float2> &out,
+                const Batch<float> *outAbs = nullptr)
     {
-        // in-place FFT on a copy, leaving in unchanged
-        copyBuffer(e, in.buffer, workIn.buffer, in.bytes());
-        fft2d(e, workIn, +1);
-        padSpectrum(e, workIn, out);
-        fft2d(e, out, -1);
+        // forward FFT of a copy (the first pass reads in), leaving in unchanged
+        FFTLoad copy;
+        copy.mode = 1;
+        copy.c = in.buffer;
+        fft2d(e, workIn, +1, -1, true, copy);
+        // inverse of the padded spectrum (the first pass pads)
+        FFTLoad pad;
+        pad.mode = 2;
+        pad.c = workIn.buffer; pad.nx = workIn.height; pad.ny = workIn.width;
+        FFTStore abs;
+        if (outAbs) {
+            abs.mode = 1;
+            abs.f = outAbs->buffer;
+        }
+        fft2d(e, out, -1, -1, true, pad, abs);
     }
 };
 
@@ -688,12 +756,15 @@ private:
 
     // windows of a chunk (row length lda) into a batch; amplitudes only
     // without deramping (derampMethod 0), as the CPU
+    // and, if given, their magnitudes into magnitude (complexAbs fused)
     void gather(Encoder &e, const Batch<float2> &chunk, int lda, const Batch<int> &offDown,
-                const Batch<int> &offAcross, const Batch<float2> &out)
+                const Batch<int> &offAcross, const Batch<float2> &out,
+                const Batch<float> *magnitude = nullptr)
     {
         e.kernel("gatherBatch").buf(chunk).buf(out).buf(offDown).buf(offAcross)
             .bytes(GatherParams{chunk.height, lda, out.height, out.width,
-                                param->derampMethod == 0})
+                                param->derampMethod == 0, magnitude != nullptr})
+            .buf(magnitude ? magnitude->buffer : out.buffer)
             .grid(out.width, out.height, out.count);
     }
 
@@ -731,12 +802,12 @@ private:
     {
         const int n = nwd * nwa;
         // reference windows: amplitudes with the mean removed
-        gather(e, refChunk, param->referenceChunkWidth[idxChunk], refOffDown, refOffAcross, cRefRaw);
-        complexAbs(e, cRefRaw, rRefRaw);
+        gather(e, refChunk, param->referenceChunkWidth[idxChunk], refOffDown, refOffAcross,
+               cRefRaw, &rRefRaw);
         subtractMean(e, rRefRaw);
         // secondary search windows
-        gather(e, secChunk, param->secondaryChunkWidth[idxChunk], secOffDown, secOffAcross, cSecRaw);
-        complexAbs(e, cSecRaw, rSecRaw);
+        gather(e, secChunk, param->secondaryChunkWidth[idxChunk], secOffDown, secOffAcross,
+               cSecRaw, &rSecRaw);
         // correlation before oversampling and its integer peak
         corrRaw.encode(e, rRefRaw, rSecRaw, rCorrRaw);
         normRaw.encode(e, rCorrRaw, rRefRaw, rSecRaw);
@@ -768,16 +839,14 @@ private:
             .grid(n);
         // oversampled reference
         deramp(e, cRefRaw);
-        ovsRef.encode(e, cRefRaw, cRefOvs);
-        complexAbs(e, cRefOvs, rRefOvs);
+        ovsRef.encode(e, cRefRaw, cRefOvs, &rRefOvs);
         subtractMean(e, rRefOvs);
         // oversampled secondary
         e.kernel("extractComplexOffsets").buf(cSecRaw).buf(cSecZoomIn).buf(offsetInit)
             .bytes(Shape2{cSecRaw.height, cSecRaw.width, cSecZoomIn.height, cSecZoomIn.width, 0, 0})
             .grid(cSecZoomIn.width, cSecZoomIn.height, n);
         deramp(e, cSecZoomIn);
-        ovsSec.encode(e, cSecZoomIn, cSecOvs);
-        complexAbs(e, cSecOvs, rSecOvs);
+        ovsSec.encode(e, cSecZoomIn, cSecOvs, &rSecOvs);
         // oversampled correlation
         corrOvs.encode(e, rRefOvs, rSecOvs, rCorrZoomIn);
         normOvs.encode(e, rCorrZoomIn, rRefOvs, rSecOvs);

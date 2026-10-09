@@ -42,7 +42,7 @@ kernel void copyWords(device const uint *in [[buffer(0)]],
 
 // ----------------------------------------------------------------- copies
 
-struct GatherParams { int inNX, inNY, outNX, outNY, absolute; };
+struct GatherParams { int inNX, inNY, outNX, outNY, absolute, withMagnitude; };
 
 // cuArraysCopyToBatch(Abs)WithOffset: windows of a chunk into a batch;
 // per-window offsets, zeros outside the chunk, |v| if p.absolute.
@@ -52,6 +52,7 @@ kernel void gatherBatch(device const float2 *in [[buffer(0)]],
                         device const int *offsetX [[buffer(2)]],
                         device const int *offsetY [[buffer(3)]],
                         constant GatherParams &p [[buffer(4)]],
+                        device float *magnitude [[buffer(5)]],
                         uint3 gid [[thread_position_in_grid]])
 {
     const int outy = gid.x, outx = gid.y, img = gid.z;
@@ -63,6 +64,9 @@ kernel void gatherBatch(device const float2 *in [[buffer(0)]],
         if (p.absolute) v = float2(sqrt(v.x * v.x + v.y * v.y), 0.0f);
     }
     out[(img * p.outNX + outx) * p.outNY + outy] = v;
+    // and its magnitude (complexAbs of the output), if requested
+    if (p.withMagnitude)
+        magnitude[(img * p.outNX + outx) * p.outNY + outy] = sqrt(v.x * v.x + v.y * v.y);
 }
 
 // cuArraysAbs
@@ -465,7 +469,71 @@ struct FFTParams {
     int elemStride;     // element distance within a line
     int lines;          // total lines
     int group;          // lines per threadgroup
+    // fused loads of the first pass and stores of the last pass (FFTLoad,
+    // FFTStore of cuMetal.mm): image size nx x ny; load 0 data, 1 copy of
+    // srcC, 2 spectrum padding of srcC (srcNX x srcNY, padSpectrum), 3 real
+    // pair srcF + i src2F (packRealPair), 4 data with rows >= validRows
+    // zero, 5 conj(T) S * coef of the packed spectrum srcC of the same size
+    // (mulConjPacked); store 0 data, 1 magnitude into dstF (complexAbs), 2 real part
+    // into dstF (dstNX x dstNY, extractReal)
+    int nx, ny, loadMode, storeMode;
+    int srcNX, srcNY, src2NX, src2NY, dstNX, dstNY, validRows;
+    float coef;         // load 5: conj(T) S * coef of the packed spectrum srcC
 };
+
+
+// element (row, col) of image img of the first pass
+inline float2 fftLoad(device const float2 *data, device const float2 *srcC,
+                      device const float *srcF, device const float *src2F,
+                      constant FFTParams &p, size_t addr, int img, int row, int col)
+{
+    switch (p.loadMode) {
+    case 1:
+        return srcC[addr];
+    case 2: {
+        const int si = padSource(row, p.srcNX, p.nx), sj = padSource(col, p.srcNY, p.ny);
+        if (si < 0 || sj < 0) return float2(0.0f);
+        return srcC[((size_t)img * p.srcNX + si) * p.srcNY + sj] * (1.0f / (p.srcNX * p.srcNY));
+    }
+    case 3: {
+        const float t = (row < p.srcNX && col < p.srcNY)
+            ? srcF[((size_t)img * p.srcNX + row) * p.srcNY + col] : 0.0f;
+        const float v = (row < p.src2NX && col < p.src2NY)
+            ? src2F[((size_t)img * p.src2NX + row) * p.src2NY + col] : 0.0f;
+        return float2(t, v);
+    }
+    case 4:
+        return row < p.validRows ? data[addr] : float2(0.0f);
+    case 5: {
+        device const float2 *zi = srcC + (size_t)img * p.nx * p.ny;
+        const float2 a = zi[row * p.ny + col];
+        const int ni = row == 0 ? 0 : p.nx - row, nj = col == 0 ? 0 : p.ny - col;
+        const float2 b = zi[ni * p.ny + nj];  // Z_-k; conj below
+        const float2 t = float2(a.x + b.x, a.y - b.y) * 0.5f;
+        const float2 s = float2(a.y + b.y, b.x - a.x) * 0.5f;
+        return float2(t.x * s.x + t.y * s.y, -t.y * s.x + t.x * s.y) * p.coef;
+    }
+    default:
+        return data[addr];
+    }
+}
+
+// element (row, col) of image img of the last pass
+inline void fftStore(device float2 *data, device float *dstF, constant FFTParams &p,
+                     size_t addr, int img, int row, int col, float2 v)
+{
+    switch (p.storeMode) {
+    case 1:
+        dstF[addr] = sqrt(v.x * v.x + v.y * v.y);
+        break;
+    case 2:
+        if (row < p.dstNX && col < p.dstNY)
+            dstF[((size_t)img * p.dstNX + row) * p.dstNY + col] = v.x;
+        break;
+    default:
+        data[addr] = v;
+    }
+}
 
 // v * w^{sign}, w = (cos, sin)
 inline float2 twiddle(float2 v, float2 w, int sign)
@@ -511,6 +579,10 @@ kernel void fft1d(device float2 *data [[buffer(0)]],
                   device const float2 *tw [[buffer(1)]],
                   device const int *radix [[buffer(2)]],
                   constant FFTParams &p [[buffer(3)]],
+                  device const float2 *srcC [[buffer(4)]],
+                  device const float *srcF [[buffer(5)]],
+                  device const float *src2F [[buffer(6)]],
+                  device float *dstF [[buffer(7)]],
                   threadgroup float2 *shared [[threadgroup(0)]],
                   uint groupIdx [[threadgroup_position_in_grid]],
                   uint tid [[thread_position_in_threadgroup]],
@@ -525,8 +597,10 @@ kernel void fft1d(device float2 *data [[buffer(0)]],
         const int c = contiguous ? idx / n : idx % C;
         const int i = contiguous ? idx % n : idx / C;
         const int line = line0 + c;
-        a[c * n + i] = data[(size_t)(line / p.linesPerImage) * p.imageSize +
-                            (line % p.linesPerImage) * p.lineStride + i * p.elemStride];
+        const int img = line / p.linesPerImage, l = line % p.linesPerImage;
+        const size_t addr = (size_t)img * p.imageSize + l * p.lineStride + i * p.elemStride;
+        a[c * n + i] = fftLoad(data, srcC, srcF, src2F, p, addr, img,
+                               contiguous ? l : i, contiguous ? i : l);
     }
     threadgroup_barrier(mem_flags::mem_threadgroup);
 
@@ -578,8 +652,9 @@ kernel void fft1d(device float2 *data [[buffer(0)]],
         const int c = contiguous ? idx / n : idx % C;
         const int i = contiguous ? idx % n : idx / C;
         const int line = line0 + c;
-        data[(size_t)(line / p.linesPerImage) * p.imageSize +
-             (line % p.linesPerImage) * p.lineStride + i * p.elemStride] = a[c * n + i];
+        const int img = line / p.linesPerImage, l = line % p.linesPerImage;
+        const size_t addr = (size_t)img * p.imageSize + l * p.lineStride + i * p.elemStride;
+        fftStore(data, dstF, p, addr, img, contiguous ? l : i, contiguous ? i : l, a[c * n + i]);
     }
 }
 

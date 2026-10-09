@@ -56,8 +56,13 @@ struct GDALImage::RowCache {
     RowCache(GDALImage &img, size_t maxBytes) : image(img)
     {
         rowBytes = static_cast<size_t>(image._width) * image._pixelSize;
-        // blocks of about 64 MB
+        // blocks of about 64 MB, a multiple of the storage block (chunk)
+        // height of the source so that every chunk is decoded once
+        int blockX = 1, blockY = 1;
+        image._poBand->GetBlockSize(&blockX, &blockY);
+        const size_t chunkRows = std::max(1, blockY);
         blockRows = std::max<size_t>(16, (64u << 20) / rowBytes);
+        blockRows = std::max<size_t>(1, blockRows / chunkRows) * chunkRows;
         nBlocks = (image._height + blockRows - 1) / blockRows;
         capacity = std::max<size_t>(4, maxBytes / (blockRows * rowBytes));
         ahead = std::max<size_t>(1, capacity / 4);
