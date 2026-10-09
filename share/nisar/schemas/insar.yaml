@@ -1353,6 +1353,11 @@ worker_options:
     # SLC resampling (FP32) on a Metal GPU (Apple) if available. Default False
     metal_enabled: bool(required=False)
 
+    # Fraction of the physical memory for the row caches through which the
+    # CPU ampcor (dense offsets, offsets product) reads the reference and
+    # secondary images (0: memory map). Default 0.25
+    ampcor_memory_fraction: num(min=0, max=1, required=False)
+
 output_options:
     page_enabled: bool(required=False)
     compression_enabled: bool(required=False)

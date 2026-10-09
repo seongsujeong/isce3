@@ -65,6 +65,7 @@ cuAmpcorParameter::cuAmpcorParameter()
     useMmap = 1; // use mmap
     useMetal = 0; // CPU only
     mmapSizeInGB = 1;
+    rowCacheMemoryFraction = 0.25;
 
     mergeGrossOffset = 0; // default to separate gross offset
 

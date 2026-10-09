@@ -51,6 +51,8 @@ def run(cfg: dict):
     else:
         ampcor = isce3.matchtemplate.PyCPUAmpcor()
         ampcor.useMetal = int(cfg['worker']['metal_enabled'])
+        ampcor.rowCacheMemoryFraction = cfg['worker'].get(
+            'ampcor_memory_fraction', 0.25)
 
     # Use memory mapping (not exposed to user but reference
     # and secondary raster are memory-mappable)

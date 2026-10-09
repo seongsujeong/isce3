@@ -133,6 +133,7 @@ def run(cfg: dict, output_hdf5: str = None):
                     error_channel.log(err_str)
                     raise ValueError(err_str)
 
+                layers = []
                 for key in layer_keys:
                     # Create and initialize Ampcor object
                     if use_gpu:
@@ -143,6 +144,8 @@ def run(cfg: dict, output_hdf5: str = None):
                         # CPU ampcor, optionally with Metal (macOS GPU)
                         ampcor = isce3.matchtemplate.PyCPUAmpcor()
                         ampcor.useMetal = int(cfg['worker']['metal_enabled'])
+                        ampcor.rowCacheMemoryFraction = cfg['worker'].get(
+                            'ampcor_memory_fraction', 0.25)
 
                     # Set parameters related to reference/secondary RSLC
                     ampcor.referenceImageName = ref_copy
@@ -196,10 +199,18 @@ def run(cfg: dict, output_hdf5: str = None):
                                          ampcor.numberWindowDown, 1,
                                          gdal.GDT_Float32)
 
-                    # Run ampcor and delete ampcor object after is done
-                    ampcor.runAmpcor()
-                    del ampcor
+                    layers.append((key, ampcor, layer_scratch_path))
 
+                # Run ampcor: on the CPU all layers in one pass over the
+                # images, so that each row block is read once
+                if use_gpu:
+                    for _, ampcor, _ in layers:
+                        ampcor.runAmpcor()
+                else:
+                    isce3.matchtemplate.run_cpu_ampcor_layers(
+                        [ampcor for _, ampcor, _ in layers])
+
+                for key, ampcor, layer_scratch_path in layers:
                     pixel_offsets_path = f'{roff_obj.SwathsPath}/frequency{freq}/pixelOffsets'
                     prod_path = f'{pixel_offsets_path}/{pol}/{key}'
 

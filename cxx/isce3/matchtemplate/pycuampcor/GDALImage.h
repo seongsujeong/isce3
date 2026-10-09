@@ -12,6 +12,7 @@
 #define __GDALIMAGE_H
 
 // dependencies
+#include <memory>
 #include <string>
 #include <gdal_priv.h>
 #include <cpl_conv.h>
@@ -77,6 +78,20 @@ public:
 
     // load data from cpu buffer to gpu
     void loadToDevice(void *dArray, size_t h_offset, size_t w_offset, size_t h_tile, size_t w_tile);
+
+    /**
+     * Read through an in-memory cache of row blocks instead of the memory
+     * map: blocks are read with large sequential reads, the ones ahead of
+     * the latest request in a background thread, and the ones furthest
+     * behind are dropped beyond maxBytes. Suits passes over the image in
+     * row order larger than the memory (memory-map page faults are slow).
+     * Thread-safe. maxBytes 0 keeps the memory map.
+     */
+    void enableRowCache(size_t maxBytes);
+
+private:
+    struct RowCache;
+    std::unique_ptr<RowCache> _rowCache;
 
 };
 

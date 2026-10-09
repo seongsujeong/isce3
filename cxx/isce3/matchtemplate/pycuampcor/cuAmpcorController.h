@@ -16,6 +16,7 @@
 #define CU_AMPCOR_CONTROLLER_H
 
 #include <memory>
+#include <vector>
 
 // dependencies
 #include "cuAmpcorParameter.h"
@@ -29,6 +30,15 @@ public:
     cuAmpcorController();
     // run interface
     void runAmpcor();
+
+    /**
+     * Run several controllers (e.g. offset layers of different window
+     * sizes) in one pass over the images when they share them: the chunks
+     * of all controllers are processed in the order of their image rows by
+     * the same CPU threads and Metal GPU, so that each row block is read once
+     * (GDALImage::enableRowCache). Controllers on other images run in turn.
+     */
+    static void runAmpcorLayers(const std::vector<cuAmpcorController*>& controllers);
 };
 #endif
 

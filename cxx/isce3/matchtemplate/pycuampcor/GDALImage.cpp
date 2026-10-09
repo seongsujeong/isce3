@@ -8,7 +8,15 @@
 #include "GDALImage.h"
 
 // dependencies
+#include <algorithm>
+#include <condition_variable>
+#include <cstring>
 #include <iostream>
+#include <map>
+#include <mutex>
+#include <stdexcept>
+#include <thread>
+#include <vector>
 
 namespace isce3::matchtemplate::pycuampcor {
 
@@ -21,6 +29,155 @@ inline void memcpy2d(void* dst, size_t dst_pitch,
         dst = (char*) dst + dst_pitch;
         src = (char*) src + src_pitch;
     }
+}
+
+/**
+ * Cache of row blocks of an image (GDALImage::enableRowCache). Blocks of
+ * blockRows rows are read whole by GDAL (one reader at a time); a prefetch
+ * thread keeps the blocks after the highest requested one loaded. When the
+ * cache is full, the unused block furthest behind the requests (else the
+ * one furthest ahead) is dropped; blocks in use are never dropped.
+ */
+struct GDALImage::RowCache {
+    struct Block {
+        std::vector<char> data;
+        bool ready = false;
+    };
+
+    GDALImage &image;
+    size_t rowBytes, blockRows, nBlocks, capacity, ahead;
+    std::mutex mutex, readMutex;
+    std::condition_variable cv;
+    std::map<size_t, std::shared_ptr<Block>> blocks;
+    size_t wanted = 0;    // highest requested block
+    bool stop = false;
+    std::thread prefetcher;
+
+    RowCache(GDALImage &img, size_t maxBytes) : image(img)
+    {
+        rowBytes = static_cast<size_t>(image._width) * image._pixelSize;
+        // blocks of about 64 MB
+        blockRows = std::max<size_t>(16, (64u << 20) / rowBytes);
+        nBlocks = (image._height + blockRows - 1) / blockRows;
+        capacity = std::max<size_t>(4, maxBytes / (blockRows * rowBytes));
+        ahead = std::max<size_t>(1, capacity / 4);
+        prefetcher = std::thread([this] { prefetch(); });
+    }
+
+    ~RowCache()
+    {
+        {
+            std::lock_guard<std::mutex> lock(mutex);
+            stop = true;
+        }
+        cv.notify_all();
+        prefetcher.join();
+    }
+
+    // drop blocks beyond the capacity (lock held), but not block keep
+    void evict(size_t keep)
+    {
+        while (blocks.size() >= capacity) {
+            auto victim = blocks.end();
+            for (auto it = blocks.begin(); it != blocks.end(); ++it) {
+                if (it->first == keep || !it->second->ready || it->second.use_count() > 1)
+                    continue;
+                // behind the requests: the furthest behind (first found)
+                if (it->first < wanted) { victim = it; break; }
+                victim = it;  // ahead: keep the last (furthest ahead)
+            }
+            if (victim == blocks.end())
+                return;  // all in use: grow beyond the capacity
+            blocks.erase(victim);
+        }
+    }
+
+    // load block b (lock held on entry and exit, released while reading)
+    std::shared_ptr<Block> load(size_t b, std::unique_lock<std::mutex> &lock)
+    {
+        evict(b);
+        auto block = std::make_shared<Block>();
+        blocks[b] = block;
+        lock.unlock();
+        const size_t row0 = b * blockRows;
+        const size_t rows = std::min(blockRows, image._height - row0);
+        block->data.resize(rows * rowBytes);
+        CPLErr err;
+        {
+            std::lock_guard<std::mutex> io(readMutex);
+            err = image._poBand->RasterIO(GF_Read, 0, static_cast<int>(row0),
+                image._width, static_cast<int>(rows), block->data.data(),
+                image._width, static_cast<int>(rows), image._dataType, 0, 0);
+        }
+        lock.lock();
+        if (err != CE_None) {
+            blocks.erase(b);
+            cv.notify_all();
+            throw std::runtime_error("GDALImage: reading rows failed");
+        }
+        block->ready = true;
+        cv.notify_all();
+        return block;
+    }
+
+    // block b, loaded if needed
+    std::shared_ptr<Block> get(size_t b)
+    {
+        std::unique_lock<std::mutex> lock(mutex);
+        if (b > wanted) {
+            wanted = b;
+            cv.notify_all();
+        }
+        auto it = blocks.find(b);
+        if (it == blocks.end())
+            return load(b, lock);
+        auto block = it->second;
+        cv.wait(lock, [&] { return block->ready || !blocks.count(b); });
+        if (!block->ready)  // its read failed
+            throw std::runtime_error("GDALImage: reading rows failed");
+        return block;
+    }
+
+    void prefetch()
+    {
+        std::unique_lock<std::mutex> lock(mutex);
+        while (!stop) {
+            // first missing block ahead of the requests, if any
+            size_t b = wanted + 1;
+            const size_t last = std::min(nBlocks, wanted + 1 + ahead);
+            while (b < last && blocks.count(b))
+                b++;
+            if (b < last) {
+                try {
+                    load(b, lock);
+                } catch (...) {
+                    // the request of the block reports the error
+                }
+                continue;
+            }
+            cv.wait(lock);
+        }
+    }
+
+    void copyRows(char *dst, size_t row0, size_t col0, size_t rows, size_t cols)
+    {
+        const size_t pixel = image._pixelSize;
+        for (size_t r = row0; r < row0 + rows;) {
+            const size_t b = r / blockRows;
+            const auto block = get(b);
+            const size_t end = std::min(row0 + rows, (b + 1) * blockRows);
+            for (; r < end; r++, dst += cols * pixel)
+                std::memcpy(dst, block->data.data() + (r - b * blockRows) * rowBytes +
+                            col0 * pixel, cols * pixel);
+        }
+    }
+};
+
+void GDALImage::enableRowCache(size_t maxBytes)
+{
+    _rowCache.reset();
+    if (maxBytes > 0)
+        _rowCache.reset(new RowCache(*this, maxBytes));
 }
 
 /**
@@ -123,7 +280,10 @@ void GDALImage::loadToDevice(void *dArray, size_t h_offset, size_t w_offset,
     char * startPtr = (char *)_memPtr ;
     startPtr += tileStartOffset;
 
-    if (_useMmap) {
+    if (_rowCache) {
+        _rowCache->copyRows(static_cast<char*>(dArray), h_offset, w_offset, h_tile, w_tile);
+    }
+    else if (_useMmap) {
         // direct copy from memory map buffer to device memory
         memcpy2d(dArray,      // dst
             w_tile*_pixelSize,                    // dst pitch
@@ -164,6 +324,8 @@ void GDALImage::loadToDevice(void *dArray, size_t h_offset, size_t w_offset,
 /// destructor
 GDALImage::~GDALImage()
 {
+    // stop the row cache prefetching before closing the dataset
+    _rowCache.reset();
     // free the virtual memory
     CPLVirtualMemFree(_poBandVirtualMem),
     // free the GDAL Dataset, close the file

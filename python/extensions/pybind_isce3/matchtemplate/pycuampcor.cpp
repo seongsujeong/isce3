@@ -73,6 +73,7 @@ void addbinding_pycuampcor_cpu(pybind11::module& m)
         .DEF_PARAM_RENAME(int, corrSurfaceOverSamplingFactor, oversamplingFactor)
 
         .DEF_PARAM_RENAME(int, mmapSize, mmapSizeInGB)
+        .DEF_PARAM(double, rowCacheMemoryFraction)
 
         .DEF_PARAM_RENAME(int, skipSampleDown,   skipSampleDownRaw)
         .DEF_PARAM_RENAME(int, skipSampleAcross, skipSampleAcrossRaw)
@@ -112,4 +113,11 @@ void addbinding_pycuampcor_cpu(pybind11::module& m)
            "integer peak search; with band half-widths (pixels) the band "
            "search replaces hill climbing; call after setupParams")
         ;
+
+    m.def("run_cpu_ampcor_layers", [](std::vector<cls*> controllers) {
+            cls::runAmpcorLayers(controllers);
+        }, pybind11::arg("controllers"),
+        "Run several PyCPUAmpcor objects (e.g. offset layers) in one pass "
+        "over their images when they share them; each row block of the images "
+        "is then read once");
 }

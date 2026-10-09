@@ -27,6 +27,7 @@
 #include <cstdlib>
 #include <functional>
 #include <cmath>
+#include <deque>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -855,41 +856,61 @@ bool metalSupported(const cuAmpcorParameter *param)
     return true;
 }
 
-int runAmpcorMetal(cuAmpcorParameter *param, GDALImage *reference, GDALImage *secondary,
-    cuArrays<float2> *offsetImageRun, cuArrays<float> *snrImageRun,
-    cuArrays<float3> *covImageRun, cuArrays<float> *corrImageRun,
-    const std::function<int()> &nextChunk, const std::function<void()> &chunkDone)
+int runAmpcorMetal(const std::vector<MetalLayer> &layers, GDALImage *reference,
+    GDALImage *secondary, const std::function<std::pair<int, int>()> &nextChunk,
+    const std::function<void()> &chunkDone)
 {
     // May run on several threads at once, each with its own slots; nextChunk
     // is shared with the CPU workers (hybrid scheduling)
     static_assert(sizeof(float3) == 12, "run cov image must be packed float3");
-    const RunImages run{wrap(offsetImageRun->devData, offsetImageRun->getByteSize()),
-                        wrap(snrImageRun->devData, snrImageRun->getByteSize()),
-                        wrap(covImageRun->devData, covImageRun->getByteSize()),
-                        wrap(corrImageRun->devData, corrImageRun->getByteSize()),
-                        offsetImageRun->width};
 
-    // chunks in flight: the CPU loads one while the GPU runs the others
+    // chunks in flight: the CPU loads one while the GPU runs the others;
+    // each layer has its own slots (sized for its windows), made on first use
     const int nSlots = 4;
-    std::vector<std::unique_ptr<MetalChunk>> slots;
-    for (int s = 0; s < nSlots; s++)
-        slots.push_back(std::make_unique<MetalChunk>(param, reference, secondary, run));
+    struct Slots {
+        RunImages run;
+        std::vector<std::unique_ptr<MetalChunk>> chunks;
+        std::vector<bool> busy;
+    };
+    std::vector<Slots> slots;
+    for (const auto &l : layers)
+        slots.push_back({RunImages{wrap(l.offsetImageRun->devData, l.offsetImageRun->getByteSize()),
+                                   wrap(l.snrImageRun->devData, l.snrImageRun->getByteSize()),
+                                   wrap(l.covImageRun->devData, l.covImageRun->getByteSize()),
+                                   wrap(l.corrImageRun->devData, l.corrImageRun->getByteSize()),
+                                   l.offsetImageRun->width},
+                         {}, std::vector<bool>(nSlots, false)});
 
-    // round robin: a slot waits for its previous chunk before it is reused;
-    // then the remaining slots are drained oldest first
-    int processed = 0;
-    for (int k = nextChunk(); k >= 0; k = nextChunk(), processed++) {
-        MetalChunk &slot = *slots[processed % nSlots];
-        if (processed >= nSlots) {
-            slot.wait();
-            chunkDone();
-        }
-        slot.submit(k / param->numberChunkAcross, k % param->numberChunkAcross);
-    }
-    for (int s = 0; s < std::min(processed, nSlots); s++) {
-        slots[(processed + s) % nSlots]->wait();
+    // in-flight chunks oldest first: (layer, slot)
+    std::deque<std::pair<int, int>> inFlight;
+    auto retire = [&]() {
+        const auto [l, s] = inFlight.front();
+        inFlight.pop_front();
+        slots[l].chunks[s]->wait();
+        slots[l].busy[s] = false;
         chunkDone();
+    };
+    int processed = 0;
+    for (auto item = nextChunk(); item.first >= 0; item = nextChunk(), processed++) {
+        if (static_cast<int>(inFlight.size()) >= nSlots)
+            retire();
+        const int l = item.first;
+        cuAmpcorParameter *param = layers[l].param;
+        auto &ls = slots[l];
+        if (ls.chunks.empty())
+            for (int s = 0; s < nSlots; s++)
+                ls.chunks.push_back(std::make_unique<MetalChunk>(param, reference,
+                                                                 secondary, ls.run));
+        // a free slot of the layer: fewer than nSlots chunks are in flight
+        const int s = static_cast<int>(std::find(ls.busy.begin(), ls.busy.end(), false) -
+                                       ls.busy.begin());
+        ls.chunks[s]->submit(item.second / param->numberChunkAcross,
+                             item.second % param->numberChunkAcross);
+        ls.busy[s] = true;
+        inFlight.push_back({l, s});
     }
+    while (!inFlight.empty())
+        retire();
 
     if (profile.on) {
         double total = 0;
