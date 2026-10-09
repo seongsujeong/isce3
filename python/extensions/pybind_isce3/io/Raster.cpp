@@ -377,11 +377,11 @@ void addbinding(py::class_<Raster> & pyRaster)
         // update and read-only (default) mode
         .def(py::init([](const std::string & path, bool update)
             {
+                // register IH5 (for read-only access as well)
+                if (path.rfind("IH5:::", 0) == 0) {
+                    isce3::io::GDALRegister_IH5();
+                }
                 if (update) {
-                    // register IH5
-                    if (path.rfind("IH5:::", 0) == 0) {
-                        isce3::io::GDALRegister_IH5();
-                    }
                     return std::make_unique<Raster>(path, GA_Update);
                 } else {
                     return std::make_unique<Raster>(path);
