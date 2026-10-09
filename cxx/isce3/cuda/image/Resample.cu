@@ -14,11 +14,8 @@
 
 namespace isce3::cuda::image::v2 {
 
-using isce3::cuda::core::gpuInterpolator;
 using isce3::cuda::core::gpuLUT2d;
-using isce3::cuda::core::gpuSinc2dInterpolator;
 
-using isce3::core::SINC_ONE;
 using isce3::core::SINC_HALF;
 using isce3::core::SINC_LEN;
 using isce3::core::SINC_SUB;
@@ -31,7 +28,6 @@ void _resampleToCoordsGlobal(
     const thrust::complex<float>* input_data_block,
     const size_t input_block_width,
     const size_t input_block_length,
-    thrust::complex<float>* chip,
     const double* range_input_indices,
     const double* azimuth_input_indices,
     const double startingRange,
@@ -39,7 +35,7 @@ void _resampleToCoordsGlobal(
     const double sensingStart,
     const double pri,                       // Pulse repetition interval, inverse of prf
     const gpuLUT2d<double> native_doppler_lut,
-    gpuSinc2dInterpolator<thrust::complex<float>> interp,
+    const float* sinc_filter,               // SINC_SUB phases x SINC_LEN taps
     const thrust::complex<float> fill_value
 )
 {
@@ -54,12 +50,6 @@ void _resampleToCoordsGlobal(
     // typically be smaller than this multiple. So, some calls to this function on
     // the device will be for non-existent pixels which must be discarded.
     if (pixel_index >= resampled_block_width * resampled_block_length) return;
-
-    const auto chip_size = static_cast<size_t>(SINC_ONE);
-
-    const auto chip_pixels = chip_size * chip_size;
-
-    const auto chip_start = pixel_index * chip_pixels;
 
     // The indices on the resampled data block. Assumes that range/azimuth indices
     // vectors are the same shape as the resampled data vector.
@@ -122,32 +112,49 @@ void _resampleToCoordsGlobal(
     // phases below are at most pi * SINC_HALF
     const float doppler_freq_f = static_cast<float>(doppler_freq);
 
-    // Read data chip
-    for (int chip_az = 0; chip_az < SINC_ONE; ++chip_az){
-        // Row to read from in Azimuth coordinates
-        // unit: azimuth row indices (int)
-        const auto az_chip_idx = azimuth_input_ind_int + chip_az - SINC_HALF;
+    // Sinc-interpolate the doppler-stripped data directly from the input block.
+    // Same arithmetic as gpuSinc2dInterpolator::interpolate on a SINC_ONE x
+    // SINC_ONE chip centered on the integer indices, without storing the chip
+    // (a per-pixel chip buffer took 648 B of device memory per output pixel).
+    //
+    // Chip coordinates and nearest filter phases, as the interpolator computes
+    // them from x/y = SINC_HALF + remainder
+    const double x = SINC_HALF + range_input_index_remainder;
+    const double y = SINC_HALF + azimuth_input_index_remainder;
+    const int ix = __double2int_rd(x);
+    const int iy = __double2int_rd(y);
+    const int ifracx = min(max(0, int((x - ix) * SINC_SUB)), SINC_SUB - 1);
+    const int ifracy = min(max(0, int((y - iy) * SINC_SUB)), SINC_SUB - 1);
+    const float* kx = sinc_filter + ifracx * SINC_LEN;
+    const float* ky = sinc_filter + ifracy * SINC_LEN;
 
-        // Compute doppler phase to be removed from radar data.
-        // (i.e. as a unit vector on the complex plane.)
-        float doppler_sin, doppler_cos;
-        sincosf(doppler_freq_f * (chip_az - SINC_HALF), &doppler_sin, &doppler_cos);
-        const thrust::complex<float> doppler_phase_conj(doppler_cos, -doppler_sin);
+    thrust::complex<float> interpolated_complex_val(0.0f);
+    // The interpolator's edge check on the chip (a remainder rounding x or y
+    // up to SINC_HALF + 1 falls outside)
+    const int half = SINC_LEN / 2;
+    if (ix >= half - 1 && ix <= SINC_HALF && iy >= half - 1 && iy <= SINC_HALF) {
+        for (int i = 0; i < SINC_LEN; ++i) {
+            // Chip row (and its offset from the chip center)
+            const int chip_az = iy + half - i;
 
-        for (int chip_rg = 0; chip_rg < SINC_ONE; ++chip_rg) {
-            // Column to read from in Range coordinates
-            // unit: range column indices (int)
-            const auto rg_chip_idx = range_input_ind_int + chip_rg - SINC_HALF;
+            // Compute doppler phase to be removed from radar data.
+            // (i.e. as a unit vector on the complex plane.)
+            float doppler_sin, doppler_cos;
+            sincosf(doppler_freq_f * (chip_az - SINC_HALF), &doppler_sin,
+                    &doppler_cos);
+            const thrust::complex<float> doppler_phase_conj(doppler_cos,
+                                                            -doppler_sin);
 
-            // Get the indices of this pixel on the chip block and input vectors.
-            const auto chip_block_index = chip_start + chip_az * chip_size + chip_rg;
-            const auto input_sample_index =
-                input_block_width * az_chip_idx + rg_chip_idx;
+            // Input sample of chip column ix + half, the first tap of the row
+            const thrust::complex<float>* row = input_data_block +
+                input_block_width * (azimuth_input_ind_int + chip_az - SINC_HALF) +
+                (range_input_ind_int + ix + half - SINC_HALF);
 
-            // Set the point at the chip indices to their value on the data
-            // block, rotated by the doppler conjugate phasor.
-            chip[chip_block_index] = 
-                input_data_block[input_sample_index] * doppler_phase_conj;
+            thrust::complex<float> row_sum(0.0f);
+            for (int j = 0; j < SINC_LEN; ++j) {
+                row_sum += (row[-j] * doppler_phase_conj) * kx[j];
+            }
+            interpolated_complex_val += row_sum * ky[i];
         }
     }
 
@@ -157,16 +164,6 @@ void _resampleToCoordsGlobal(
     sincosf(doppler_freq_f * static_cast<float>(azimuth_input_index_remainder),
             &doppler_sin, &doppler_cos);
     const thrust::complex<float> doppler_resampled_phasor(doppler_cos, doppler_sin);
-
-    // Interpolate chip
-    const thrust::complex<float> interpolated_complex_val =
-        interp.interpolate(
-            SINC_HALF + range_input_index_remainder,
-            SINC_HALF + azimuth_input_index_remainder,
-            &chip[chip_start],
-            chip_size,
-            chip_size
-        );
 
     // Add doppler to interpolated value
     resampled_data_block[pixel_index] = 
@@ -212,22 +209,21 @@ gpuResampleToCoords(
     // number of rows on output array
     const auto out_length = static_cast<size_t>(resampled_data_block.rows());
 
-    const auto chip_size = SINC_ONE;
-
     // Number of threads per block (should always %32==0)
     const int thrd_per_block = 256;
 
-    // Determine the number of pixels and the size of the chip array.
+    // Determine the number of pixels.
     const size_t num_resampled_pixels = out_width * out_length;
-    const size_t num_chip_elements = num_resampled_pixels * chip_size * chip_size;
 
-    // Instantiate the interpolator.
-    // A small change over previous versions - a pointer to this object would previously
-    // been passed as an argument to this function. In order to make this code
-    // callable at the Python level, this has been moved here. In order to add support
-    // for different interpolators, a Python binding needs to be made for these
-    // interpolator objects.
-    auto interp = gpuSinc2dInterpolator<thrust::complex<float>>(SINC_LEN, SINC_SUB);
+    // Sinc interpolation filter, as gpuSinc2dInterpolator builds it (computed in
+    // double, used in float for complex<float> data).
+    // In order to add support for different interpolators, a Python binding needs
+    // to be made for these interpolator objects.
+    thrust::host_vector<double> h_sinc_filter(SINC_SUB * SINC_LEN, 0.0);
+    isce3::cuda::core::compute_normalized_coefficients(
+        1.0, SINC_LEN, SINC_SUB, 0.0, h_sinc_filter);
+    const thrust::host_vector<float> h_sinc_filter_f(h_sinc_filter);
+    const thrust::device_vector<float> d_sinc_filter(h_sinc_filter_f);
 
     // Declare device vectors for all input data and copy the input data to them.
     auto d_input_data = _copyToDeviceAs<thrust::complex<float>>(input_data_block);
@@ -244,11 +240,6 @@ gpuResampleToCoords(
         num_resampled_pixels
     );
 
-    // Declare the chip array on the device. This is a large array that will contain
-    // the chip values for each pixel.
-    // XXX: This seems inefficient. Look at ways to fix it.
-    thrust::device_vector<thrust::complex<float>> d_chip(num_chip_elements);
-
     // Determine the grid of blocks needed to run this algorithm on the device.
     dim3 block(thrd_per_block);
     dim3 grid((num_resampled_pixels + (thrd_per_block - 1)) / thrd_per_block);
@@ -261,7 +252,6 @@ gpuResampleToCoords(
         d_input_data.data().get(),
         in_width,
         in_length,
-        d_chip.data().get(),
         d_range_indices.data().get(),
         d_azimuth_indices.data().get(),
         radar_grid.startingRange(),
@@ -269,7 +259,7 @@ gpuResampleToCoords(
         radar_grid.sensingStart(),
         1 / radar_grid.prf(),
         d_doppler,
-        interp,
+        d_sinc_filter.data().get(),
         d_fill_value
     );
 
