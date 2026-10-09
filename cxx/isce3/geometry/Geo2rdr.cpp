@@ -12,6 +12,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <future>
+#include <limits>
 #include <valarray>
 
 #include <isce3/core/Constants.h>
@@ -94,19 +95,38 @@ geo2rdr(isce3::io::Raster & topoRaster,
     if ((demLength % _linesPerBlock) != 0)
         nBlocks += 1;
 
-    // Loop over blocks
+    // Block extents: first line and number of lines
+    auto extent = [&](size_t block) {
+        const size_t lineStart = block * _linesPerBlock;
+        return std::make_pair(lineStart,
+                              std::min(_linesPerBlock, demLength - lineStart));
+    };
+    // Block of topo data (x, y, height)
+    struct TopoBlock { std::valarray<double> x, y, hgt; };
+    auto read = [&](size_t block) {
+        const auto [lineStart, blockLength] = extent(block);
+        const size_t blockSize = blockLength * demWidth;
+        TopoBlock b {std::valarray<double>(blockSize),
+                     std::valarray<double>(blockSize),
+                     std::valarray<double>(blockSize)};
+        topoRaster.getBlock(b.x, 0, lineStart, demWidth, blockLength, 1);
+        topoRaster.getBlock(b.y, 0, lineStart, demWidth, blockLength, 2);
+        topoRaster.getBlock(b.hgt, 0, lineStart, demWidth, blockLength, 3);
+        return b;
+    };
+
+    // Loop over blocks. The next block is read and the previous one written
+    // while the current one is computed, each raster used by one thread at a
+    // time, so that the raster I/O overlaps the computation.
     size_t converged = 0;
+    auto nextBlock = std::async(std::launch::async, read, 0);
+    std::future<void> written;
     for (size_t block = 0; block < nBlocks; ++block) {
 
         // Get block extents
-        size_t lineStart, blockLength;
-        lineStart = block * _linesPerBlock;
-        if (block == (nBlocks - 1)) {
-            blockLength = demLength - lineStart;
-        } else {
-            blockLength = _linesPerBlock;
-        }
-        size_t blockSize = blockLength * demWidth;
+        const auto ext = extent(block);
+        const size_t lineStart = ext.first, blockLength = ext.second;
+        const size_t blockSize = blockLength * demWidth;
 
         // Diagnostics
         const double tblock = _radarGrid.sensingTime(lineStart);
@@ -119,33 +139,36 @@ geo2rdr(isce3::io::Raster & topoRaster,
              << _doppler.eval(tblock, rngend) << " "
              << pyre::journal::endl;
 
-        // Valarrays to hold input block from topo rasters
-        std::valarray<double> x(blockSize), y(blockSize), hgt(blockSize);
+        // Block of topo data; start reading the next one
+        const TopoBlock topo = nextBlock.get();
+        if (block + 1 < nBlocks)
+            nextBlock = std::async(std::launch::async, read, block + 1);
+
         // Valarrays to hold block of geo2rdr results
         std::valarray<double> rgoff(blockSize), azoff(blockSize);
 
-        // Read block of topo data
-        topoRaster.getBlock(x, 0, lineStart, demWidth, blockLength, 1);
-        topoRaster.getBlock(y, 0, lineStart, demWidth, blockLength, 2);
-        topoRaster.getBlock(hgt, 0, lineStart, demWidth, blockLength,3);
-
         // Loop over DEM lines in block
+        #pragma omp parallel for reduction(+:converged)
         for (size_t blockLine = 0; blockLine < blockLength; ++blockLine) {
 
             // Global line index
             const size_t line = lineStart + blockLine;
 
+            // Initial azimuth time of each pixel: solution of the previous
+            // pixel, a search over the orbit (NaN) for the first one or after
+            // a failure
+            double aztime = std::numeric_limits<double>::quiet_NaN();
+
             // Loop over DEM pixels
-            #pragma omp parallel for reduction(+:converged)
             for (size_t pixel = 0; pixel < demWidth; ++pixel) {
 
                 // Convert topo XYZ to LLH
                 const size_t index = blockLine * demWidth + pixel;
-                Vec3 xyz{x[index], y[index], hgt[index]};
+                Vec3 xyz{topo.x[index], topo.y[index], topo.hgt[index]};
                 Vec3 llh = _projTopo->inverse(xyz);
 
                 // Perform geo->rdr iterations
-                double aztime, slantRange;
+                double slantRange;
                 int geostat = isce3::geometry::geo2rdr(
                     llh, _ellipsoid, _orbit, _doppler,  aztime, slantRange,
                     _radarGrid.wavelength(), _radarGrid.lookSide(),
@@ -168,14 +191,23 @@ geo2rdr(isce3::io::Raster & topoRaster,
                     rgoff[index] = NULL_VALUE;
                     azoff[index] = NULL_VALUE;
                 }
-            } // end OMP for loop pixels in block
-        } // end for loop lines in block
+                if (!geostat)
+                    aztime = std::numeric_limits<double>::quiet_NaN();
+            } // end for loop pixels in line
+        } // end OMP for loop lines in block
 
-        // Write block of data
-        rgoffRaster.setBlock(rgoff, 0, lineStart, demWidth, blockLength);
-        azoffRaster.setBlock(azoff, 0, lineStart, demWidth, blockLength);
+        // Write block of data after the previous write finished
+        if (written.valid())
+            written.get();
+        written = std::async(std::launch::async,
+            [&, rgoff = std::move(rgoff), azoff = std::move(azoff),
+             lineStart, blockLength]() mutable {
+                rgoffRaster.setBlock(rgoff, 0, lineStart, demWidth, blockLength);
+                azoffRaster.setBlock(azoff, 0, lineStart, demWidth, blockLength);
+            });
 
     } // end for loop blocks in DEM image
+    written.get();
 
     // Print out convergence statistics
     info << "Total convergence: " << converged << " out of "
