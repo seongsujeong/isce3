@@ -1,4 +1,5 @@
 #include "Topo.h"
+#include "detail/Rdr2GeoMetal.h"
 #include "detail/Rdr2GeoMixed.h"
 
 #include <algorithm>
@@ -9,6 +10,8 @@
 #include <cstdlib>
 #include <fstream>
 #include <future>
+#include <limits>
+#include <memory>
 #include <valarray>
 #include <vector>
 
@@ -142,6 +145,13 @@ topo(Raster & demRaster, TopoLayers & layers)
     info << "DEM EPSG: " << demRaster.getEPSG() << pyre::journal::newline;
     info << "Output EPSG: " << _epsgOut << pyre::journal::endl;
 
+    // Metal GPU for the FP32 iterations of the mixed precision, if available
+    std::unique_ptr<detail::Rdr2GeoMetal> gpu;
+#ifdef ISCE3_METAL
+    if (_mixedPrecision)
+        gpu = detail::Rdr2GeoMetal::create();
+#endif
+
     // Loop over blocks
     size_t totalconv = 0;
     for (size_t block = 0; block < nBlocks; ++block) {
@@ -187,6 +197,10 @@ topo(Raster & demRaster, TopoLayers & layers)
         assert(demInterp.haveRaster());
         const auto dem_midpoint = demInterp.midLonLat();
 
+        if (gpu)
+            totalconv += _topoBlockMetal(*gpu, demInterp, layers, lineStart,
+                                         blockLength, satPosition, dem_midpoint);
+        else
         #pragma omp parallel
         {
             // Thread-local count of the total number of rdr2geo calls that
@@ -227,10 +241,9 @@ topo(Raster & demRaster, TopoLayers & layers)
                     Pixel pixel(rng, dopfact, rbin);
 
                     // Perform rdr->geo iterations
-                    int geostat = _mixedPrecision ?
-                        _rdr2geoMixed(pixel, TCNbasis, pos, vel, demInterp, llh) :
-                        rdr2geo(pixel, TCNbasis, pos, vel, _ellipsoid, demInterp, llh,
-                                _radarGrid.lookSide(), _threshold, _numiter, _extraiter);
+                    int geostat = rdr2geo(
+                        pixel, TCNbasis, pos, vel, _ellipsoid, demInterp, llh,
+                        _radarGrid.lookSide(), _threshold, _numiter, _extraiter);
                     totalconv_thread += geostat;
 
                     // Save data in output arrays
@@ -294,34 +307,160 @@ void isce3::geometry::Topo::topo(
           groundToSatEastRaster, groundToSatNorthRaster);
 }
 
-/** Mixed-precision rdr2geo of one pixel from the starting estimate in llh
- * (see detail/Rdr2GeoMixed.h): FP32 residual iterations to a 1 mm height
- * change, then the FP64 iteration (with its convergence test) from there;
- * the FP64 iteration alone where the FP32 one does not converge.
- * Returns 1 if converged. */
-int isce3::geometry::Topo::
-_rdr2geoMixed(const Pixel& pixel, const Basis& TCNbasis, const Vec3& pos,
-              const Vec3& vel, const DEMInterpolator& demInterp,
-              Vec3& llh) const
+#ifdef ISCE3_METAL
+// GPU constants of a pixel: the DEM map coordinates as DEM indices (integer
+// part + FP32 fraction, wrapped in longitude as interpolateXY does) and the
+// Jacobian in DEM index units. Returns false where they are not finite.
+static bool toMetalPixel(const isce3::geometry::detail::Rdr2GeoResidualSetup& s,
+                         const isce3::geometry::DEMInterpolator& dem,
+                         isce3::geometry::detail::Rdr2GeoMetalPixel& p)
 {
-    constexpr float tolFp32 = 1e-3f;  // m, height change of the FP32 iteration
-    detail::Rdr2GeoResidualSetup setup;
-    const double h0 = std::isnan(llh[2]) ? demInterp.refHeight() : llh[2];
-    double h = std::numeric_limits<double>::quiet_NaN();
-    if (detail::rdr2geoResidualSetup(setup, pixel, TCNbasis, pos, vel,
-                                     _ellipsoid, *demInterp.proj(),
-                                     _radarGrid.lookSide(), h0))
-        h = detail::rdr2geoResidualIterate(setup,
-                [&](double x, double y) { return demInterp.interpolateXY(x, y); },
-                _numiter, tolFp32);
-    if (std::isnan(h))
-        return rdr2geo(pixel, TCNbasis, pos, vel, _ellipsoid, demInterp, llh,
-                       _radarGrid.lookSide(), _threshold, _numiter, _extraiter);
-    llh[2] = h;
-    // FP64 finish from the FP32 solution, with the FP64 convergence test
-    return rdr2geo(pixel, TCNbasis, pos, vel, _ellipsoid, demInterp, llh,
-                   _radarGrid.lookSide(), _threshold, _numiter, _extraiter);
+    double x = s.demX;
+    if (dem.epsgCode() == 4326) {
+        if (x > 360 || x < -360) x = std::fmod(x, 360);
+        if (x < -180) x += 360;
+        if (x - 360 >= dem.xStart()) x -= 360;
+        else if (x < dem.xStart() && x + 360 >= dem.xStart()) x += 360;
+    }
+    const double col = (x - dem.xStart()) / dem.deltaX();
+    const double row = (s.demY - dem.yStart()) / dem.deltaY();
+    if (!(std::abs(col) < 1e9 && std::abs(row) < 1e9))
+        return false;
+    p.col = static_cast<int>(std::floor(col));
+    p.row = static_cast<int>(std::floor(row));
+    p.fcol = static_cast<float>(col - p.col);
+    p.frow = static_cast<float>(row - p.row);
+    for (int j = 0; j < 3; ++j) {
+        p.jac[0][j] = static_cast<float>(s.jac[0][j] / dem.deltaX());
+        p.jac[1][j] = static_cast<float>(s.jac[1][j] / dem.deltaY());
+        p.n0[j] = s.n0[j];
+        p.tHat[j] = s.tHat[j];
+    }
+    p.hT0 = s.hT0;
+    p.tNorm = s.tNorm;
+    p.dh0 = s.dh0;
+    p.c0 = s.c0;
+    p.b0 = s.b0;
+    p.r = s.r;
+    p.alpha0 = s.alpha0;
+    p.beta0 = s.beta0;
+    p.curvature = s.curvature;
+    return true;
 }
+
+/** Mixed-precision rdr2geo of one block with the FP32 iterations on the
+ * Metal GPU. Chunks of lines go CPU FP64 setup -> GPU FP32 iterations -> CPU
+ * FP64 finish (rdr2geo from the FP32 height, with its convergence test); the
+ * GPU runs a chunk while the CPU finishes the previous one and sets up the
+ * next. The setup of a pixel starts from the height of its range bin in the
+ * latest finished line (the DEM mean for the first chunks), so that the
+ * linearization of the FP32 iterations stays close to the solution. */
+size_t isce3::geometry::Topo::
+_topoBlockMetal(detail::Rdr2GeoMetal& gpu, const DEMInterpolator& demInterp,
+                TopoLayers& layers, size_t lineStart, size_t blockLength,
+                std::vector<Vec3>& satPosition, const Vec3& demMidpoint)
+{
+    constexpr size_t chunkLines = 8;
+    constexpr float tolFp32 = 1e-4f;  // m, height change of the FP32 iteration
+    const size_t width = _radarGrid.width();
+    const auto side = _radarGrid.lookSide();
+    gpu.dem(demInterp.data(), demInterp.width(), demInterp.length(),
+            demInterp.refHeight());
+
+    // orbit state of the block lines
+    std::vector<double> tline(blockLength);
+    std::vector<Vec3> vel(blockLength);
+    std::vector<Basis> tcn(blockLength);
+    for (size_t i = 0; i < blockLength; ++i)
+        _initAzimuthLine(lineStart + i, tline[i], satPosition[i], vel[i], tcn[i]);
+    auto pixelAt = [&](size_t i, size_t rbin) {
+        const double rng = _radarGrid.slantRange(rbin);
+        const double dopfact = (0.5 * _radarGrid.wavelength()
+                * (_doppler.eval(tline[i], rng) / vel[i].norm())) * rng;
+        return Pixel(rng, dopfact, rbin);
+    };
+    // radius of the radius + h height model of detail::rdr2geo
+    const double major = _ellipsoid.a();
+    const double minor = major * std::sqrt(1. - _ellipsoid.e2());
+    auto radius = [&](const Vec3& pos) {
+        const Vec3 q {pos[0] / major, pos[1] / major, pos[2] / minor};
+        return pos.norm() / q.norm();
+    };
+
+    // model heights of the setup per range bin: latest finished line, and
+    // the snapshot each slot started from
+    std::vector<double> hPrior(width, demInterp.refHeight()), h0[2];
+    size_t converged = 0;
+
+    auto setup = [&](size_t c) {
+        const int slot = c % 2;
+        const size_t l0 = c * chunkLines;
+        const size_t nl = std::min(chunkLines, blockLength - l0);
+        h0[slot] = hPrior;
+        auto* lines = gpu.lines(slot, nl);
+        auto* pixels = gpu.pixels(slot, nl * width);
+        for (size_t k = 0; k < nl; ++k) {
+            const Basis& b = tcn[l0 + k];
+            const Vec3 vhat = vel[l0 + k].normalized();
+            for (int j = 0; j < 3; ++j) {
+                lines[k].that[j] = static_cast<float>(b.x0()[j]);
+                lines[k].chat[j] = static_cast<float>(b.x1()[j]);
+                lines[k].nhat[j] = static_cast<float>(b.x2()[j]);
+            }
+            lines[k].a = static_cast<float>(satPosition[l0 + k].norm());
+            lines[k].ndotvOverVdott = static_cast<float>(
+                    b.x2().dot(vhat) / vhat.dot(b.x0()));
+        }
+        #pragma omp parallel for schedule(static)
+        for (size_t p = 0; p < nl * width; ++p) {
+            const size_t i = l0 + p / width, rbin = p % width;
+            detail::Rdr2GeoResidualSetup s;
+            if (!detail::rdr2geoResidualSetup(s, pixelAt(i, rbin), tcn[i],
+                    satPosition[i], vel[i], _ellipsoid, *demInterp.proj(),
+                    side, h0[slot][rbin]) ||
+                !toMetalPixel(s, demInterp, pixels[p]))
+                pixels[p].r = std::numeric_limits<float>::quiet_NaN();
+        }
+        gpu.run(slot, nl * width, width, _numiter, tolFp32);
+    };
+
+    auto finish = [&](size_t c) {
+        const int slot = c % 2;
+        const size_t l0 = c * chunkLines;
+        const size_t nl = std::min(chunkLines, blockLength - l0);
+        const float* dh = gpu.wait(slot);
+        size_t conv = 0;
+        #pragma omp parallel for schedule(static) reduction(+:conv)
+        for (size_t p = 0; p < nl * width; ++p) {
+            const size_t i = l0 + p / width, rbin = p % width;
+            const Pixel pixel = pixelAt(i, rbin);
+            // FP64 iteration alone where the FP32 one did not converge
+            Vec3 llh = demMidpoint;
+            if (!std::isnan(dh[p]))
+                llh[2] = h0[slot][rbin] + dh[p];
+            const int geostat = rdr2geo(pixel, tcn[i], satPosition[i], vel[i],
+                    _ellipsoid, demInterp, llh, side, _threshold, _numiter,
+                    _extraiter);
+            conv += geostat;
+            _setOutputTopoLayers(llh, layers, i, pixel, satPosition[i], vel[i],
+                                 tcn[i], demInterp);
+            if (geostat && i == l0 + nl - 1)
+                hPrior[rbin] = _ellipsoid.lonLatToXyz(llh).norm() -
+                               radius(satPosition[i]);
+        }
+        converged += conv;
+    };
+
+    const size_t nChunks = (blockLength + chunkLines - 1) / chunkLines;
+    for (size_t c = 0; c < nChunks; ++c) {
+        setup(c);
+        if (c > 0)
+            finish(c - 1);
+    }
+    finish(nChunks - 1);
+    return converged;
+}
+#endif
 
 void isce3::geometry::Topo::
 _initAzimuthLine(size_t line, double& tline, Vec3& pos, Vec3& vel, Basis& TCNbasis)

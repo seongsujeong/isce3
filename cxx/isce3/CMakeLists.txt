@@ -49,9 +49,17 @@ if(ISCE3_WITH_METAL)
     file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/matchtemplate/pycuampcor/cuMetalSource.h
         "// Generated from cuAmpcor.metal by CMake\n"
         "static const char *cuAmpcorMetalSource = R\"METAL(${ISCE3_METAL_SOURCE})METAL\";\n")
-    target_sources(${LISCE} PRIVATE matchtemplate/pycuampcor/cuMetal.mm)
+    # same for the mixed-precision rdr2geo kernel
+    set(METAL_SRC ${CMAKE_CURRENT_SOURCE_DIR}/geometry/detail/Rdr2GeoMixed.metal)
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${METAL_SRC})
+    file(READ ${METAL_SRC} ISCE3_METAL_SOURCE)
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/geometry/detail/Rdr2GeoMixedMetalSource.h
+        "// Generated from Rdr2GeoMixed.metal by CMake\n"
+        "static const char *rdr2geoMixedMetalSource = R\"METAL(${ISCE3_METAL_SOURCE})METAL\";\n")
+    target_sources(${LISCE} PRIVATE matchtemplate/pycuampcor/cuMetal.mm geometry/detail/Rdr2GeoMetal.mm)
     # Objective-C objects held in C++ members need ARC
-    set_source_files_properties(matchtemplate/pycuampcor/cuMetal.mm PROPERTIES COMPILE_OPTIONS -fobjc-arc)
+    set_source_files_properties(matchtemplate/pycuampcor/cuMetal.mm geometry/detail/Rdr2GeoMetal.mm
+        PROPERTIES COMPILE_OPTIONS -fobjc-arc)
     target_compile_definitions(${LISCE} PUBLIC ISCE3_METAL)
     target_link_libraries(${LISCE} PRIVATE "-framework Foundation" "-framework Metal")
 endif()

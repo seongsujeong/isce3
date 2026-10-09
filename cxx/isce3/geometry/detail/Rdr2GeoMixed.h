@@ -120,7 +120,8 @@ inline bool rdr2geoResidualSetup(Rdr2GeoResidualSetup& s,
     return true;
 }
 
-/** \internal FP32 height iteration on residuals: target motion dT(dh) for a
+/** \internal FP32 height iteration on residuals (CPU reference of the Metal
+ * kernel rdr2geoResidualIterate in Rdr2GeoMixed.metal): target motion dT(dh) for a
  * height change dh of the radius + h model, DEM height at the linearized map
  * coordinates, ellipsoidal height of the target to second order, and the new
  * height of the model. demHeight(x, y) returns the DEM height at map

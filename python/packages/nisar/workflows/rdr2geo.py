@@ -94,6 +94,9 @@ def run(cfg):
                               threshold=threshold, numiter=numiter,
                               extraiter=extraiter,
                               lines_per_block=lines_per_block)
+        if not use_gpu:
+            # FP32 height iterations on the Metal GPU (Apple) if available
+            rdr2geo_obj.mixed_precision = cfg['worker'].get('metal_enabled', False)
 
         # dict of layer names keys to tuples of their output name and GDAL types
         layers = {'x':('x', gdal.GDT_Float64), 'y':('y', gdal.GDT_Float64),

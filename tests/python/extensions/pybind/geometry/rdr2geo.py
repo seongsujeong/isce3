@@ -216,3 +216,38 @@ def test_validate(unit_test_params):
             assert mean_err < tol, f"band {i_band} of {test_path} mean err fail"
 
         del test_ds
+
+
+def test_mixed_precision(unit_test_params):
+    """
+    mixed precision (FP32 iterations, on the Metal GPU where available)
+    matches the FP64 iterations to well below a millimeter, except where
+    several solutions exist (layover, shadow and some steep slopes of this
+    mountainous scene, ~0.6% of the pixels): the two start each pixel from
+    another neighbor (FP64: previous range bin, Metal: previous lines) and
+    may converge to another, equally consistent solution
+    """
+    p = unit_test_params
+    length, width = p.radargrid.shape
+    out = {}
+    for mixed in (False, True):
+        rasters = [isce3.io.Raster(f"/vsimem/mixed{mixed}_{n}.rdr", width,
+                                   length, 1, gdal.GDT_Float64, "ENVI")
+                   for n in "xyz"]
+        mask = isce3.io.Raster(f"/vsimem/mixed{mixed}_mask.rdr", width,
+                               length, 1, gdal.GDT_Byte, "ENVI")
+        topo = isce3.geometry.Rdr2Geo(p.radargrid, p.slc.getOrbit(),
+                                      isce3.core.Ellipsoid(),
+                                      p.slc.getDopplerCentroid(),
+                                      threshold=1e-4)
+        topo.mixed_precision = mixed
+        topo.topo(p.dem_raster, *rasters, layover_shadow_raster=mask)
+        del rasters, mask
+        out[mixed] = np.stack([
+            gdal.Open(f"/vsimem/mixed{mixed}_{n}.rdr").ReadAsArray()
+            for n in ("x", "y", "z", "mask")])
+    valid = (out[False][3] == 0) & (out[True][3] == 0)
+    diff = np.abs(out[True][:3] - out[False][:3])[:, valid]
+    # lon/lat in degrees (1e-8 deg ~ 1 mm) and height in meters
+    assert np.percentile(diff[:2], 99) < 1e-8
+    assert np.percentile(diff[2], 99) < 1e-3

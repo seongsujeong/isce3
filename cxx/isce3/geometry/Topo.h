@@ -17,6 +17,10 @@
 // isce3::geometry
 #include "geometry.h"
 
+namespace isce3 { namespace geometry { namespace detail {
+class Rdr2GeoMetal;
+}}}
+
 /**
  * Transformer from radar geometry coordinates to map coordinates with
  * DEM / reference altitude
@@ -100,10 +104,13 @@ public:
     /**
      * Set mixed-precision height iterations
      *
-     * If set, each pixel iterates in FP32 on residuals around an FP64
-     * starting point and finishes with a few FP64 iterations (see
+     * If set and a Metal GPU is available (ISCE3_METAL builds), each pixel
+     * iterates in FP32 on the GPU on residuals around an FP64 starting point
+     * and finishes with the FP64 iteration on the CPU (see
      * detail/Rdr2GeoMixed.h); pixels whose FP32 iteration does not converge
-     * use the FP64 iteration. Results agree to well below a millimeter.
+     * use the FP64 iteration. Results agree to well below a millimeter except
+     * where several solutions exist (layover, steep slopes). Without a Metal
+     * GPU the FP64 iteration is used as if unset.
      *
      * @param[in] enabled Whether to use mixed precision
      */
@@ -305,12 +312,13 @@ private:
                           isce3::core::Vec3& pos, isce3::core::Vec3& vel,
                           isce3::core::Basis& TCNbasis);
 
-    // Mixed-precision rdr2geo of one pixel (see mixedPrecision())
-    int _rdr2geoMixed(const isce3::core::Pixel& pixel,
-                      const isce3::core::Basis& TCNbasis,
-                      const isce3::core::Vec3& pos, const isce3::core::Vec3& vel,
-                      const DEMInterpolator& demInterp,
-                      isce3::core::Vec3& llh) const;
+    // Mixed-precision rdr2geo of one block with the FP32 iterations on a
+    // Metal GPU (ISCE3_METAL builds); returns the number of converged pixels
+    size_t _topoBlockMetal(detail::Rdr2GeoMetal& gpu,
+                           const DEMInterpolator& demInterp, TopoLayers& layers,
+                           size_t lineStart, size_t blockLength,
+                           std::vector<isce3::core::Vec3>& satPosition,
+                           const isce3::core::Vec3& demMidpoint);
 
     /**
      * Write to output layers

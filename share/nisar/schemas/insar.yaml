@@ -1349,7 +1349,8 @@ worker_options:
     gpu_id: int(min=0, required=False)
 
     # Run supported steps of the CPU ampcor (dense offsets, offsets product)
-    # on a Metal GPU (Apple) if available. Default False
+    # and the FP32 height iterations of the CPU rdr2geo (mixed precision) on
+    # a Metal GPU (Apple) if available. Default False
     metal_enabled: bool(required=False)
 
 output_options:
