@@ -612,22 +612,24 @@ def reference_slc_copy(cfg, freq, pol, lines_per_block):
     Path of the memory-mappable (ENVI) copy of the reference RSLC shared by
     the dense offsets, offsets product and crossmul steps, in
     <scratch>/reference_slc/freq<freq>/<pol>. The copy is made on first use
-    and reused while it is complete and newer than the reference RSLC.
+    and reused while it is complete, of the same reference RSLC and newer
+    than it.
     '''
     ref_hdf5 = cfg['input_file_group']['reference_rslc_file']
     out_dir = pathlib.Path(cfg['product_path_group']['scratch_path']) / \
         f'reference_slc/freq{freq}/{pol}'
     out_path = out_dir / 'reference.slc'
-    # written only after a complete copy
+    # written only after a complete copy; holds the source RSLC path
     done = out_dir / 'reference.slc.done'
-    if not done.is_file() or \
+    source = str(pathlib.Path(ref_hdf5).resolve())
+    if not done.is_file() or done.read_text() != source or \
             done.stat().st_mtime < os.path.getmtime(ref_hdf5):
         out_dir.mkdir(parents=True, exist_ok=True)
         # drop the marker first so an interrupted copy is redone
         done.unlink(missing_ok=True)
         copy_raster(ref_hdf5, freq, pol, lines_per_block, str(out_path),
                     file_type='ENVI')
-        done.touch()
+        done.write_text(source)
     return str(out_path)
 
 
