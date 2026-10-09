@@ -4,6 +4,10 @@
 #include "Looks.h"
 #include "Signal.h"
 
+#include <algorithm>
+#include <future>
+#include <numeric>
+
 /**
  * Compute the frequency response due to a subpixel shift introduced by
  * upsampling and downsampling
@@ -72,48 +76,72 @@ crossmul(isce3::io::Raster& refSlcRaster,
         isce3::io::Raster& coherenceRaster,
         isce3::io::Raster* rngOffsetRaster) const
 {
-    // setting local lines per block to avoid modifying class member
-    size_t linesPerBlock = _linesPerBlock;
+    _crossmul(refSlcRaster, secSlcRaster,
+              {{&ifgRaster, &coherenceRaster, _rangeLooks, _azimuthLooks}},
+              rngOffsetRaster);
+}
 
+void isce3::signal::Crossmul::
+crossmul(isce3::io::Raster& refSlcRaster,
+        isce3::io::Raster& secSlcRaster,
+        isce3::io::Raster& ifgRaster,
+        isce3::io::Raster& coherenceRaster,
+        isce3::io::Raster& ifgRaster2,
+        isce3::io::Raster& coherenceRaster2,
+        int rangeLooks2, int azimuthLooks2,
+        isce3::io::Raster* rngOffsetRaster) const
+{
+    if (rangeLooks2 < 1 || azimuthLooks2 < 1)
+        throw isce3::except::InvalidArgument(ISCE_SRCINFO(),
+                "crossmul multilook < 1");
+    _crossmul(refSlcRaster, secSlcRaster,
+              {{&ifgRaster, &coherenceRaster, _rangeLooks, _azimuthLooks},
+               {&ifgRaster2, &coherenceRaster2, rangeLooks2, azimuthLooks2}},
+              rngOffsetRaster);
+}
+
+void isce3::signal::Crossmul::
+_crossmul(isce3::io::Raster& refSlcRaster,
+        isce3::io::Raster& secSlcRaster,
+        const std::vector<LooksOutput>& outputs,
+        isce3::io::Raster* rngOffsetRaster) const
+{
     // check consistency of input/output raster shapes
     size_t nrows = refSlcRaster.length();
     size_t ncols = refSlcRaster.width();
 
-    if (ifgRaster.length() != coherenceRaster.length())
-        throw isce3::except::LengthError(ISCE_SRCINFO(),
-                "interferogram and coherence rasters length do not match");
+    // Making sure that the number of rows in each block (linesPerBlock)
+    // to be an integer multiple of the number of azimuth looks of every
+    // output (of their least common multiple)
+    size_t azimuthLooksLcm = 1;
+    for (const auto& out : outputs) {
+        auto& ifgRaster = *out.ifg;
+        auto& coherenceRaster = *out.coherence;
+        if (ifgRaster.length() != coherenceRaster.length())
+            throw isce3::except::LengthError(ISCE_SRCINFO(),
+                    "interferogram and coherence rasters length do not match");
 
-    if (ifgRaster.width() != coherenceRaster.width())
-        throw isce3::except::LengthError(ISCE_SRCINFO(),
-                "interferogram and coherence rasters width do not match");
-
-    const auto output_rows = ifgRaster.length();
-    const auto output_cols = ifgRaster.width();
-    if (_multiLookEnabled) {
-        // Making sure that the number of rows in each block (linesPerBlock)
-        // to be an integer multiple of the number of azimuth looks.
-        linesPerBlock = (_linesPerBlock / _azimuthLooks) * _azimuthLooks;
+        if (ifgRaster.width() != coherenceRaster.width())
+            throw isce3::except::LengthError(ISCE_SRCINFO(),
+                    "interferogram and coherence rasters width do not match");
 
         // checking only multilook interferogram shape is sufficient
         // interferogram and coherence shapes checked to match above
-        if (output_rows != nrows / _azimuthLooks)
+        const auto output_rows = ifgRaster.length();
+        const auto output_cols = ifgRaster.width();
+        if (output_rows != nrows / out.azimuthLooks)
             throw isce3::except::LengthError(ISCE_SRCINFO(),
-                    "multilooked interferogram/coherence raster lengths of unexpected size");
+                    "interferogram/coherence raster lengths of unexpected size");
 
-        if (output_cols != ncols / _rangeLooks)
+        if (output_cols != ncols / out.rangeLooks)
             throw isce3::except::LengthError(ISCE_SRCINFO(),
-                    "multilooked interferogram/coherence raster widths of unexpected size");
-    } else {
-        // checking only multilook interferogram shape is sufficient
-        // interferogram and coherence shapes checked to match above
-        if (output_rows != nrows)
-            throw isce3::except::LengthError(ISCE_SRCINFO(),
-                    "full resolution input/output raster lengths do not match");
+                    "interferogram/coherence raster widths of unexpected size");
 
-        if (output_cols != ncols)
-            throw isce3::except::LengthError(ISCE_SRCINFO(),
-                    "full resolution input/output raster widths do not match");
+        azimuthLooksLcm = std::lcm(azimuthLooksLcm,
+                                   static_cast<size_t>(out.azimuthLooks));
     }
+    const size_t linesPerBlock = std::max<size_t>(1, _linesPerBlock / azimuthLooksLcm)
+                                 * azimuthLooksLcm;
 
     size_t nthreads = omp_thread_count();
 
@@ -126,17 +154,6 @@ crossmul(isce3::io::Raster& refSlcRaster,
     //signal object for secSlc
     isce3::signal::Signal<float> secSignal(nthreads);
 
-    // instantiate Looks used for multi-looking the interferogram
-    isce3::signal::Looks<float> looksObj;
-
-    const size_t linesPerBlockMLooked = linesPerBlock / _azimuthLooks;
-    const size_t ncolsMultiLooked = ncols / _rangeLooks;
-    looksObj.nrows(linesPerBlock);
-    looksObj.ncols(ncols);
-    looksObj.rowsLooks(_azimuthLooks);
-    looksObj.colsLooks(_rangeLooks);
-    looksObj.nrowsLooked(linesPerBlockMLooked);
-    looksObj.ncolsLooked(ncolsMultiLooked);
 
     // Compute FFT size (power of 2)
     size_t fft_size;
@@ -170,6 +187,12 @@ crossmul(isce3::io::Raster& refSlcRaster,
     // storage for a block of range offsets
     std::valarray<double> rngOffset(ncols*linesPerBlock);
 
+    // next block of the reference and secondary SLCs and range offsets,
+    // read while the current one is processed
+    std::valarray<std::complex<float>> nextRefSlc(spectrumSize);
+    std::valarray<std::complex<float>> nextSecSlc(spectrumSize);
+    std::valarray<double> nextRngOffset(ncols*linesPerBlock);
+
     // storage for a simulated interferogram which its phase is the
     // interferometric phase due to the imaging geometry:
     // phase = (4*PI/wavelength)*(rangePixelSpacing)*(rngOffset)
@@ -182,28 +205,38 @@ crossmul(isce3::io::Raster& refSlcRaster,
     // full resolution interferogram
     std::valarray<std::complex<float>> ifgram(ncols*linesPerBlock);
 
-    // multi-looked interferogram
-    std::valarray<std::complex<float>> ifgramMultiLooked;
+    // Looks object and buffers of each output: multi-looked interferogram,
+    // power of reference and secondary SLC, coherence for multi-looked and
+    // full-res interferogram
+    struct LooksBuffers {
+        isce3::signal::Looks<float> looksObj;
+        std::valarray<std::complex<float>> ifgramMultiLooked;
+        std::valarray<float> refPowerLooked, secPowerLooked, coherence;
+    };
+    std::vector<LooksBuffers> looksBuffers(outputs.size());
+    for (size_t k = 0; k < outputs.size(); ++k) {
+        const auto& out = outputs[k];
+        auto& b = looksBuffers[k];
+        if (out.rangeLooks > 1 || out.azimuthLooks > 1) {
+            // instantiate Looks used for multi-looking the interferogram
+            const size_t linesPerBlockMLooked = linesPerBlock / out.azimuthLooks;
+            const size_t ncolsMultiLooked = ncols / out.rangeLooks;
+            b.looksObj.nrows(linesPerBlock);
+            b.looksObj.ncols(ncols);
+            b.looksObj.rowsLooks(out.azimuthLooks);
+            b.looksObj.colsLooks(out.rangeLooks);
+            b.looksObj.nrowsLooked(linesPerBlockMLooked);
+            b.looksObj.ncolsLooked(ncolsMultiLooked);
 
-    // multi-looked power of reference SLC
-    std::valarray<float> refPowerLooked;
-
-    // multi-looked power of secondary SLC
-    std::valarray<float> secPowerLooked;
-
-    // coherence for multi-looked and full-res interferogram
-    std::valarray<float> coherence;
-
-    if (_multiLookEnabled) {
-        // resize following valarrays from empty
-        const auto mlookSize = ncolsMultiLooked*linesPerBlockMLooked;
-        ifgramMultiLooked.resize(mlookSize);
-        coherence.resize(mlookSize);
-        refPowerLooked.resize(mlookSize);
-        secPowerLooked.resize(mlookSize);
-    }
-    else {
-        coherence.resize(ncols*linesPerBlock);
+            // resize following valarrays from empty
+            const auto mlookSize = ncolsMultiLooked*linesPerBlockMLooked;
+            b.ifgramMultiLooked.resize(mlookSize);
+            b.coherence.resize(mlookSize);
+            b.refPowerLooked.resize(mlookSize);
+            b.secPowerLooked.resize(mlookSize);
+        } else {
+            b.coherence.resize(ncols*linesPerBlock);
+        }
     }
 
     // storage for spectrum of the block of data in reference SLC
@@ -255,6 +288,30 @@ crossmul(isce3::io::Raster& refSlcRaster,
     // loop over all blocks
     std::cout << "nblocks : " << nblocks << std::endl;
 
+    // get a block of reference and secondary SLC data and a block of range
+    // offsets into the next-block storage. This zero-pads SLCs in range.
+    auto readBlock = [&](size_t block) {
+        const auto rowStart = block * linesPerBlock;
+        const auto blockRowsData = std::min(nrows - rowStart, linesPerBlock);
+        nextRefSlc = 0;
+        nextSecSlc = 0;
+        std::valarray<std::complex<float>> dataLine(ncols);
+        for (size_t line = 0; line < blockRowsData; ++line) {
+            refSlcRaster.getLine(dataLine, rowStart + line);
+            nextRefSlc[std::slice(line*fft_size, ncols, 1)] = dataLine;
+            secSlcRaster.getLine(dataLine, rowStart + line);
+            nextSecSlc[std::slice(line*fft_size, ncols, 1)] = dataLine;
+        }
+        if (flatten) {
+            std::valarray<double> offsetLine(ncols);
+            for (size_t line = 0; line < blockRowsData; ++line) {
+                rngOffsetRaster->getLine(offsetLine, rowStart + line);
+                nextRngOffset[std::slice(line*ncols, ncols, 1)] = offsetLine + _offsetStartingRangeShift / _rangePixelSpacing;
+            }
+        }
+    };
+    auto nextBlock = std::async(std::launch::async, readBlock, 0);
+
     for (size_t block = 0; block < nblocks; ++block) {
         std::cout << "block: " << block << std::endl;
         // start row for this block
@@ -267,24 +324,18 @@ crossmul(isce3::io::Raster& refSlcRaster,
         //blockRowsData for last block will be 12
         const auto blockRowsData = std::min(nrows - rowStart, linesPerBlock);
 
-        // fill the valarray with zero before getting the block of the data
-        refSlc = 0;
-        secSlc = 0;
+        // take the block read in the background and start reading the next
+        // one (the input rasters are only used by the reading thread)
+        nextBlock.get();
+        std::swap(refSlc, nextRefSlc);
+        std::swap(secSlc, nextSecSlc);
+        std::swap(rngOffset, nextRngOffset);
+        if (block + 1 < nblocks)
+            nextBlock = std::async(std::launch::async, readBlock, block + 1);
+
+        // fill the valarray with zero
         ifgramUpsampled = 0;
         ifgram = 0;
-
-        // get a block of reference and secondary SLC data
-        // and a block of range offsets
-        // This will change once we have the functionality to
-        // get a block of data directly in to a slice
-        // This zero-pads SLCs in range
-        std::valarray<std::complex<float>> dataLine(ncols);
-        for (size_t line = 0; line < blockRowsData; ++line) {
-            refSlcRaster.getLine(dataLine, rowStart + line);
-            refSlc[std::slice(line*fft_size, ncols, 1)] = dataLine;
-            secSlcRaster.getLine(dataLine, rowStart + line);
-            secSlc[std::slice(line*fft_size, ncols, 1)] = dataLine;
-        }
 
         // upsample the reference and secondary SLCs
         if (_oversampleFactor == 1) {
@@ -308,13 +359,6 @@ crossmul(isce3::io::Raster& refSlcRaster,
         }
 
         if (flatten) {
-            // Read range offsets
-            std::valarray<double> offsetLine(ncols);
-            for (size_t line = 0; line < blockRowsData; ++line) {
-                rngOffsetRaster->getLine(offsetLine, rowStart + line);
-                rngOffset[std::slice(line*ncols, ncols, 1)] = offsetLine + _offsetStartingRangeShift / _rangePixelSpacing;
-            }
-
             #pragma omp parallel for
             for (size_t line = 0; line < blockRowsData; ++line) {
                 for (size_t col = 0; col < ncols; ++col) {
@@ -341,50 +385,61 @@ crossmul(isce3::io::Raster& refSlcRaster,
             }
         }
 
-        // Take looks down (summing columns)
-        if (_multiLookEnabled) {
+        // Take looks down (summing columns), for each output
+        for (size_t k = 0; k < outputs.size(); ++k) {
+            const int rangeLooks = outputs[k].rangeLooks;
+            const int azimuthLooks = outputs[k].azimuthLooks;
+            auto& ifgRaster = *outputs[k].ifg;
+            auto& coherenceRaster = *outputs[k].coherence;
+            auto& looksObj = looksBuffers[k].looksObj;
+            auto& ifgramMultiLooked = looksBuffers[k].ifgramMultiLooked;
+            auto& refPowerLooked = looksBuffers[k].refPowerLooked;
+            auto& secPowerLooked = looksBuffers[k].secPowerLooked;
+            auto& coherence = looksBuffers[k].coherence;
+            if (rangeLooks > 1 || azimuthLooks > 1) {
 
-            // mulitlook interferogram and set raster
-            looksObj.ncols(ncols);
-            looksObj.colsLooks(_rangeLooks);
-            looksObj.multilook(ifgram, ifgramMultiLooked);
-            ifgRaster.setBlock(ifgramMultiLooked, 0, rowStart/_azimuthLooks,
-                        ncols/_rangeLooks, blockRowsData/_azimuthLooks);
+                // mulitlook interferogram and set raster
+                looksObj.ncols(ncols);
+                looksObj.colsLooks(rangeLooks);
+                looksObj.multilook(ifgram, ifgramMultiLooked);
+                ifgRaster.setBlock(ifgramMultiLooked, 0, rowStart/azimuthLooks,
+                            ncols/rangeLooks, blockRowsData/azimuthLooks);
 
-            // multilook SLC to power for coherence computation
-            // refPowerLooked = average(abs(refSlc)^2)
-            if (_oversampleFactor == 1) {
-                looksObj.ncols(fft_size);
-                looksObj.multilook(refSlc, refPowerLooked, 2);
-                looksObj.multilook(secSlc, secPowerLooked, 2);
+                // multilook SLC to power for coherence computation
+                // refPowerLooked = average(abs(refSlc)^2)
+                if (_oversampleFactor == 1) {
+                    looksObj.ncols(fft_size);
+                    looksObj.multilook(refSlc, refPowerLooked, 2);
+                    looksObj.multilook(secSlc, secPowerLooked, 2);
+                } else {
+                    // update looksObj so SlcUpsampled can be mulitlooked
+                    looksObj.ncols(_oversampleFactor*fft_size);
+                    looksObj.colsLooks(_oversampleFactor*rangeLooks);
+                    looksObj.multilook(refSlcUpsampled, refPowerLooked, 2);
+                    looksObj.multilook(secSlcUpsampled, secPowerLooked, 2);
+                }
+
+                // compute coherence
+                #pragma omp parallel for
+                for (size_t i = 0; i< ifgramMultiLooked.size(); ++i) {
+                    coherence[i] = std::abs(ifgramMultiLooked[i])/
+                            std::sqrt(refPowerLooked[i]*secPowerLooked[i]);
+                }
+
+                // set coherence raster
+                coherenceRaster.setBlock(coherence, 0, rowStart/azimuthLooks,
+                        ncols/rangeLooks, blockRowsData/azimuthLooks);
             } else {
-                // update looksObj so SlcUpsampled can be mulitlooked
-                looksObj.ncols(_oversampleFactor*fft_size);
-                looksObj.colsLooks(_oversampleFactor*_rangeLooks);
-                looksObj.multilook(refSlcUpsampled, refPowerLooked, 2);
-                looksObj.multilook(secSlcUpsampled, secPowerLooked, 2);
+                // set the block of interferogram
+                ifgRaster.setBlock(ifgram, 0, rowStart, ncols, blockRowsData);
+
+                // fill coherence with ones (no need to compute result)
+                coherence = 1.0;
+
+                // set the block of coherence
+                coherenceRaster.setBlock(coherence, 0, rowStart, ncols,
+                                         blockRowsData);
             }
-
-            // compute coherence
-            #pragma omp parallel for
-            for (size_t i = 0; i< ifgramMultiLooked.size(); ++i) {
-                coherence[i] = std::abs(ifgramMultiLooked[i])/
-                        std::sqrt(refPowerLooked[i]*secPowerLooked[i]);
-            }
-
-            // set coherence raster
-            coherenceRaster.setBlock(coherence, 0, rowStart/_azimuthLooks,
-                    ncols/_rangeLooks, blockRowsData/_azimuthLooks);
-        } else {
-            // set the block of interferogram
-            ifgRaster.setBlock(ifgram, 0, rowStart, ncols, blockRowsData);
-
-            // fill coherence with ones (no need to compute result)
-            coherence = 1.0;
-
-            // set the block of coherence
-            coherenceRaster.setBlock(coherence, 0, rowStart, ncols,
-                                     blockRowsData);
         }
     }
 }

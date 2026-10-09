@@ -1,4 +1,5 @@
 #include "Signal.h"
+#include <algorithm>
 #include <iostream>
 #include "fftw3cxx.h"
 
@@ -6,6 +7,8 @@ template<class T>
 struct isce3::signal::Signal<T>::impl {
     isce3::fftw3cxx::plan<T> _plan_fwd;
     isce3::fftw3cxx::plan<T> _plan_inv;
+    // spectrum buffers of upsample, kept between calls
+    std::valarray<std::complex<T>> _spectrum, _spectrumShifted;
 };
 
 template <class T>
@@ -970,18 +973,21 @@ template<class T>
 void isce3::signal::Signal<T>::
 upsample(std::valarray<std::complex<T>> &signal,
             std::valarray<std::complex<T>> &signalUpsampled,
-            int rows, int fft_size, int upsampleFactor, 
-            std::valarray<std::complex<T>> shiftImpact)
+            int rows, int fft_size, int upsampleFactor,
+            const std::valarray<std::complex<T>>& shiftImpact)
 {
 
     // number of columns of upsampled spectrum
-    int columns = upsampleFactor*fft_size;
+    const size_t columns = static_cast<size_t>(upsampleFactor) * fft_size;
 
-    // temporary storage for the spectrum before and after the shift
-    std::valarray<std::complex<T>> spectrum(fft_size*rows);
-    std::valarray<std::complex<T>> spectrumShifted(columns*rows);
-
-    spectrumShifted = std::complex<T> (0.0,0.0);
+    // storage for the spectrum before and after the shift, reused between
+    // calls (the FFT and the shift below write every element)
+    auto& spectrum = pimpl->_spectrum;
+    auto& spectrumShifted = pimpl->_spectrumShifted;
+    if (spectrum.size() != static_cast<size_t>(fft_size) * rows)
+        spectrum.resize(static_cast<size_t>(fft_size) * rows);
+    if (spectrumShifted.size() != columns * rows)
+        spectrumShifted.resize(columns * rows);
 
     // forward fft in range
     pimpl->_plan_fwd.execute_dft(&signal[0], &spectrum[0]);
@@ -996,28 +1002,33 @@ upsample(std::valarray<std::complex<T>> &signal,
     //  becomes:
     //      spectrumShifted = [1,2,3,0,0,0,0,0,0,4,5,6]
     //
-
+    // and multiply the shiftImpact (a linear phase is frequency domain
+    // equivalent to a shift in time domain) by the spectrum; row by row in
+    // parallel
+    const bool shift = spectrumShifted.size() == shiftImpact.size();
+    const size_t nlow = (fft_size + 1) / 2, nhigh = fft_size / 2;
     #pragma omp parallel for
-    for (size_t column = 0; column<(fft_size+1)/2; ++column)
-        spectrumShifted[std::slice(column, rows, columns)] = spectrum[std::slice(column, rows, fft_size)];
-
-    #pragma omp parallel for
-    for (size_t i = 0; i<fft_size/2; ++i){
-        size_t j = upsampleFactor*fft_size - fft_size/2 + i;
-        spectrumShifted[std::slice(j, rows, columns)] = spectrum[std::slice(i+fft_size/2, rows, fft_size)];
+    for (int row = 0; row < rows; ++row) {
+        const std::complex<T>* in = &spectrum[static_cast<size_t>(row) * fft_size];
+        std::complex<T>* out = &spectrumShifted[row * columns];
+        std::copy(in, in + nlow, out);
+        std::fill(out + nlow, out + columns - nhigh, std::complex<T>(0));
+        std::copy(in + nhigh, in + 2 * nhigh, out + columns - nhigh);
+        if (shift) {
+            const std::complex<T>* impact = &shiftImpact[row * columns];
+            for (size_t col = 0; col < columns; ++col)
+                out[col] *= impact[col];
+        }
     }
-
-
-    // multiply the shiftImpact (a linear phase is frequency domain
-    // equivalent to a shift in time domain) by the spectrum
-    if (spectrumShifted.size() == shiftImpact.size())
-        spectrumShifted *= shiftImpact;
 
     // inverse fft to get the upsampled signal
     pimpl->_plan_inv.execute_dft(&spectrumShifted[0], &signalUpsampled[0]);
 
-    // Normalize
-    signalUpsampled /= fft_size;
+    // Normalize (real division of both parts, in parallel)
+    const T scale = static_cast<T>(fft_size);
+    #pragma omp parallel for
+    for (size_t i = 0; i < signalUpsampled.size(); ++i)
+        signalUpsampled[i] /= scale;
 
 }
 

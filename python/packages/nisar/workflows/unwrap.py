@@ -125,17 +125,21 @@ def run(cfg: dict, input_hdf5: str, output_hdf5: str):
                 # Use the generated wrapped interferogram and coherence for
                 # unwrapping.
                 if (unwrap_rg_looks > 1) or (unwrap_az_looks > 1):
-                    if cfg['processing']['fine_resample']['enabled']:
-                        resample_type = 'fine'
-                    else:
-                        resample_type = 'coarse'
-                    crossmul.run(cfg, output_hdf5=None, resample_type=resample_type,
-                                 dump_on_disk=True, rg_looks=unwrap_rg_looks,
-                                 az_looks=unwrap_az_looks)
-                    igram_path = str(crossmul_scratch / 'wrapped_igram_rg'
-                                     f'{unwrap_rg_looks}_az{unwrap_az_looks}')
-                    corr_path = str(crossmul_scratch / 'coherence_rg'
-                                    f'{unwrap_rg_looks}_az{unwrap_az_looks}')
+                    igram_path, corr_path = crossmul.looks_paths(
+                        crossmul_scratch, unwrap_rg_looks, unwrap_az_looks)
+                    # the crossmul step makes them along with the RIFG
+                    # interferogram when it can
+                    if not (pathlib.Path(igram_path).is_file() and
+                            pathlib.Path(corr_path).is_file()):
+                        if cfg['processing']['fine_resample']['enabled']:
+                            resample_type = 'fine'
+                        else:
+                            resample_type = 'coarse'
+                        crossmul.run(cfg, output_hdf5=None,
+                                     resample_type=resample_type,
+                                     dump_on_disk=True,
+                                     rg_looks=unwrap_rg_looks,
+                                     az_looks=unwrap_az_looks)
 
                 # If enabled, preprocess wrapped phase: remove invalid pixels
                 # and fill their location with a filling algorithm

@@ -372,8 +372,17 @@ void isce3::signal::Looks<T>::multilook(std::valarray<std::complex<T>>& input,
         size_t line = kk / _ncolsLooked;
         size_t col = kk % _ncolsLooked;
         T sum = 0.0;
-        for (size_t j = col * _colsLooks; j < (col + 1) * _colsLooks; ++j) {
-            sum += std::pow(std::abs(input[line * _ncols + j]), exponent);
+        if (exponent == 2) {
+            // std::pow(x, 2) without the call: the square of a float is
+            // exact in double, as pow's result is
+            for (size_t j = col * _colsLooks; j < (col + 1) * _colsLooks; ++j) {
+                const double a = std::abs(input[line * _ncols + j]);
+                sum += a * a;
+            }
+        } else {
+            for (size_t j = col * _colsLooks; j < (col + 1) * _colsLooks; ++j) {
+                sum += std::pow(std::abs(input[line * _ncols + j]), exponent);
+            }
         }
         tempOutput[line * _ncolsLooked + col] = sum;
     }

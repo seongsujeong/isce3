@@ -3,6 +3,7 @@
 #include "forward.h"
 
 #include <complex>
+#include <vector>
 #include <isce3/core/LUT1d.h>
 #include <isce3/io/forward.h>
 
@@ -31,6 +32,31 @@ class isce3::signal::Crossmul {
                     isce3::io::Raster& secSlcRaster,
                     isce3::io::Raster& ifgRaster,
                     isce3::io::Raster& coherence,
+                    isce3::io::Raster* rngOffsetRaster = nullptr) const;
+
+        /**
+         * Crossmultiply 2 SLCs into the interferogram and coherence of the
+         * set looks and, in the same pass, of a second number of looks (the
+         * SLCs are read, upsampled and multiplied once)
+         *
+         * \param[in]  refSlcRaster input raster of reference SLC
+         * \param[in]  secSlcRaster input raster of secondary SLC
+         * \param[out] ifgRaster    output interferogram raster
+         * \param[out] coherenceRaster  output coherence raster
+         * \param[out] ifgRaster2   output interferogram raster, second looks
+         * \param[out] coherenceRaster2 output coherence raster, second looks
+         * \param[in]  rangeLooks2  number of range looks of the second outputs
+         * \param[in]  azimuthLooks2 number of azimuth looks of the second outputs
+         * \param[in]  rngOffsetRaster  optional pointer to range offset raster
+         *                              if provided, interferogram will be flattened
+         */
+        void crossmul(isce3::io::Raster& refSlcRaster,
+                    isce3::io::Raster& secSlcRaster,
+                    isce3::io::Raster& ifgRaster,
+                    isce3::io::Raster& coherenceRaster,
+                    isce3::io::Raster& ifgRaster2,
+                    isce3::io::Raster& coherenceRaster2,
+                    int rangeLooks2, int azimuthLooks2,
                     isce3::io::Raster* rngOffsetRaster = nullptr) const;
 
         /** Set doppler LUTs for reference and secondary SLCs*/
@@ -107,6 +133,19 @@ class isce3::signal::Crossmul {
                                 size_t &peakIndex);
 
     private:
+        // interferogram and coherence outputs of a number of looks
+        struct LooksOutput {
+            isce3::io::Raster* ifg;
+            isce3::io::Raster* coherence;
+            int rangeLooks, azimuthLooks;
+        };
+
+        // crossmultiply 2 SLCs into one or more looks outputs
+        void _crossmul(isce3::io::Raster& refSlcRaster,
+                       isce3::io::Raster& secSlcRaster,
+                       const std::vector<LooksOutput>& outputs,
+                       isce3::io::Raster* rngOffsetRaster) const;
+
         //Doppler LUT for the refernce SLC
         isce3::core::LUT1d<double> _refDoppler;
 

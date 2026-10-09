@@ -3,6 +3,7 @@
 '''
 wrapper for crossmul
 '''
+import math
 import pathlib
 import time
 
@@ -21,6 +22,15 @@ from nisar.workflows.helpers import (copy_raster,
                                      get_cfg_freq_pols, reference_slc_copy)
 from nisar.products.insar.product_paths import RIFGGroupsPaths
 from nisar.workflows.yaml_argparse import YamlArgparse
+
+
+def looks_paths(output_dir, rg_looks, az_looks):
+    '''
+    Paths of the wrapped interferogram and coherence of a number of looks in
+    a crossmul scratch directory (shared with the unwrap step)
+    '''
+    return (f'{output_dir}/wrapped_igram_rg{rg_looks}_az{az_looks}',
+            f'{output_dir}/coherence_rg{rg_looks}_az{az_looks}')
 
 
 def run(cfg: dict, output_hdf5: str = None, resample_type='coarse',
@@ -68,6 +78,19 @@ def run(cfg: dict, output_hdf5: str = None, resample_type='coarse',
 
     crossmul.range_looks = rg_looks
     crossmul.az_looks = az_looks
+
+    # Wrapped interferogram and coherence of the phase unwrapping looks: made
+    # in the same pass as the RIFG ones (CPU) for the unwrap step, which then
+    # does not crossmultiply again. A pass needs blocks of a multiple of both
+    # numbers of azimuth looks (their least common multiple).
+    unwrap_cfg = cfg['processing'].get('phase_unwrap') or {}
+    unwrap_looks = (unwrap_cfg.get('range_looks', 1),
+                    unwrap_cfg.get('azimuth_looks', 1))
+    with_unwrap_looks = (not dump_on_disk and not use_gpu
+                         and max(unwrap_looks) > 1
+                         and unwrap_looks != (rg_looks, az_looks)
+                         and math.lcm(az_looks, unwrap_looks[1])
+                         <= 2 * lines_per_block)
     crossmul.oversample_factor = crossmul_params['oversample']
     crossmul.lines_per_block = lines_per_block
 
@@ -122,8 +145,8 @@ def run(cfg: dict, output_hdf5: str = None, resample_type='coarse',
                 pol_group_path = f'{freq_group_path}/interferogram/{pol}'
 
                 if dump_on_disk:
-                    igram_path = f'{output_dir}/wrapped_igram_rg{rg_looks}_az{az_looks}'
-                    coh_path = f'{output_dir}/coherence_rg{rg_looks}_az{az_looks}'
+                    igram_path, coh_path = looks_paths(output_dir, rg_looks,
+                                                       az_looks)
                     ifg_raster = isce3.io.Raster(igram_path, ref_radar_grid.width // rg_looks,
                                                  ref_radar_grid.length // az_looks, 1, gdal.GDT_CFloat32, 'ENVI')
                     coh_raster = isce3.io.Raster(coh_path, ref_radar_grid.width // rg_looks,
@@ -165,8 +188,32 @@ def run(cfg: dict, output_hdf5: str = None, resample_type='coarse',
                 sec_slc_raster = isce3.io.Raster(raster_path)
 
                 # Compute multilooked interferogram and coherence raster
-                crossmul.crossmul(ref_slc_raster, sec_slc_raster, ifg_raster,
-                                  coh_raster, flatten_raster)
+                unwrap_paths = looks_paths(output_dir, *unwrap_looks)
+                if with_unwrap_looks:
+                    # and those of the phase unwrapping looks
+                    ifg2_raster, coh2_raster = (
+                        isce3.io.Raster(path,
+                                        ref_slc_raster.width // unwrap_looks[0],
+                                        ref_slc_raster.length // unwrap_looks[1],
+                                        1, dtype, 'ENVI')
+                        for path, dtype in zip(unwrap_paths,
+                                               (gdal.GDT_CFloat32,
+                                                gdal.GDT_Float32)))
+                    crossmul.crossmul_two_looks(
+                        ref_slc_raster, sec_slc_raster, ifg_raster, coh_raster,
+                        ifg2_raster, coh2_raster, *unwrap_looks,
+                        flatten_raster)
+                    del ifg2_raster, coh2_raster
+                else:
+                    crossmul.crossmul(ref_slc_raster, sec_slc_raster,
+                                      ifg_raster, coh_raster, flatten_raster)
+                    if not dump_on_disk:
+                        # unwrap-looks outputs of an earlier run are stale
+                        for path in map(pathlib.Path, unwrap_paths):
+                            for f in path.parent.glob(path.name + '*'):
+                                if f.name == path.name or \
+                                        f.name.startswith(path.name + '.'):
+                                    f.unlink()
 
                 del ifg_raster
 

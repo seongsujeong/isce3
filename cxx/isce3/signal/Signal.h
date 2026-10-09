@@ -345,7 +345,7 @@ class isce3::signal::Signal {
         void upsample(std::valarray<std::complex<T>> &signal,
                     std::valarray<std::complex<T>> &signalOversampled,
                     int rows, int fft_size, int oversampleFactor,
-                    std::valarray<std::complex<T>> shiftImpact);
+                    const std::valarray<std::complex<T>>& shiftImpact);
 
         /** \brief upsampling a basebanded block of data in range (columns)
          * direction and shifting the upsampled signal by a constant. The shift

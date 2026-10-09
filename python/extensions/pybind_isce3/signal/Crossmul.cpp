@@ -25,7 +25,9 @@ void addbinding(py::class_<Crossmul> & pyCrossmul)
     Returns crossmul object with range and and azimuth multilook
     off by default.
                 )")
-        .def("crossmul", &Crossmul::crossmul,
+        .def("crossmul", py::overload_cast<isce3::io::Raster&,
+                    isce3::io::Raster&, isce3::io::Raster&, isce3::io::Raster&,
+                    isce3::io::Raster*>(&Crossmul::crossmul, py::const_),
                 py::arg("ref_slc"),
                 py::arg("sec_slc"),
                 py::arg("interferogram"),
@@ -45,6 +47,44 @@ void addbinding(py::class_<Crossmul> & pyCrossmul)
         Output coherence raster
     interferogram: Raster
         Optional range offset raster usef for flattening
+                )")
+        .def("crossmul_two_looks", py::overload_cast<isce3::io::Raster&,
+                    isce3::io::Raster&, isce3::io::Raster&, isce3::io::Raster&,
+                    isce3::io::Raster&, isce3::io::Raster&, int, int,
+                    isce3::io::Raster*>(&Crossmul::crossmul, py::const_),
+                py::arg("ref_slc"),
+                py::arg("sec_slc"),
+                py::arg("interferogram"),
+                py::arg("coherence"),
+                py::arg("interferogram2"),
+                py::arg("coherence2"),
+                py::arg("range_looks2"),
+                py::arg("az_looks2"),
+                py::arg("range_offset") = nullptr, R"(
+    Crossmultiply reference and secondary SLCs into the interferogram and
+    coherence of the set looks and, in the same pass, of a second number of
+    looks.
+
+    Parameters
+    ----------
+    ref_slc: Raster
+        Input reference SLC raster
+    sec_slc: Raster
+        Input secondary SLC raster
+    interferogram: Raster
+        Output interferogram raster
+    coherence: Raster
+        Output coherence raster
+    interferogram2: Raster
+        Output interferogram raster of the second looks
+    coherence2: Raster
+        Output coherence raster of the second looks
+    range_looks2: int
+        Number of range looks of the second outputs
+    az_looks2: int
+        Number of azimuth looks of the second outputs
+    range_offset: Raster
+        Optional range offset raster used for flattening
                 )")
         .def("set_dopplers", &Crossmul::doppler,
                 py::arg("ref_doppler"),
