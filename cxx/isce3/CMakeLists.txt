@@ -38,28 +38,32 @@ target_include_directories(${LISCE} PUBLIC
     $<INSTALL_INTERFACE:"${ISCE_INCLUDEDIR}">
     )
 
-# Metal (Apple GPU) steps of the CPU ampcor
+# Metal (Apple GPU) steps: CPU ampcor, mixed-precision rdr2geo, SLC resampling
 if(ISCE3_WITH_METAL)
     # Metal kernels are compiled at run time from source embedded in a header
     # as a raw string literal (the source must not contain `)METAL"`);
-    # editing the .metal file re-runs configure to regenerate it
-    set(METAL_SRC ${CMAKE_CURRENT_SOURCE_DIR}/matchtemplate/pycuampcor/cuAmpcor.metal)
-    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${METAL_SRC})
-    file(READ ${METAL_SRC} ISCE3_METAL_SOURCE)
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/matchtemplate/pycuampcor/cuMetalSource.h
-        "// Generated from cuAmpcor.metal by CMake\n"
-        "static const char *cuAmpcorMetalSource = R\"METAL(${ISCE3_METAL_SOURCE})METAL\";\n")
-    # same for the mixed-precision rdr2geo kernel
-    set(METAL_SRC ${CMAKE_CURRENT_SOURCE_DIR}/geometry/detail/Rdr2GeoMixed.metal)
-    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${METAL_SRC})
-    file(READ ${METAL_SRC} ISCE3_METAL_SOURCE)
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/geometry/detail/Rdr2GeoMixedMetalSource.h
-        "// Generated from Rdr2GeoMixed.metal by CMake\n"
-        "static const char *rdr2geoMixedMetalSource = R\"METAL(${ISCE3_METAL_SOURCE})METAL\";\n")
-    target_sources(${LISCE} PRIVATE matchtemplate/pycuampcor/cuMetal.mm geometry/detail/Rdr2GeoMetal.mm)
+    # editing a .metal file re-runs configure to regenerate its header
+    foreach(METAL_KERNEL
+            "matchtemplate/pycuampcor/cuAmpcor.metal;matchtemplate/pycuampcor/cuMetalSource.h;cuAmpcorMetalSource"
+            "geometry/detail/Rdr2GeoMixed.metal;geometry/detail/Rdr2GeoMixedMetalSource.h;rdr2geoMixedMetalSource"
+            "geometry/detail/Rdr2GeoDD.metal;geometry/detail/Rdr2GeoDDMetalSource.h;rdr2geoDDMetalSource"
+            "image/Resample.metal;image/ResampleMetalSource.h;resampleMetalSource")
+        list(GET METAL_KERNEL 0 METAL_SRC)
+        list(GET METAL_KERNEL 1 METAL_HEADER)
+        list(GET METAL_KERNEL 2 METAL_VAR)
+        set(METAL_SRC ${CMAKE_CURRENT_SOURCE_DIR}/${METAL_SRC})
+        set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${METAL_SRC})
+        file(READ ${METAL_SRC} ISCE3_METAL_SOURCE)
+        file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${METAL_HEADER}
+            "// Generated from ${METAL_SRC} by CMake\n"
+            "static const char *${METAL_VAR} = R\"METAL(${ISCE3_METAL_SOURCE})METAL\";\n")
+    endforeach()
+    set(METAL_SOURCES matchtemplate/pycuampcor/cuMetal.mm
+        geometry/detail/Rdr2GeoMetal.mm geometry/detail/Rdr2GeoDDMetal.mm
+        image/ResampleMetal.mm core/detail/MetalContext.mm)
+    target_sources(${LISCE} PRIVATE ${METAL_SOURCES})
     # Objective-C objects held in C++ members need ARC
-    set_source_files_properties(matchtemplate/pycuampcor/cuMetal.mm geometry/detail/Rdr2GeoMetal.mm
-        PROPERTIES COMPILE_OPTIONS -fobjc-arc)
+    set_source_files_properties(${METAL_SOURCES} PROPERTIES COMPILE_OPTIONS -fobjc-arc)
     target_compile_definitions(${LISCE} PUBLIC ISCE3_METAL)
     target_link_libraries(${LISCE} PRIVATE "-framework Foundation" "-framework Metal")
 endif()

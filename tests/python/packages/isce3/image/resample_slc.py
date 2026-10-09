@@ -3,7 +3,8 @@ from __future__ import annotations
 
 import pytest
 
-from .resamp_funcs import block_resample, pybind_resample
+from .resamp_funcs import (block_resample, metal_block_resample,
+                           metal_pybind_resample, pybind_resample)
 from ..resample_slc_utils import (
     distributed_target_resample_test,
     ResampFunc,
@@ -16,6 +17,8 @@ from ..resample_slc_utils import (
     [
         (pybind_resample, "C++ _resample_to_coords pybind"),
         (block_resample, "Python resample_slc_blocks"),
+        (metal_pybind_resample, "C++ _metal_resample_to_coords pybind"),
+        (metal_block_resample, "Python resample_slc_blocks with_metal"),
     ]
 )
 class TestResampleSLCV2:

@@ -1,8 +1,10 @@
 #include "Topo.h"
+#include "detail/Rdr2GeoDDMetal.h"
 #include "detail/Rdr2GeoMetal.h"
 #include "detail/Rdr2GeoMixed.h"
 
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <chrono>
 #include <cmath>
@@ -145,10 +147,20 @@ topo(Raster & demRaster, TopoLayers & layers)
     info << "DEM EPSG: " << demRaster.getEPSG() << pyre::journal::newline;
     info << "Output EPSG: " << _epsgOut << pyre::journal::endl;
 
-    // Metal GPU for the FP32 iterations of the mixed precision, if available
+    // Metal GPU for the mixed precision, if available: the whole iteration
+    // in double-float when only x, y, z are written and the Doppler is
+    // constant, else the FP32 iterations with an FP64 finish on the CPU
+    std::unique_ptr<detail::Rdr2GeoDDMetal> gpuDD;
     std::unique_ptr<detail::Rdr2GeoMetal> gpu;
 #ifdef ISCE3_METAL
-    if (_mixedPrecision)
+    const bool onlyXYZ = !_computeMask &&
+        !layers.hasIncRaster() && !layers.hasHdgRaster() &&
+        !layers.hasLocalIncRaster() && !layers.hasLocalPsiRaster() &&
+        !layers.hasSimRaster() && !layers.hasMaskRaster() &&
+        !layers.hasGroundToSatEastRaster() && !layers.hasGroundToSatNorthRaster();
+    if (_mixedPrecision && onlyXYZ && !_doppler.haveData())
+        gpuDD = detail::Rdr2GeoDDMetal::create();
+    if (_mixedPrecision && !gpuDD)
         gpu = detail::Rdr2GeoMetal::create();
 #endif
 
@@ -197,7 +209,10 @@ topo(Raster & demRaster, TopoLayers & layers)
         assert(demInterp.haveRaster());
         const auto dem_midpoint = demInterp.midLonLat();
 
-        if (gpu)
+        if (gpuDD)
+            totalconv += _topoBlockMetalDD(*gpuDD, demInterp, layers, lineStart,
+                                           blockLength, satPosition, dem_midpoint);
+        else if (gpu)
             totalconv += _topoBlockMetal(*gpu, demInterp, layers, lineStart,
                                          blockLength, satPosition, dem_midpoint);
         else
@@ -458,6 +473,224 @@ _topoBlockMetal(detail::Rdr2GeoMetal& gpu, const DEMInterpolator& demInterp,
             finish(c - 1);
     }
     finish(nChunks - 1);
+    return converged;
+}
+#endif
+
+#ifdef ISCE3_METAL
+/** rdr2geo of one block on the Metal GPU in double-float arithmetic
+ * (detail/Rdr2GeoDD.metal), in chunks of tileSize lines. The CPU fills the
+ * line geometry and, per tile of tileSize x tileSize pixels, an FP64 anchor
+ * (target of the tile center at its starting height) with quadratic models
+ * of the DEM indices and output coordinates in the ECEF offset from it
+ * (central differences, 50 m steps; model errors ~1e-8 m for the targets of
+ * a tile), then writes the GPU results. Each pixel starts from the height of
+ * its range bin in the previous chunk (the DEM mean for the first one).
+ * Pixels of tiles without a valid anchor use the FP64 rdr2geo. */
+size_t isce3::geometry::Topo::
+_topoBlockMetalDD(detail::Rdr2GeoDDMetal& gpu, const DEMInterpolator& demInterp,
+                  TopoLayers& layers, size_t lineStart, size_t blockLength,
+                  std::vector<Vec3>& satPosition, const Vec3& demMidpoint)
+{
+    using detail::DD;
+    constexpr int tileSize = 32;
+    constexpr double step = 50.;  // m, central differences of the models
+    const size_t width = _radarGrid.width();
+    const int tilesPerRow = static_cast<int>((width + tileSize - 1) / tileSize);
+    const auto side = _radarGrid.lookSide();
+    const double major = _ellipsoid.a();
+    const double minor = major * std::sqrt(1. - _ellipsoid.e2());
+    gpu.dem(demInterp.data(), demInterp.width(), demInterp.length());
+
+    // orbit state of the block lines
+    std::vector<double> tline(blockLength);
+    std::vector<Vec3> vel(blockLength);
+    std::vector<Basis> tcn(blockLength);
+    for (size_t i = 0; i < blockLength; ++i)
+        _initAzimuthLine(lineStart + i, tline[i], satPosition[i], vel[i], tcn[i]);
+
+    // slant ranges and starting heights (radius + h model) per range bin
+    DD* ranges = gpu.ranges(width);
+    for (size_t bin = 0; bin < width; ++bin)
+        ranges[bin] = DD(_radarGrid.slantRange(bin));
+    std::vector<float> hPrior(width, static_cast<float>(demMidpoint[2]));
+
+    // DEM indices and output coordinates of an ECEF position; the DEM
+    // longitude wrap (interpolateXY) is the one of the anchor
+    auto maps = [&](const Vec3& xyz, double wrap, std::array<double, 4>& f) {
+        const Vec3 llh = _ellipsoid.xyzToLonLat(xyz);
+        Vec3 m, o;
+        demInterp.proj()->forward(llh, m);
+        _proj->forward(llh, o);
+        f = {(m[0] + wrap - demInterp.xStart()) / demInterp.deltaX(),
+             (m[1] - demInterp.yStart()) / demInterp.deltaY(), o[0], o[1]};
+    };
+    auto demWrap = [&](const Vec3& xyz) {
+        if (demInterp.epsgCode() != 4326)
+            return 0.;
+        Vec3 m;
+        demInterp.proj()->forward(_ellipsoid.xyzToLonLat(xyz), m);
+        double x = m[0];
+        if (x > 360 || x < -360) x = std::fmod(x, 360);
+        if (x < -180) x += 360;
+        if (x - 360 >= demInterp.xStart()) x -= 360;
+        else if (x < demInterp.xStart() && x + 360 >= demInterp.xStart()) x += 360;
+        return x - m[0];
+    };
+
+    size_t converged = 0;
+    for (size_t l0 = 0; l0 < blockLength; l0 += tileSize) {
+        const size_t nl = std::min<size_t>(tileSize, blockLength - l0);
+
+        // line geometry
+        detail::Rdr2GeoDDLine* lines = gpu.lines(nl);
+        for (size_t k = 0; k < nl; ++k) {
+            const size_t i = l0 + k;
+            const Vec3& pos = satPosition[i];
+            const Vec3 vhat = vel[i].normalized();
+            const double satDist = pos.norm();
+            const Vec3 q {pos[0] / major, pos[1] / major, pos[2] / minor};
+            const double eta = 1. / q.norm();
+            auto& L = lines[k];
+            for (int j = 0; j < 3; ++j) {
+                L.pos[j] = DD(pos[j]);
+                L.that[j] = DD(tcn[i].x0()[j]);
+                L.chat[j] = DD(tcn[i].x1()[j]);
+                L.nhat[j] = DD(tcn[i].x2()[j]);
+            }
+            L.satDist = DD(satDist);
+            L.radius = DD(eta * satDist);
+            L.height = DD((1. - eta) * satDist);
+            L.ndotv = DD(tcn[i].x2().dot(vhat));
+            L.vdott = DD(vhat.dot(tcn[i].x0()));
+            // dopfact of a constant Doppler, as in the CPU pixel loop
+            L.dopCoef = DD(0.5 * _radarGrid.wavelength() *
+                           (_doppler.eval(tline[i], _radarGrid.midRange()) / vel[i].norm()));
+            L.side = DD(side == isce3::core::LookSide::Right ? 1. : -1.);
+        }
+        std::copy(hPrior.begin(), hPrior.end(), gpu.prior(width));
+
+        // tile anchors and map models
+        detail::Rdr2GeoDDTile* tiles = gpu.tiles(tilesPerRow);
+        #pragma omp parallel for schedule(dynamic, 16)
+        for (int tc = 0; tc < tilesPerRow; ++tc) {
+            auto& t = tiles[tc];
+            t.valid = 0;
+            const size_t i = l0 + nl / 2;
+            const size_t bin = std::min<size_t>(tc * tileSize + tileSize / 2, width - 1);
+            const double r = _radarGrid.slantRange(bin);
+            const auto& L = lines[nl / 2];
+            const double h = hPrior[bin];
+            // target of the anchor pixel at height h (updateLLH of rdr2geo)
+            const double a = L.satDist.value(), b = L.radius.value() + h;
+            const double c = 0.5 * (a / r + r / a - (b / a) * (b / r));
+            const double gamma = r * c;
+            const double alpha = (L.dopCoef.value() * r - gamma * L.ndotv.value()) /
+                                 L.vdott.value();
+            const double rs = r * std::sqrt(1. - c * c);
+            const double beta = L.side.value() * std::sqrt(rs * rs - alpha * alpha);
+            const Vec3 A = satPosition[i] + alpha * tcn[i].x0() + beta * tcn[i].x1() +
+                           gamma * tcn[i].x2();
+            if (!std::isfinite(A[0]) || !std::isfinite(A[1]) || !std::isfinite(A[2]))
+                continue;
+            const double wrap = demWrap(A);
+            std::array<double, 4> f0, fp[3], fm[3], fpp, fpm, fmp, fmm;
+            maps(A, wrap, f0);
+            Vec3 e[3] = {{step, 0, 0}, {0, step, 0}, {0, 0, step}};
+            for (int k = 0; k < 3; ++k) {
+                maps(A + e[k], wrap, fp[k]);
+                maps(A - e[k], wrap, fm[k]);
+            }
+            double J[4][3], H[4][6];
+            for (int m = 0; m < 4; ++m)
+                for (int k = 0; k < 3; ++k) {
+                    J[m][k] = (fp[k][m] - fm[k][m]) / (2 * step);
+                    H[m][k] = (fp[k][m] - 2 * f0[m] + fm[k][m]) / (step * step);
+                }
+            const int pairs[3][2] = {{0, 1}, {0, 2}, {1, 2}};
+            for (int n = 0; n < 3; ++n) {
+                const Vec3 &ek = e[pairs[n][0]], &el = e[pairs[n][1]];
+                maps(A + ek + el, wrap, fpp);
+                maps(A + ek - el, wrap, fpm);
+                maps(A - ek + el, wrap, fmp);
+                maps(A - ek - el, wrap, fmm);
+                for (int m = 0; m < 4; ++m)
+                    H[m][3 + n] = (fpp[m] - fpm[m] - fmp[m] + fmm[m]) / (4 * step * step);
+            }
+            bool finite = true;
+            for (int m = 0; m < 4; ++m)
+                for (int k = 0; k < 6; ++k)
+                    finite = finite && std::isfinite(H[m][k]) && (k > 2 || std::isfinite(J[m][k]));
+            if (!finite || !(std::abs(f0[0]) < 1e9 && std::abs(f0[1]) < 1e9))
+                continue;
+            for (int k = 0; k < 3; ++k)
+                t.anchor[k] = DD(A[k]);
+            t.demCol = static_cast<int>(std::floor(f0[0]));
+            t.demRow = static_cast<int>(std::floor(f0[1]));
+            t.demFrac[0] = static_cast<float>(f0[0] - t.demCol);
+            t.demFrac[1] = static_cast<float>(f0[1] - t.demRow);
+            for (int m = 0; m < 2; ++m) {
+                t.out0[m] = DD(f0[2 + m]);
+                for (int k = 0; k < 3; ++k) {
+                    t.demJ[m][k] = static_cast<float>(J[m][k]);
+                    t.outJ[m][k] = DD(J[2 + m][k]);
+                }
+                for (int k = 0; k < 6; ++k) {
+                    t.demH[m][k] = static_cast<float>(H[m][k]);
+                    t.outH[m][k] = static_cast<float>(H[2 + m][k]);
+                }
+            }
+            t.valid = 1;
+        }
+
+        // the GPU iteration
+        detail::Rdr2GeoDDParams p;
+        p.count = static_cast<unsigned>(nl * width);
+        p.width = static_cast<int>(width);
+        p.tileSize = tileSize;
+        p.tilesPerRow = tilesPerRow;
+        p.nx = static_cast<int>(demInterp.width());
+        p.ny = static_cast<int>(demInterp.length());
+        p.refHeight = static_cast<float>(demInterp.refHeight());
+        p.threshold = static_cast<float>(_threshold);
+        p.maxiter = _numiter;
+        p.extraiter = _extraiter;
+        p.a = DD(_ellipsoid.a());
+        p.e2 = DD(_ellipsoid.e2());
+        detail::Rdr2GeoDDOut* out = gpu.out(nl * width);
+        gpu.run(p);
+
+        // results; the FP64 rdr2geo for pixels of tiles without an anchor
+        size_t conv = 0;
+        #pragma omp parallel for schedule(static) reduction(+:conv)
+        for (size_t px = 0; px < nl * width; ++px) {
+            const size_t i = l0 + px / width, bin = px % width;
+            const auto& o = out[px];
+            if (o.converged >= 0) {
+                layers.x(i, bin, o.x.value());
+                layers.y(i, bin, o.y.value());
+                layers.z(i, bin, o.z.value());
+                conv += o.converged;
+                continue;
+            }
+            const double rng = _radarGrid.slantRange(bin);
+            const Pixel pixel(rng, (0.5 * _radarGrid.wavelength()
+                    * (_doppler.eval(tline[i], rng) / vel[i].norm())) * rng, bin);
+            Vec3 llh = demMidpoint;
+            conv += rdr2geo(pixel, tcn[i], satPosition[i], vel[i], _ellipsoid,
+                            demInterp, llh, side, _threshold, _numiter, _extraiter);
+            _setOutputTopoLayers(llh, layers, i, pixel, satPosition[i], vel[i],
+                                 tcn[i], demInterp);
+        }
+        converged += conv;
+
+        // starting heights of the next chunk: last line
+        for (size_t bin = 0; bin < width; ++bin) {
+            const auto& o = out[(nl - 1) * width + bin];
+            if (o.converged == 1)
+                hPrior[bin] = o.h;
+        }
+    }
     return converged;
 }
 #endif

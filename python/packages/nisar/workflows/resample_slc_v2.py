@@ -47,6 +47,8 @@ def run(cfg: dict, resample_type: str) -> None:
 
     # Determine if the user requested to use the GPU.
     with_gpu = use_gpu(cfg['worker']['gpu_enabled'], cfg['worker']['gpu_id'])
+    # or a Metal GPU (Apple), if available
+    with_metal = not with_gpu and cfg['worker'].get('metal_enabled', False)
 
     # Python sees journal.info as returning Any.
     # It is a subclasse of Channel and being used as such, so this type hint
@@ -109,6 +111,7 @@ def run(cfg: dict, resample_type: str) -> None:
             block_size_az=block_length,
             block_size_rg=block_width,
             with_gpu=with_gpu,
+            with_metal=with_metal,
         )
 
         t_freq_elapsed += perf_counter()
@@ -158,6 +161,7 @@ def resample_secondary_rslc_onto_reference(
     block_size_az: int,
     block_size_rg: int,
     with_gpu: bool = False,
+    with_metal: bool = False,
 ) -> None:
     """
     Resample a secondary RSLC product onto a reference one using NISAR HDF5 datasets.
@@ -189,6 +193,9 @@ def resample_secondary_rslc_onto_reference(
     with_gpu : bool, optional
         If True, run the GPU resample workflow. If False, run the CPU resample workflow.
         Defaults to False.
+    with_metal : bool, optional
+        If True and `with_gpu` is False, interpolate on a Metal GPU (Apple) where
+        available. Defaults to False.
     """
     sec_slc_obj = RSLC(hdf5file=os.fspath(sec_file_path))
     sec_grid = sec_slc_obj.getRadarGrid(freq)
@@ -271,6 +278,7 @@ def resample_secondary_rslc_onto_reference(
             block_size_rg=block_size_rg,
             fill_value=0.0 + 0.0j,
             with_gpu=with_gpu,
+            with_metal=with_metal,
         )
 
 

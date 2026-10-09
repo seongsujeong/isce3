@@ -4,6 +4,7 @@
 
 #include "Rdr2GeoMetal.h"
 
+#include <isce3/core/detail/MetalContext.h>
 #include <isce3/geometry/detail/Rdr2GeoMixedMetalSource.h>
 
 #include <algorithm>
@@ -48,26 +49,14 @@ Rdr2GeoMetal::~Rdr2GeoMetal()
 
 std::unique_ptr<Rdr2GeoMetal> Rdr2GeoMetal::create()
 {
-    @autoreleasepool {
-        id<MTLDevice> device = MTLCreateSystemDefaultDevice();
-        if (!device) return nullptr;
-        MTLCompileOptions *options = [MTLCompileOptions new];
-        options.mathMode = MTLMathModeSafe;  // follow the CPU arithmetic
-        NSError *error = nil;
-        id<MTLLibrary> library = [device newLibraryWithSource:@(rdr2geoMixedMetalSource)
-                                                      options:options error:&error];
-        id<MTLFunction> f = [library newFunctionWithName:@"rdr2geoResidualIterate"];
-        id<MTLComputePipelineState> pso = f ?
-            [device newComputePipelineStateWithFunction:f error:&error] : nil;
-        if (!pso)
-            throw std::runtime_error(std::string("Metal rdr2geo kernel: ") +
-                    (error ? error.localizedDescription.UTF8String : "not found"));
-        std::unique_ptr<Rdr2GeoMetal> g(new Rdr2GeoMetal);
-        g->_impl->device = device;
-        g->_impl->queue = [device newCommandQueue];
-        g->_impl->pso = pso;
-        return g;
-    }
+    using namespace isce3::core::detail;
+    if (!metalDevice())
+        return nullptr;
+    std::unique_ptr<Rdr2GeoMetal> g(new Rdr2GeoMetal);
+    g->_impl->device = metalDevice();
+    g->_impl->queue = metalQueue();
+    g->_impl->pso = metalPipeline(rdr2geoMixedMetalSource, "rdr2geoResidualIterate");
+    return g;
 }
 
 void Rdr2GeoMetal::dem(const float* z, int nx, int ny, float refHeight)

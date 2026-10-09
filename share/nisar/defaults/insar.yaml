@@ -102,9 +102,9 @@ runconfig:
             # first available CUDA device. Ignored if *gpu_enabled* is False.
             gpu_id: 0
 
-            # OPTIONAL - Run supported steps of the CPU ampcor and the FP32
-            # height iterations of the CPU rdr2geo on a Metal GPU (Apple) if
-            # available. Default False
+            # OPTIONAL - Run supported steps of the CPU ampcor, the FP32
+            # height iterations of the CPU rdr2geo and the SLC resampling on a
+            # Metal GPU (Apple) if available. Default False
             metal_enabled: False
 
         # ADT section - isce3 + pyre workflow

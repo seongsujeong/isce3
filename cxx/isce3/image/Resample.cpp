@@ -1,4 +1,5 @@
 #include "Resample.h"
+#include "ResampleMetal.h"
 
 #include <isce3/core/Constants.h>
 #include <isce3/core/Interpolator.h>
@@ -173,5 +174,24 @@ void resampleToCoords(
         } // end omp for collapse(2)
     } // end omp parallel
 } // end resampleToCoords
+
+#ifndef ISCE3_METAL
+// Without Metal (ResampleMetal.mm), the CPU resampling
+bool metalResampleAvailable() { return false; }
+
+void resampleToCoordsMetal(
+    ArrayRef2D<std::complex<float>> resampled_data_block,
+    const ConstArrayRef2D<std::complex<float>> input_data_block,
+    const ConstArrayRef2D<double> range_input_indices,
+    const ConstArrayRef2D<double> azimuth_input_indices,
+    const isce3::product::RadarGridParameters& radar_grid,
+    const isce3::core::LUT2d<double>& native_doppler_lut,
+    const std::complex<float> fill_value)
+{
+    resampleToCoords(resampled_data_block, input_data_block,
+                     range_input_indices, azimuth_input_indices, radar_grid,
+                     native_doppler_lut, fill_value);
+}
+#endif
 
 } // end namespace isce3::image::v2

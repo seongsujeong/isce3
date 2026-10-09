@@ -115,6 +115,7 @@ geogrid/getRadarGrid.h
 geogrid/relocateRaster.h
 image/forward.h
 image/Resample.h
+image/ResampleMetal.h
 image/ResampSlc.h
 image/ResampSlc.icc
 image/Tile.h

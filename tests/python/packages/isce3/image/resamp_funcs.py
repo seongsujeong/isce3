@@ -3,7 +3,8 @@ from __future__ import annotations
 import numpy as np
 
 from isce3.core import LUT2d
-from isce3.ext.isce3.image.v2 import _resample_to_coords
+from isce3.ext.isce3.image.v2 import (_metal_resample_to_coords,
+                                      _resample_to_coords)
 from isce3.image.v2.resample_slc import resample_slc_blocks
 from isce3.product import RadarGridParameters
 
@@ -15,6 +16,7 @@ def block_resample(
     input_radar_grid: RadarGridParameters,
     doppler: LUT2d,
     fill_value: np.complex64,
+    with_metal: bool = False,
 ) -> None:
     az_length, rg_width = output_slc.shape
 
@@ -29,6 +31,7 @@ def block_resample(
         block_size_rg=rg_width // 2,
         block_size_az=az_length // 2,
         quiet=False,
+        with_metal=with_metal,
     )
 
 
@@ -40,12 +43,13 @@ def pybind_resample(
     input_radar_grid: RadarGridParameters,
     doppler: LUT2d,
     fill_value: np.complex64,
+    resample=_resample_to_coords,
 ) -> None:
     rows, cols = np.indices(output_slc.shape)
     azimuth_indices = np.array(rows + az_offsets, dtype=np.float64)
     range_indices = np.array(cols + rg_offsets, dtype=np.float64)
 
-    _resample_to_coords(
+    resample(
         output_slc,
         input_slc,
         range_indices,
@@ -54,3 +58,12 @@ def pybind_resample(
         doppler,
         fill_value,
     )
+
+
+# The same on the Metal GPU (the CPU without one)
+def metal_block_resample(*args) -> None:
+    block_resample(*args, with_metal=True)
+
+
+def metal_pybind_resample(*args) -> None:
+    pybind_resample(*args, resample=_metal_resample_to_coords)

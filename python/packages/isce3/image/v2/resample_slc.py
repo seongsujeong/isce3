@@ -1,13 +1,17 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from concurrent.futures import Future, ThreadPoolExecutor
+from functools import partial
+from itertools import chain
 from time import perf_counter
 
 import journal
 import numpy as np
 from isce3.core import SINC_HALF, LUT2d
 from isce3.core.resample_block_generators import get_blocks, get_blocks_by_offsets
-from isce3.ext.isce3.image.v2 import _resample_to_coords
+from isce3.ext.isce3.image.v2 import (_metal_resample_to_coords,
+                                      _resample_to_coords)
 from isce3.io.dataset import DatasetReader, DatasetWriter
 from isce3.product import RadarGridParameters
 
@@ -24,6 +28,7 @@ def resample_slc_blocks(
     quiet: bool = False,
     fill_value: np.complex64 = np.nan + 1.0j * np.nan,
     with_gpu: bool = False,
+    with_metal: bool = False,
 ) -> None:
     """
     Resamples one or more SLCs onto a geometry described by given offsets datasets.
@@ -63,6 +68,9 @@ def resample_slc_blocks(
     with_gpu : bool, optional
         If True, run the GPU resample workflow. If False, run the CPU resample workflow.
         Defaults to False.
+    with_metal : bool, optional
+        If True and `with_gpu` is False, interpolate on a Metal GPU (Apple) where
+        available (FP32, see `resample_to_coords`). Defaults to False.
     """
     info_channel = journal.info("resample_slc.resample_slc_blocks")
     warning_channel = journal.warning("resample_slc.resample_slc_blocks")
@@ -74,7 +82,7 @@ def resample_slc_blocks(
         from isce3.cuda.image.v2.resample_slc import gpu_resample_to_coords
         resample = gpu_resample_to_coords
     else:
-        resample = resample_to_coords
+        resample = partial(resample_to_coords, metal=with_metal)
 
     if len(input_slcs) != len(output_resampled_slcs):
         err_log = "Number of input and output datasets do not match."
@@ -135,30 +143,20 @@ def resample_slc_blocks(
     write_timer = 0
     processing_timer = 0
 
-    # For each block in the processing set:
-    for out_block_slice in get_blocks(
-        block_max_shape=(block_size_az, block_size_rg),
-        grid_shape=output_shape,
-        quiet=quiet,
-    ):
-        # Initialize the per-block runtime timers.
-        # These take the time of major I/O and processing tasks by subtracting
-        # their beginning time and then adding their end time, which leaves the
-        # time committed per task.
-        block_offsets_read_timer = 0
-        block_slc_read_timer = 0
-        block_write_timer = 0
-        block_processing_timer = 0
-
+    def read_block(out_block_slice):
+        """
+        Read the offsets of an output block and the input SLC blocks they
+        point to. Returns (out_block_slice, None, ...) if the offsets are
+        all-NaN or point outside of the input grid (logged in
+        `get_blocks_by_offsets`), and the read times.
+        """
         # Get the offsets blocks using the slices.
-        block_offsets_read_timer -= perf_counter()
+        t0 = perf_counter()
         az_offsets_block = np.array(az_offsets_dataset[out_block_slice], np.float64)
         rg_offsets_block = np.array(rg_offsets_dataset[out_block_slice], np.float64)
-        block_offsets_read_timer += perf_counter()
+        t1 = perf_counter()
 
         # Interpret extremely low values as NaN
-        block_processing_timer -= perf_counter()
-
         # This happens if geo2rdr does not converge - it defaults to very large
         # negative values (namely -1000000.0)
         # TODO: Fix this behavior in geo2rdr?
@@ -173,82 +171,117 @@ def resample_slc_blocks(
             in_grid_shape=input_slcs[0].shape,
             buffer=SINC_HALF,
         )
-
-        # Skip this block if the offsets are all-NaN or if they point somewhere outside
-        # of the input grid. This has already been logged in `get_blocks_offset`.
         if in_slices is None:
-            continue
+            return out_block_slice, None, None, None, None, t1 - t0, 0.0
 
-        block_processing_timer += perf_counter()
+        # For each input SLC given, acquire a block of data.
+        t2 = perf_counter()
+        input_blocks = [np.array(input_slc[in_slices], dtype=np.complex64)
+                        for input_slc in input_slcs]
+        return (out_block_slice, in_slices, az_offsets_block, rg_offsets_block,
+                input_blocks, t1 - t0, perf_counter() - t2)
 
-        # The set of input processing blocks
-        input_blocks: list[np.ndarray] = []
+    # With a GPU, the next block is read in a background thread while the
+    # current one is resampled and written (the inputs are only read by that
+    # thread, the outputs only written by this one). The CPU resampling uses
+    # all cores, so it reads in turn.
+    prefetch = with_gpu or with_metal
 
-        # For each input SLC given, acquire a block of data to the in_blocks list
-        # and create one in output_blocks that is filled with zeros to populate.
-        block_slc_read_timer -= perf_counter()
-        for input_slc in input_slcs:
-            input_blocks.append(np.array(input_slc[in_slices], dtype=np.complex64))
-        block_slc_read_timer += perf_counter()
+    def submit(reader, out_block_slice):
+        if prefetch:
+            return reader.submit(read_block, out_block_slice)
+        future = Future()
+        future.set_result(read_block(out_block_slice))
+        return future
 
-        # The set of resampled processing blocks. Initialize to a list of None.
-        # These will eventually be replaced by the resampled blocks output by
-        # the algorithm.
-        output_blocks: list[np.ndarray | None] = [None for _ in input_blocks]
+    out_block_slices = get_blocks(
+        block_max_shape=(block_size_az, block_size_rg),
+        grid_shape=output_shape,
+        quiet=quiet,
+    )
+    with ThreadPoolExecutor(max_workers=1) as reader:
+        pending = None
+        for following in chain(out_block_slices, [None]):
+            # start reading the following block, then process the pending one
+            submitted = None if following is None else \
+                submit(reader, following)
+            if pending is None:
+                pending = submitted
+                continue
+            block = pending.result()
+            pending = submitted
 
-        # Get the first positions in azimuth and range on both the resampled block
-        # and input block.
-        block_processing_timer -= perf_counter()
+            (out_block_slice, in_slices, az_offsets_block, rg_offsets_block,
+             input_blocks, block_offsets_read_timer, block_slc_read_timer) = block
+            block_write_timer = 0
+            block_processing_timer = 0
 
-        # Convert the offset blocks to index blocks that map pixels on the output
-        # data block to positions on the input data block.
-        azimuth_index_grid, range_index_grid = offsets_to_indices(
-            out_block_slice=out_block_slice,
-            in_block_slice=in_slices,
-            az_offsets=az_offsets_block,
-            rg_offsets=rg_offsets_block,
-        )
+            # Skip this block if the offsets are all-NaN or if they point
+            # somewhere outside of the input grid.
+            if in_slices is None:
+                offsets_read_timer += block_offsets_read_timer
+                continue
 
-        # Run the resampling algorithm on the given blocks.
-        for i in range(len(input_blocks)):
-            input_block = input_blocks[i]
-            if not quiet:
-                info_channel.log(
-                    f"interpolating to output SLC for block {out_block_slice}..."
+            # The set of resampled processing blocks. Initialize to a list of None.
+            # These will eventually be replaced by the resampled blocks output by
+            # the algorithm.
+            output_blocks: list[np.ndarray | None] = [None for _ in input_blocks]
+
+            # Get the first positions in azimuth and range on both the resampled block
+            # and input block.
+            block_processing_timer -= perf_counter()
+
+            # Convert the offset blocks to index blocks that map pixels on the output
+            # data block to positions on the input data block.
+            azimuth_index_grid, range_index_grid = offsets_to_indices(
+                out_block_slice=out_block_slice,
+                in_block_slice=in_slices,
+                az_offsets=az_offsets_block,
+                rg_offsets=rg_offsets_block,
+            )
+
+            # Run the resampling algorithm on the given blocks.
+            for i in range(len(input_blocks)):
+                input_block = input_blocks[i]
+                if not quiet:
+                    info_channel.log(
+                        f"interpolating to output SLC for block {out_block_slice}..."
+                    )
+                    # Reporting input block shape for debugging
+                    info_channel.log(f"Input block: {in_slices}")
+                output_blocks[i] = resample(
+                    input_block,
+                    range_index_grid,
+                    azimuth_index_grid,
+                    input_radar_grid[in_slices],
+                    doppler,
+                    fill_value,
                 )
-                # Reporting input block shape for debugging
-                info_channel.log(f"Input block: {in_slices}")
+            block_processing_timer += perf_counter()
 
-            output_blocks[i] = resample(
-                input_block,
-                range_index_grid,
-                azimuth_index_grid,
-                input_radar_grid[in_slices],
-                doppler,
-                fill_value,
-            )
+            # The resampling blocks have now been filled. For each output dataset,
+            # write the associated block to it.
+            block_write_timer -= perf_counter()
+            for output_dataset, output_block in zip(output_resampled_slcs,
+                                                    output_blocks):
+                output_dataset[out_block_slice] = output_block
+            block_write_timer += perf_counter()
 
-        block_processing_timer += perf_counter()
+            # Add the accumulated times per block to the overall totals and report.
+            # (the read times overlap the processing and writing of the previous
+            # block)
+            offsets_read_timer += block_offsets_read_timer
+            slc_read_timer += block_slc_read_timer
+            write_timer += block_write_timer
+            processing_timer += block_processing_timer
 
-        # The resampling blocks have now been filled. For each output dataset, write
-        # the associated block to it.
-        block_write_timer -= perf_counter()
-        for output_dataset, output_block in zip(output_resampled_slcs, output_blocks):
-            output_dataset[out_block_slice] = output_block
-        block_write_timer += perf_counter()
-
-        # Add the accumulated times per block to the overall totals and report.
-        offsets_read_timer += block_offsets_read_timer
-        slc_read_timer += block_slc_read_timer
-        write_timer += block_write_timer
-        processing_timer += block_processing_timer
-        if not quiet:
-            info_channel.log(f"Block SLC I/O read time (sec): {block_slc_read_timer}")
-            info_channel.log(
-                f"Block Offsets I/O read time (sec): {block_offsets_read_timer}"
-            )
-            info_channel.log(f"Block I/O write time (sec): {block_write_timer}")
-            info_channel.log(f"Block Processing time (sec): {block_processing_timer}")
+            if not quiet:
+                info_channel.log(f"Block SLC I/O read time (sec): {block_slc_read_timer}")
+                info_channel.log(
+                    f"Block Offsets I/O read time (sec): {block_offsets_read_timer}"
+                )
+                info_channel.log(f"Block I/O write time (sec): {block_write_timer}")
+                info_channel.log(f"Block Processing time (sec): {block_processing_timer}")
 
     # Report the overall totals and return.
     if not quiet:
@@ -365,6 +398,7 @@ def resample_to_coords(
     input_radar_grid: RadarGridParameters,
     native_doppler: LUT2d,
     fill_value: np.complex64 = (np.nan + 1.0j * np.nan),
+    metal: bool = False,
 ) -> np.ndarray:
     """
     Interpolate input SLC block into the index values of the output block.
@@ -385,6 +419,10 @@ def resample_to_coords(
         2D LUT describing the native doppler of the input SLC image, in Hz.
     fill_value : complex
         The value to fill out-of-bounds pixels with. Defaults to NaN + j*NaN.
+    metal : bool, optional
+        If True, interpolate on a Metal GPU (Apple) where available, in FP32
+        (results agree with the CPU to ~1e-7 relative); otherwise, or without a
+        Metal GPU, on the CPU. Defaults to False.
 
     Returns
     -------
@@ -423,7 +461,7 @@ def resample_to_coords(
         range_input_indices.shape, fill_value=fill_value, dtype=np.complex64
     )
 
-    _resample_to_coords(
+    (_metal_resample_to_coords if metal else _resample_to_coords)(
         output_data_block=output_block,
         input_data_block=input_data_block,
         range_input_indices=range_input_indices,

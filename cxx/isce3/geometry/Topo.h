@@ -19,6 +19,7 @@
 
 namespace isce3 { namespace geometry { namespace detail {
 class Rdr2GeoMetal;
+class Rdr2GeoDDMetal;
 }}}
 
 /**
@@ -319,6 +320,14 @@ private:
                            size_t lineStart, size_t blockLength,
                            std::vector<isce3::core::Vec3>& satPosition,
                            const isce3::core::Vec3& demMidpoint);
+
+    // rdr2geo of one block on a Metal GPU in double-float arithmetic (ISCE3_METAL
+    // builds, only x, y, z layers); returns the number of converged pixels
+    size_t _topoBlockMetalDD(detail::Rdr2GeoDDMetal& gpu,
+                             const DEMInterpolator& demInterp, TopoLayers& layers,
+                             size_t lineStart, size_t blockLength,
+                             std::vector<isce3::core::Vec3>& satPosition,
+                             const isce3::core::Vec3& demMidpoint);
 
     /**
      * Write to output layers

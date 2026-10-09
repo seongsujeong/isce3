@@ -218,14 +218,17 @@ def test_validate(unit_test_params):
         del test_ds
 
 
-def test_mixed_precision(unit_test_params):
+@pytest.mark.parametrize("native_doppler", [True, False])
+def test_mixed_precision(unit_test_params, native_doppler):
     """
     mixed precision (FP32 iterations, on the Metal GPU where available)
     matches the FP64 iterations to well below a millimeter, except where
     several solutions exist (layover, shadow and some steep slopes of this
     mountainous scene, ~0.6% of the pixels): the two start each pixel from
     another neighbor (FP64: previous range bin, Metal: previous lines) and
-    may converge to another, equally consistent solution
+    may converge to another, equally consistent solution. Without a native
+    Doppler LUT the whole iteration runs on the GPU in double-float, with it
+    the FP32 iterations.
     """
     p = unit_test_params
     length, width = p.radargrid.shape
@@ -238,7 +241,8 @@ def test_mixed_precision(unit_test_params):
                                length, 1, gdal.GDT_Byte, "ENVI")
         topo = isce3.geometry.Rdr2Geo(p.radargrid, p.slc.getOrbit(),
                                       isce3.core.Ellipsoid(),
-                                      p.slc.getDopplerCentroid(),
+                                      p.slc.getDopplerCentroid()
+                                      if native_doppler else isce3.core.LUT2d(),
                                       threshold=1e-4)
         topo.mixed_precision = mixed
         topo.topo(p.dem_raster, *rasters, layover_shadow_raster=mask)

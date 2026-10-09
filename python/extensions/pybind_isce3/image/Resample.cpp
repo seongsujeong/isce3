@@ -3,6 +3,7 @@
 #include <isce3/core/EMatrix.h>
 #include <isce3/core/LUT2d.h>
 #include <isce3/image/Resample.h>
+#include <isce3/image/ResampleMetal.h>
 #include <isce3/product/RadarGridParameters.h>
 
 #include <pybind11/complex.h>
@@ -49,4 +50,25 @@ void addbindings_resamp(py::module & m)
             The value to fill out-of-bounds pixels with. Defaults to NaN + j*NaN.
         )"
     );
+
+    m.def("_metal_resample_to_coords",
+        &isce3::image::v2::resampleToCoordsMetal,
+        py::arg("output_data_block"),
+        py::arg("input_data_block"),
+        py::arg("range_input_indices"),
+        py::arg("azimuth_input_indices"),
+        py::arg("in_radar_grid"),
+        py::arg("native_doppler"),
+        py::arg("fill_value") =
+            std::complex<float>(std::numeric_limits<float>::quiet_NaN(),
+                                std::numeric_limits<float>::quiet_NaN()),
+        py::call_guard<py::gil_scoped_release>(),
+        R"(
+        _resample_to_coords on the Metal GPU (FP32), with the same arguments;
+        the CPU resampling without a Metal GPU.
+        )"
+    );
+    m.def("metal_resample_available",
+        &isce3::image::v2::metalResampleAvailable,
+        "Whether _metal_resample_to_coords runs on a Metal GPU");
 }
