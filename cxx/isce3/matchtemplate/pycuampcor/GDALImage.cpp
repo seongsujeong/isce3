@@ -224,7 +224,7 @@ GDALImage::GDALImage(std::string filename, int band, int cacheSizeInGB, int useM
     // determine the image type
     _isComplex = GDALDataTypeIsComplex(_dataType);
     // determine the pixel size in bytes
-    _pixelSize = GDALGetDataTypeSize(_dataType);
+    _pixelSize = GDALGetDataTypeSizeBytes(_dataType);
 
     _bufferSize = 1024*1024*cacheSizeInGB;
 
@@ -248,13 +248,18 @@ GDALImage::GDALImage(std::string filename, int band, int cacheSizeInGB, int useM
             &_pixelSize,
             &pnLineSpace,
             papszOptions);
-        if(!_poBandVirtualMem)
-            throw;
-
-        // get the starting pointer
-        _memPtr = CPLVirtualMemGetAddr(_poBandVirtualMem);
+        CSLDestroy(papszOptions);
+        // formats that cannot be memory mapped (e.g. chunked, compressed
+        // HDF5) are read with GDAL instead, best through a row cache
+        if(_poBandVirtualMem)
+            _memPtr = CPLVirtualMemGetAddr(_poBandVirtualMem);
+        else {
+            CPLErrorReset();
+            _useMmap = 0;
+            _pixelSize = GDALGetDataTypeSizeBytes(_dataType);
+        }
     }
-    else { // use a buffer
+    if(!_useMmap) { // use a buffer
         _memPtr = (void*) malloc(_bufferSize);
     }
     // make sure memPtr is not Null
@@ -313,7 +318,7 @@ void GDALImage::loadToDevice(void *dArray, size_t h_offset, size_t w_offset,
             w_offset, h_offset,  //nXOff, nYOff
             w_tile, h_tile,  // nXSize, nYSize
             _memPtr, // pData
-            w_tile*h_tile, 1, // nBufXSize, nBufYSize
+            w_tile, h_tile, // nBufXSize, nBufYSize
             _dataType, //eBufType
             0, 0 //nPixelSpace, nLineSpace in pData
             );
@@ -331,8 +336,11 @@ GDALImage::~GDALImage()
 {
     // stop the row cache prefetching before closing the dataset
     _rowCache.reset();
-    // free the virtual memory
-    CPLVirtualMemFree(_poBandVirtualMem),
+    // free the virtual memory or the buffer
+    if(_poBandVirtualMem)
+        CPLVirtualMemFree(_poBandVirtualMem);
+    else
+        free(_memPtr);
     // free the GDAL Dataset, close the file
     delete _poDataset;
 }

@@ -16,6 +16,7 @@ from isce3.io import HDF5OptimizedReader
 from isce3.io.gdal.gdal_raster import GDALRaster
 
 from nisar.products.readers import RSLC
+from nisar.workflows.helpers import ParallelChunkReader
 from nisar.workflows.rubbersheet import open_resample_offsets
 from nisar.workflows.resample_slc_runconfig import ResampleSlcRunConfig
 from nisar.workflows.yaml_argparse import YamlArgparse
@@ -253,6 +254,9 @@ def resample_secondary_rslc_onto_reference(
             chunks = dataset.chunks
             if is_complex32(dataset):
                 dataset = ComplexFloat16Decoder(dataset)
+            else:
+                # chunks decoded in parallel threads (h5py decodes serially)
+                dataset = ParallelChunkReader(dataset)
             sec_readers.append(dataset)
 
         # Tiles of whole secondary RSLC chunks: each chunk is then

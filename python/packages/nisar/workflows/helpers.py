@@ -4,6 +4,8 @@ collection of useful functions used across workflows
 from __future__ import annotations
 import datetime
 import os
+import zlib
+from concurrent.futures import ThreadPoolExecutor
 import pathlib
 from collections import defaultdict
 from collections.abc import Iterator
@@ -508,8 +510,6 @@ def write_hdf5_dataset_parallel(dset, data, num_threads=None, chunk_rows=8):
     chunk_rows: int
         Rows of chunks compressed per batch (bounds the memory held)
     """
-    import zlib
-    from concurrent.futures import ThreadPoolExecutor
 
     plist = dset.id.get_create_plist()
     filters = [plist.get_filter(i) for i in range(plist.get_nfilters())]
@@ -543,6 +543,90 @@ def write_hdf5_dataset_parallel(dset, data, num_threads=None, chunk_rows=8):
                        for j in range(0, nx, cx)]
             for origin, raw in executor.map(chunk_bytes, origins):
                 dset.id.write_direct_chunk(origin, raw)
+
+
+def _gzip_chunked(dset):
+    '''Whether a dataset is chunked and compressed with gzip only (optionally
+    shuffled), so that its chunks can be decoded without h5py'''
+    return dset.chunks is not None and len(dset.chunks) == 2 and \
+        dset.compression == 'gzip' and not dset.fletcher32 and \
+        dset.scaleoffset is None
+
+
+def _decode_chunk_row(dset, executor, i):
+    '''Rows [i, i + chunk height) of a 2D gzip-chunked dataset (within the
+    dataset), its chunks decoded by the executor's threads'''
+    cy, cx = dset.chunks
+    ny, nx = dset.shape
+    item = dset.dtype.itemsize
+    out = np.empty((min(cy, ny - i), nx), dtype=dset.dtype)
+
+    def decode(j):
+        mask, raw = dset.id.read_direct_chunk((i, j))
+        if mask:  # a filter was skipped when writing: let h5py decode it
+            chunk = dset[i:i + cy, j:j + cx]
+        else:
+            data = np.frombuffer(zlib.decompress(raw), np.uint8)
+            if dset.shuffle:
+                data = data.reshape(item, -1).T
+            chunk = np.ascontiguousarray(data).view(dset.dtype).reshape(cy, cx)
+        c1 = min(j + cx, nx)
+        out[:, j:c1] = chunk[:out.shape[0], :c1 - j]
+
+    list(executor.map(decode, range(0, nx, cx)))
+    return out
+
+
+def read_hdf5_rows_parallel(dset, row0, rows, num_threads=None):
+    '''
+    Rows [row0, row0 + rows) of a 2D HDF5 dataset. Chunked datasets
+    compressed with gzip only (optionally shuffled) are read chunk by chunk
+    without the filters and decoded in parallel threads (zlib releases the
+    GIL; h5py decodes serially); other datasets are read by h5py.
+    '''
+    return ParallelChunkReader(dset, num_threads, cache_rows=0)[
+        row0:row0 + rows, :]
+
+
+class ParallelChunkReader:
+    '''
+    DatasetReader of a 2D HDF5 dataset whose rows are decoded chunk row by
+    chunk row in parallel threads when it is gzip-chunked (else read by
+    h5py); the last cache_rows decoded chunk rows are kept, as h5py's chunk
+    cache does, for reads overlapping the previous ones.
+    '''
+    def __init__(self, dataset, num_threads=None, cache_rows=2):
+        self.dataset = dataset
+        self.shape = dataset.shape
+        self.dtype = dataset.dtype
+        self.ndim = dataset.ndim
+        self.chunks = dataset.chunks
+        self._threads = num_threads or os.cpu_count()
+        self._cache_rows = cache_rows
+        self._cache = {}  # chunk row start -> rows, oldest first
+
+    def __array__(self, dtype=None, copy=None):
+        return np.asarray(self[:, :], dtype=dtype)
+
+    def __getitem__(self, key):
+        rows, cols = key
+        r0, r1, step = rows.indices(self.shape[0])
+        if step != 1 or not _gzip_chunked(self.dataset):
+            return self.dataset[key]
+        cy = self.chunks[0]
+        out = np.empty((max(r1 - r0, 0), self.shape[1]), dtype=self.dtype)
+        with ThreadPoolExecutor(self._threads) as executor:
+            for i in range(r0 // cy * cy, r1, cy):
+                band = self._cache.pop(i, None)
+                if band is None:
+                    band = _decode_chunk_row(self.dataset, executor, i)
+                if self._cache_rows:
+                    self._cache[i] = band
+                    while len(self._cache) > self._cache_rows:
+                        del self._cache[next(iter(self._cache))]
+                a, b = max(i, r0), min(i + band.shape[0], r1)
+                out[a - r0:b - r0] = band[a - i:b - i]
+        return out[:, cols]
 
 
 def copy_raster(infile, freq, pol,
@@ -599,7 +683,8 @@ def copy_raster(infile, freq, pol,
         if is_complex32:
             data_block = isce3.core.types.read_c4_dataset_as_c8(hdf5_ds, s)
         else:
-            data_block = hdf5_ds[s]
+            data_block = read_hdf5_rows_parallel(hdf5_ds, line_start,
+                                                 block_length)
 
         # Write to GDAL raster
         out_ds.GetRasterBand(1).WriteArray(data_block[0:block_length],

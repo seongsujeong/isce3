@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <future>
+#include <mutex>
 #include <numeric>
 
 /**
@@ -288,26 +289,32 @@ _crossmul(isce3::io::Raster& refSlcRaster,
     // loop over all blocks
     std::cout << "nblocks : " << nblocks << std::endl;
 
+    // raster I/O of the reading thread and of this one, one at a time: the
+    // inputs and outputs may be HDF5, whose library is not thread-safe
+    std::mutex ioMutex;
+
     // get a block of reference and secondary SLC data and a block of range
     // offsets into the next-block storage. This zero-pads SLCs in range.
     auto readBlock = [&](size_t block) {
+        std::lock_guard<std::mutex> io(ioMutex);
         const auto rowStart = block * linesPerBlock;
         const auto blockRowsData = std::min(nrows - rowStart, linesPerBlock);
         nextRefSlc = 0;
         nextSecSlc = 0;
-        std::valarray<std::complex<float>> dataLine(ncols);
-        for (size_t line = 0; line < blockRowsData; ++line) {
-            refSlcRaster.getLine(dataLine, rowStart + line);
-            nextRefSlc[std::slice(line*fft_size, ncols, 1)] = dataLine;
-            secSlcRaster.getLine(dataLine, rowStart + line);
-            nextSecSlc[std::slice(line*fft_size, ncols, 1)] = dataLine;
-        }
+        // whole blocks (a chunked source, e.g. an HDF5 RSLC, then decodes
+        // each chunk once instead of once per line)
+        std::valarray<std::complex<float>> data(ncols * blockRowsData);
+        refSlcRaster.getBlock(data, 0, rowStart, ncols, blockRowsData);
+        for (size_t line = 0; line < blockRowsData; ++line)
+            nextRefSlc[std::slice(line*fft_size, ncols, 1)] = data[std::slice(line*ncols, ncols, 1)];
+        secSlcRaster.getBlock(data, 0, rowStart, ncols, blockRowsData);
+        for (size_t line = 0; line < blockRowsData; ++line)
+            nextSecSlc[std::slice(line*fft_size, ncols, 1)] = data[std::slice(line*ncols, ncols, 1)];
         if (flatten) {
-            std::valarray<double> offsetLine(ncols);
-            for (size_t line = 0; line < blockRowsData; ++line) {
-                rngOffsetRaster->getLine(offsetLine, rowStart + line);
-                nextRngOffset[std::slice(line*ncols, ncols, 1)] = offsetLine + _offsetStartingRangeShift / _rangePixelSpacing;
-            }
+            std::valarray<double> offsets(ncols * blockRowsData);
+            rngOffsetRaster->getBlock(offsets, 0, rowStart, ncols, blockRowsData);
+            nextRngOffset[std::slice(0, ncols * blockRowsData, 1)] =
+                offsets + _offsetStartingRangeShift / _rangePixelSpacing;
         }
     };
     auto nextBlock = std::async(std::launch::async, readBlock, 0);
@@ -402,8 +409,11 @@ _crossmul(isce3::io::Raster& refSlcRaster,
                 looksObj.ncols(ncols);
                 looksObj.colsLooks(rangeLooks);
                 looksObj.multilook(ifgram, ifgramMultiLooked);
-                ifgRaster.setBlock(ifgramMultiLooked, 0, rowStart/azimuthLooks,
-                            ncols/rangeLooks, blockRowsData/azimuthLooks);
+                {
+                    std::lock_guard<std::mutex> io(ioMutex);
+                    ifgRaster.setBlock(ifgramMultiLooked, 0, rowStart/azimuthLooks,
+                                ncols/rangeLooks, blockRowsData/azimuthLooks);
+                }
 
                 // multilook SLC to power for coherence computation
                 // refPowerLooked = average(abs(refSlc)^2)
@@ -427,16 +437,18 @@ _crossmul(isce3::io::Raster& refSlcRaster,
                 }
 
                 // set coherence raster
-                coherenceRaster.setBlock(coherence, 0, rowStart/azimuthLooks,
-                        ncols/rangeLooks, blockRowsData/azimuthLooks);
+                {
+                    std::lock_guard<std::mutex> io(ioMutex);
+                    coherenceRaster.setBlock(coherence, 0, rowStart/azimuthLooks,
+                            ncols/rangeLooks, blockRowsData/azimuthLooks);
+                }
             } else {
-                // set the block of interferogram
-                ifgRaster.setBlock(ifgram, 0, rowStart, ncols, blockRowsData);
-
                 // fill coherence with ones (no need to compute result)
                 coherence = 1.0;
 
-                // set the block of coherence
+                // set the blocks of interferogram and coherence
+                std::lock_guard<std::mutex> io(ioMutex);
+                ifgRaster.setBlock(ifgram, 0, rowStart, ncols, blockRowsData);
                 coherenceRaster.setBlock(coherence, 0, rowStart, ncols,
                                          blockRowsData);
             }
