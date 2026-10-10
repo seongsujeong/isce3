@@ -14,9 +14,9 @@ from isce3.core.types import ComplexFloat16Decoder, is_complex32
 from isce3.image.v2.resample_slc import resample_slc_blocks
 from isce3.io import HDF5OptimizedReader
 from isce3.io.gdal.gdal_raster import GDALRaster
+from isce3.io.hdf5_chunks import ParallelChunkReader
 
 from nisar.products.readers import RSLC
-from nisar.workflows.helpers import ParallelChunkReader
 from nisar.workflows.rubbersheet import open_resample_offsets
 from nisar.workflows.resample_slc_runconfig import ResampleSlcRunConfig
 from nisar.workflows.yaml_argparse import YamlArgparse

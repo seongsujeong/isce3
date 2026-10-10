@@ -8,7 +8,7 @@ project(isce3
     LANGUAGES CXX
     )
 
-option(ISCE3_WITH_METAL "Run supported CPU ampcor steps on the Metal GPU (Apple only)" OFF)
+option(ISCE3_WITH_METAL "Run ampcor, rdr2geo and SLC resampling steps on the Metal GPU (Apple only)" OFF)
 if(ISCE3_WITH_METAL)
     if(NOT APPLE)
         message(FATAL_ERROR "ISCE3_WITH_METAL requires Apple platforms")

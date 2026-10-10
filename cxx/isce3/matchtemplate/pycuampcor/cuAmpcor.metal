@@ -32,14 +32,6 @@ inline float2 mulConj(float2 a, float2 b)
     return float2(a.x * b.x + a.y * b.y, a.y * b.x - a.x * b.y);
 }
 
-// buffer copy, one 32-bit word per thread
-kernel void copyWords(device const uint *in [[buffer(0)]],
-                      device uint *out [[buffer(1)]],
-                      uint i [[thread_position_in_grid]])
-{
-    out[i] = in[i];
-}
-
 // ----------------------------------------------------------------- copies
 
 struct GatherParams { int inNX, inNY, outNX, outNY, absolute, withMagnitude; };
@@ -67,15 +59,6 @@ kernel void gatherBatch(device const float2 *in [[buffer(0)]],
     // and its magnitude (complexAbs of the output), if requested
     if (p.withMagnitude)
         magnitude[(img * p.outNX + outx) * p.outNY + outy] = sqrt(v.x * v.x + v.y * v.y);
-}
-
-// cuArraysAbs
-kernel void complexAbs(device const float2 *in [[buffer(0)]],
-                       device float *out [[buffer(1)]],
-                       uint i [[thread_position_in_grid]])
-{
-    const float2 v = in[i];
-    out[i] = sqrt(v.x * v.x + v.y * v.y);
 }
 
 struct Shape2 { int inNX, inNY, outNX, outNY, offsetX, offsetY; };
@@ -408,55 +391,6 @@ kernel void normalizeSat(device float *corr [[buffer(0)]],
 
 // ------------------------------------------------------------ correlation
 
-struct PackParams { int tNX, tNY, iNX, iNY, outNX, outNY; };
-
-// template + i * image, both zero padded to the FFT size, for one FFT of
-// both real inputs
-kernel void packRealPair(device const float *templates [[buffer(0)]],
-                         device const float *images [[buffer(1)]],
-                         device float2 *out [[buffer(2)]],
-                         constant PackParams &p [[buffer(3)]],
-                         uint3 gid [[thread_position_in_grid]])
-{
-    const int j = gid.x, i = gid.y, img = gid.z;
-    if (i >= p.outNX || j >= p.outNY) return;
-    const float t = (i < p.tNX && j < p.tNY) ? templates[(img * p.tNX + i) * p.tNY + j] : 0.0f;
-    const float v = (i < p.iNX && j < p.iNY) ? images[(img * p.iNX + i) * p.iNY + j] : 0.0f;
-    out[((size_t)img * p.outNX + i) * p.outNY + j] = float2(t, v);
-}
-
-// From Z = FFT(t + i s): T = (Z_k + conj Z_-k) / 2, S = (Z_k - conj Z_-k) / 2i
-// (t, s real); writes conj(T) S * coef (cuMulConj) for the inverse transform.
-// -k is taken modulo the size along each axis.
-kernel void mulConjPacked(device const float2 *z [[buffer(0)]],
-                          device float2 *out [[buffer(1)]],
-                          constant Shape2 &p [[buffer(2)]],
-                          constant float &coef [[buffer(3)]],
-                          uint3 gid [[thread_position_in_grid]])
-{
-    const int j = gid.x, i = gid.y, img = gid.z;
-    if (i >= p.outNX || j >= p.outNY) return;
-    device const float2 *zi = z + (size_t)img * p.outNX * p.outNY;
-    const float2 a = zi[i * p.outNY + j];
-    const int ni = i == 0 ? 0 : p.outNX - i, nj = j == 0 ? 0 : p.outNY - j;
-    const float2 b = zi[ni * p.outNY + nj];  // Z_-k; conj below
-    const float2 t = float2(a.x + b.x, a.y - b.y) * 0.5f;
-    const float2 s = float2(a.y + b.y, b.x - a.x) * 0.5f;
-    out[(size_t)img * p.outNX * p.outNY + i * p.outNY + j] =
-        float2(t.x * s.x + t.y * s.y, -t.y * s.x + t.x * s.y) * coef;
-}
-
-// cuMulConj (template spectrum a, image spectrum b) scaled, in place in a:
-// conj(a) b * coef (unpacked variant of mulConjPacked)
-kernel void mulConjScale(device float2 *a [[buffer(0)]],
-                         device const float2 *b [[buffer(1)]],
-                         constant float &coef [[buffer(2)]],
-                         uint i [[thread_position_in_grid]])
-{
-    const float2 x = a[i], y = b[i];
-    a[i] = float2(x.x * y.x + x.y * y.y, -x.y * y.x + x.x * y.y) * coef;
-}
-
 struct TimeCorrParams { int tNX, tNY, iNX, iNY, rNX, rNY; };
 
 // cuCorrTimeDomain: direct sum over the template for each lag (one thread
@@ -490,17 +424,36 @@ struct FFTParams {
     int elemStride;     // element distance within a line
     int lines;          // total lines
     int group;          // lines per threadgroup
-    // fused loads of the first pass and stores of the last pass (FFTLoad,
-    // FFTStore of cuMetal.mm): image size nx x ny; load 0 data, 1 copy of
-    // srcC, 2 spectrum padding of srcC (srcNX x srcNY, padSpectrum), 3 real
-    // pair srcF + i src2F (packRealPair), 4 data with rows >= validRows
-    // zero, 5 conj(T) S * coef of the packed spectrum srcC of the same size
-    // (mulConjPacked), 6 copy of srcC deramped by ramp[img] (derampPhase);
-    // store 0 data, 1 magnitude into dstF (complexAbs), 2 real part
-    // into dstF (dstNX x dstNY, extractReal)
+    // input of the first pass and output of the last pass (FFTLoadMode,
+    // FFTStoreMode below; FFTLoad, FFTStore of cuMetal.mm); image size
+    // nx x ny
     int nx, ny, loadMode, storeMode;
     int srcNX, srcNY, src2NX, src2NY, dstNX, dstNY, validRows;
-    float coef;         // load 5: conj(T) S * coef of the packed spectrum srcC
+    float coef;         // LOAD_MUL_CONJ scale
+};
+
+// Input of the first pass of a 2D FFT (values must match cuMetal.mm)
+enum FFTLoadMode {
+    LOAD_DATA = 0,          // the batch itself (in place)
+    LOAD_COPY = 1,          // copy of srcC (same size)
+    LOAD_PAD_SPECTRUM = 2,  // spectrum srcC (srcNX x srcNY) padded at its
+                            // corners, scaled by 1 / (srcNX srcNY)
+    LOAD_REAL_PAIR = 3,     // srcF + i src2F, zero padded: both real inputs
+                            // of a correlation through one complex FFT
+    LOAD_ZERO_ROWS = 4,     // the batch, rows >= validRows taken as zero
+    LOAD_MUL_CONJ = 5,      // conj(T) S * coef from the packed spectrum
+                            // Z = FFT(t + i s) in srcC: T = (Z_k + conj Z_-k)
+                            // / 2, S = (Z_k - conj Z_-k) / 2i
+    LOAD_DERAMPED = 6,      // copy of srcC times exp(i (row ramp.x + col
+                            // ramp.y)) (derampPhase)
+};
+
+// Output of the last pass of a 2D FFT (values must match cuMetal.mm)
+enum FFTStoreMode {
+    STORE_DATA = 0,         // the batch itself (in place)
+    STORE_MAGNITUDE = 1,    // |v| into dstF (same size)
+    STORE_REAL = 2,         // real parts of the top-left dstNX x dstNY
+                            // into dstF
 };
 
 
@@ -511,30 +464,29 @@ inline float2 fftLoad(device const float2 *data, device const float2 *srcC,
                       constant FFTParams &p, size_t addr, int img, int row, int col)
 {
     switch (p.loadMode) {
-    case 1:
+    case LOAD_COPY:
         return srcC[addr];
-    case 2: {
+    case LOAD_PAD_SPECTRUM: {
         const int si = padSource(row, p.srcNX, p.nx), sj = padSource(col, p.srcNY, p.ny);
         if (si < 0 || sj < 0) return float2(0.0f);
         return srcC[((size_t)img * p.srcNX + si) * p.srcNY + sj] * (1.0f / (p.srcNX * p.srcNY));
     }
-    case 3: {
+    case LOAD_REAL_PAIR: {
         const float t = (row < p.srcNX && col < p.srcNY)
             ? srcF[((size_t)img * p.srcNX + row) * p.srcNY + col] : 0.0f;
         const float v = (row < p.src2NX && col < p.src2NY)
             ? src2F[((size_t)img * p.src2NX + row) * p.src2NY + col] : 0.0f;
         return float2(t, v);
     }
-    case 4:
+    case LOAD_ZERO_ROWS:
         return row < p.validRows ? data[addr] : float2(0.0f);
-    case 6: {
-        // copy of srcC deramped (deramp of cuLinearDeramp_kernel)
+    case LOAD_DERAMPED: {
         const float phase = row * ramp[img].x + col * ramp[img].y;
         const float c = cos(phase), s = sin(phase);
         const float2 v = srcC[addr];
         return float2(v.x * c - v.y * s, v.x * s + v.y * c);
     }
-    case 5: {
+    case LOAD_MUL_CONJ: {
         device const float2 *zi = srcC + (size_t)img * p.nx * p.ny;
         const float2 a = zi[row * p.ny + col];
         const int ni = row == 0 ? 0 : p.nx - row, nj = col == 0 ? 0 : p.ny - col;
@@ -553,10 +505,10 @@ inline void fftStore(device float2 *data, device float *dstF, constant FFTParams
                      size_t addr, int img, int row, int col, float2 v)
 {
     switch (p.storeMode) {
-    case 1:
+    case STORE_MAGNITUDE:
         dstF[addr] = sqrt(v.x * v.x + v.y * v.y);
         break;
-    case 2:
+    case STORE_REAL:
         if (row < p.dstNX && col < p.dstNY)
             dstF[((size_t)img * p.dstNX + row) * p.dstNY + col] = v.x;
         break;

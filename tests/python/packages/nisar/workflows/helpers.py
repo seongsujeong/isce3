@@ -159,7 +159,7 @@ def test_write_hdf5_dataset_parallel(tmp_path, dtype, shuffle):
     '''
     import h5py
     import numpy as np
-    from nisar.workflows.helpers import write_hdf5_dataset_parallel
+    from isce3.io.hdf5_chunks import write_hdf5_dataset_parallel
 
     rng = np.random.default_rng(0)
     data = (rng.normal(size=(1100, 700)) * 10).astype(dtype)

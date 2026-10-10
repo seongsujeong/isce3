@@ -3,8 +3,10 @@
 
 #include "MetalContext.h"
 
+#include <algorithm>
 #include <map>
 #include <mutex>
+#include <unistd.h>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -55,6 +57,46 @@ id<MTLComputePipelineState> metalPipeline(const char* source, const char* name)
                     (error ? error.localizedDescription.UTF8String : "not found"));
     }
     return pso;
+}
+
+id<MTLBuffer> metalBuffer(size_t bytes)
+{
+    id<MTLBuffer> b = [metalDevice() newBufferWithLength:std::max<size_t>(bytes, 4)
+                                                 options:MTLResourceStorageModeShared];
+    if (!b)
+        throw std::runtime_error("Metal buffer allocation failed");
+    return b;
+}
+
+id<MTLBuffer> metalBuffer(const void* data, size_t bytes)
+{
+    id<MTLBuffer> b = bytes ? [metalDevice() newBufferWithBytes:data length:bytes
+                                                         options:MTLResourceStorageModeShared]
+                            : metalBuffer(0);
+    if (!b)
+        throw std::runtime_error("Metal buffer allocation failed");
+    return b;
+}
+
+id<MTLBuffer> metalWrap(const void* data, size_t bytes)
+{
+    const size_t page = getpagesize();
+    const size_t length = std::max<size_t>((bytes + page - 1) / page * page, page);
+    id<MTLBuffer> b = [metalDevice() newBufferWithBytesNoCopy:const_cast<void*>(data)
+                                                       length:length
+                                                      options:MTLResourceStorageModeShared
+                                                  deallocator:nil];
+    if (!b)
+        throw std::runtime_error("Metal buffer over host memory failed");
+    return b;
+}
+
+void metalWait(id<MTLCommandBuffer> cmd, const char* what)
+{
+    [cmd waitUntilCompleted];
+    if (cmd.status == MTLCommandBufferStatusError)
+        throw std::runtime_error(std::string(what) + ": " +
+                                 cmd.error.localizedDescription.UTF8String);
 }
 
 }}} // namespace isce3::core::detail

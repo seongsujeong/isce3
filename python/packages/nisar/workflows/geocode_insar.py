@@ -13,6 +13,7 @@ import journal
 import numpy as np
 from isce3.core import crop_external_orbit
 from isce3.io import HDF5OptimizedReader
+from isce3.io.hdf5_chunks import write_hdf5_dataset_parallel
 from nisar.products.insar.product_paths import (GOFFGroupsPaths,
                                                 GUNWGroupsPaths,
                                                 RIFGGroupsPaths,
@@ -25,8 +26,7 @@ from nisar.workflows.compute_stats import compute_stats_real_data
 from nisar.products.insar.utils import compute_valid_pixel_fraction
 from nisar.workflows.geocode_corrections import get_az_srg_corrections
 from nisar.workflows.geocode_insar_runconfig import GeocodeInsarRunConfig
-from nisar.workflows.helpers import (get_cfg_freq_pols, get_offset_radar_grid,
-                                     write_hdf5_dataset_parallel)
+from nisar.workflows.helpers import get_cfg_freq_pols, get_offset_radar_grid
 from nisar.workflows.yaml_argparse import YamlArgparse
 from osgeo import gdal, gdal_array
 

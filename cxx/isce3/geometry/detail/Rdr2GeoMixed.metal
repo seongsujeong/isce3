@@ -1,6 +1,7 @@
-// FP32 height iteration of the mixed-precision rdr2geo on the GPU; mirrors
-// rdr2geoResidualIterate (Rdr2GeoMixed.h) with the DEM height from the
-// biquintic (order 6) Spline2dInterpolator of DEMInterpolator::interpolateXY
+// FP32 height iteration of the mixed-precision rdr2geo (Rdr2GeoMixed.h) on
+// the GPU, around the FP64 setup rdr2geoResidualSetup, with the DEM height
+// from the biquintic (order 6) Spline2dInterpolator of
+// DEMInterpolator::interpolateXY
 #include <metal_stdlib>
 using namespace metal;
 
@@ -74,6 +75,10 @@ static float demHeight(int col, float fc, int row, float fr,
     return spline(fr + 2.f, HC, R);
 }
 
+// Target motion dT(dh) for a height change dh of the radius + h model, DEM
+// height at the linearized DEM indices, ellipsoidal height of the target to
+// second order, and the new height of the model. Writes the height change
+// dh, or NaN if it did not converge to tol.
 kernel void rdr2geoResidualIterate(device const Line *lines [[buffer(0)]],
                                    device const Pixel *pixels [[buffer(1)]],
                                    device const float *z [[buffer(2)]],
@@ -90,9 +95,11 @@ kernel void rdr2geoResidualIterate(device const Line *lines [[buffer(0)]],
         return;
     float dh = 0.f;
     for (int it = 0; it < p.maxiter; ++it) {
+        // cos(look) change: b^2 - b0^2 = dh (2 b0 + dh)
         const float dc = -dh * (2.f * s.b0 + dh) / (2.f * l.a * s.r);
         const float dgamma = s.r * dc;
         const float dalpha = -dgamma * l.ndotvOverVdott;
+        // beta^2 - beta0^2 = -r^2 dc (2 c0 + dc) - dalpha (2 alpha0 + dalpha)
         const float dbeta2 = -s.r * s.r * dc * (2.f * s.c0 + dc) -
                              dalpha * (2.f * s.alpha0 + dalpha);
         const float root = sqrt(max(s.beta0 * s.beta0 + dbeta2, 0.f));
@@ -100,9 +107,11 @@ kernel void rdr2geoResidualIterate(device const Line *lines [[buffer(0)]],
         float dT[3];
         for (int j = 0; j < 3; ++j)
             dT[j] = dalpha * l.that[j] + dbeta * l.chat[j] + dgamma * l.nhat[j];
+        // DEM height at the target
         const float dx = s.jac[0][0] * dT[0] + s.jac[0][1] * dT[1] + s.jac[0][2] * dT[2];
         const float dy = s.jac[1][0] * dT[0] + s.jac[1][1] * dT[1] + s.jac[1][2] * dT[2];
         const float hdem = demHeight(s.col, s.fcol + dx, s.row, s.frow + dy, z, p);
+        // ellipsoidal height of the target, then onto the DEM along the normal
         const float dn = s.n0[0] * dT[0] + s.n0[1] * dT[1] + s.n0[2] * dT[2];
         const float dT2 = dT[0] * dT[0] + dT[1] * dT[1] + dT[2] * dT[2];
         const float hT = s.hT0 + dn + (dT2 - dn * dn) * s.curvature;
@@ -112,6 +121,7 @@ kernel void rdr2geoResidualIterate(device const Line *lines [[buffer(0)]],
             tdotx += s.tHat[j] * dX;
             dX2 += dX * dX;
         }
+        // |T0 + dX| - |T0| without forming the ~6.4e6 m norms in FP32
         const float dnorm = (2.f * tdotx * s.tNorm + dX2) /
                 (s.tNorm + sqrt(s.tNorm * s.tNorm + 2.f * tdotx * s.tNorm + dX2));
         const float dhNew = s.dh0 + dnorm;

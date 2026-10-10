@@ -19,4 +19,22 @@ id<MTLCommandQueue> metalQueue();
  * safe math on first use. Throws std::runtime_error on compile errors. */
 id<MTLComputePipelineState> metalPipeline(const char* source, const char* name);
 
+/** New shared-storage buffer (CPU and GPU see the same memory) of at least
+ * `bytes` (4 at least: Metal rejects empty buffers); throws on failure */
+id<MTLBuffer> metalBuffer(size_t bytes);
+
+/** New shared-storage buffer holding a copy of `bytes` bytes at `data` */
+id<MTLBuffer> metalBuffer(const void* data, size_t bytes);
+
+/** Shared-storage buffer over host memory without copy: `data` must be
+ * page-aligned (e.g. from posix_memalign), the length is rounded up to
+ * whole pages (allocated by the host as well) and the host keeps ownership
+ * (outliving the buffer). Wrapping maps the pages for the GPU: wrap large
+ * memory once, not per use. */
+id<MTLBuffer> metalWrap(const void* data, size_t bytes);
+
+/** Wait for a committed command buffer; throws (prefixed by `what`) if it
+ * failed */
+void metalWait(id<MTLCommandBuffer> cmd, const char* what);
+
 }}} // namespace isce3::core::detail

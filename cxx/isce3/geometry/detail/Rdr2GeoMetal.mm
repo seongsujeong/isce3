@@ -8,28 +8,24 @@
 #include <isce3/geometry/detail/Rdr2GeoMixedMetalSource.h>
 
 #include <algorithm>
-#include <stdexcept>
-#include <string>
 
 namespace isce3 { namespace geometry { namespace detail {
+
+using namespace isce3::core::detail;
 
 namespace {
 // layout matches Params in Rdr2GeoMixed.metal
 struct Params { int count, width, nx, ny, maxiter; float tol, refHeight; };
 
-// shared-storage buffer of at least `bytes`, reallocated when too small
-void reserve(id<MTLDevice> device, id<MTLBuffer> __strong &b, size_t bytes)
+// buffer b with room for `bytes`, reallocated when too small
+void reserve(id<MTLBuffer> __strong &b, size_t bytes)
 {
-    if (b && b.length >= bytes) return;
-    b = [device newBufferWithLength:std::max<size_t>(bytes, 4)
-                            options:MTLResourceStorageModeShared];
-    if (!b) throw std::runtime_error("Metal rdr2geo buffer allocation failed");
+    if (!b || b.length < bytes)
+        b = metalBuffer(bytes);
 }
 }
 
 struct Rdr2GeoMetal::Impl {
-    id<MTLDevice> device = nil;
-    id<MTLCommandQueue> queue = nil;
     id<MTLComputePipelineState> pso = nil;
     id<MTLBuffer> dem = nil;
     int nx = 0, ny = 0;
@@ -49,12 +45,9 @@ Rdr2GeoMetal::~Rdr2GeoMetal()
 
 std::unique_ptr<Rdr2GeoMetal> Rdr2GeoMetal::create()
 {
-    using namespace isce3::core::detail;
     if (!metalDevice())
         return nullptr;
     std::unique_ptr<Rdr2GeoMetal> g(new Rdr2GeoMetal);
-    g->_impl->device = metalDevice();
-    g->_impl->queue = metalQueue();
     g->_impl->pso = metalPipeline(rdr2geoMixedMetalSource, "rdr2geoResidualIterate");
     return g;
 }
@@ -63,9 +56,7 @@ void Rdr2GeoMetal::dem(const float* z, int nx, int ny, float refHeight)
 {
     for (auto &s : _impl->slots)
         if (s.cmd) [s.cmd waitUntilCompleted];
-    _impl->dem = [_impl->device newBufferWithBytes:z length:sizeof(float) * nx * ny
-                                           options:MTLResourceStorageModeShared];
-    if (!_impl->dem) throw std::runtime_error("Metal rdr2geo DEM upload failed");
+    _impl->dem = metalBuffer(z, sizeof(float) * nx * ny);
     _impl->nx = nx;
     _impl->ny = ny;
     _impl->refHeight = refHeight;
@@ -74,15 +65,15 @@ void Rdr2GeoMetal::dem(const float* z, int nx, int ny, float refHeight)
 Rdr2GeoMetalLine* Rdr2GeoMetal::lines(int slot, size_t n)
 {
     auto &s = _impl->slots[slot];
-    reserve(_impl->device, s.lines, n * sizeof(Rdr2GeoMetalLine));
+    reserve(s.lines, n * sizeof(Rdr2GeoMetalLine));
     return static_cast<Rdr2GeoMetalLine*>(s.lines.contents);
 }
 
 Rdr2GeoMetalPixel* Rdr2GeoMetal::pixels(int slot, size_t n)
 {
     auto &s = _impl->slots[slot];
-    reserve(_impl->device, s.pixels, n * sizeof(Rdr2GeoMetalPixel));
-    reserve(_impl->device, s.out, n * sizeof(float));
+    reserve(s.pixels, n * sizeof(Rdr2GeoMetalPixel));
+    reserve(s.out, n * sizeof(float));
     return static_cast<Rdr2GeoMetalPixel*>(s.pixels.contents);
 }
 
@@ -92,7 +83,7 @@ void Rdr2GeoMetal::run(int slot, size_t nPixels, int width, int maxiter, float t
         auto &s = _impl->slots[slot];
         const Params p {static_cast<int>(nPixels), width, _impl->nx, _impl->ny,
                         maxiter, tol, _impl->refHeight};
-        s.cmd = [_impl->queue commandBuffer];
+        s.cmd = [metalQueue() commandBuffer];
         id<MTLComputeCommandEncoder> enc = [s.cmd computeCommandEncoder];
         [enc setComputePipelineState:_impl->pso];
         [enc setBuffer:s.lines offset:0 atIndex:0];
@@ -111,10 +102,7 @@ void Rdr2GeoMetal::run(int slot, size_t nPixels, int width, int maxiter, float t
 const float* Rdr2GeoMetal::wait(int slot)
 {
     auto &s = _impl->slots[slot];
-    [s.cmd waitUntilCompleted];
-    if (s.cmd.status == MTLCommandBufferStatusError)
-        throw std::runtime_error(std::string("Metal rdr2geo kernel failed: ") +
-                                 s.cmd.error.localizedDescription.UTF8String);
+    metalWait(s.cmd, "Metal rdr2geo");
     s.cmd = nil;
     return static_cast<const float*>(s.out.contents);
 }

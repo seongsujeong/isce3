@@ -8,8 +8,6 @@
 #include <isce3/geometry/detail/Rdr2GeoDDMetalSource.h>
 
 #include <algorithm>
-#include <stdexcept>
-#include <string>
 
 namespace isce3 { namespace geometry { namespace detail {
 
@@ -24,11 +22,8 @@ namespace {
 template<class T>
 T* reserve(id<MTLBuffer> __strong &b, size_t n)
 {
-    const size_t bytes = std::max<size_t>(n * sizeof(T), 4);
-    if (!b || b.length < bytes) {
-        b = [metalDevice() newBufferWithLength:bytes options:MTLResourceStorageModeShared];
-        if (!b) throw std::runtime_error("Metal rdr2geo buffer allocation failed");
-    }
+    if (!b || b.length < n * sizeof(T))
+        b = metalBuffer(n * sizeof(T));
     return static_cast<T*>(b.contents);
 }
 }
@@ -47,9 +42,7 @@ std::unique_ptr<Rdr2GeoDDMetal> Rdr2GeoDDMetal::create()
 
 void Rdr2GeoDDMetal::dem(const float* z, int nx, int ny)
 {
-    _impl->dem = [metalDevice() newBufferWithBytes:z length:sizeof(float) * nx * ny
-                                           options:MTLResourceStorageModeShared];
-    if (!_impl->dem) throw std::runtime_error("Metal rdr2geo DEM upload failed");
+    _impl->dem = metalBuffer(z, sizeof(float) * nx * ny);
 }
 
 Rdr2GeoDDLine* Rdr2GeoDDMetal::lines(size_t n) { return reserve<Rdr2GeoDDLine>(_impl->lines, n); }
@@ -75,10 +68,7 @@ void Rdr2GeoDDMetal::run(const Rdr2GeoDDParams& p)
               threadsPerThreadgroup:MTLSizeMake(_impl->pso.maxTotalThreadsPerThreadgroup, 1, 1)];
         [enc endEncoding];
         [cmd commit];
-        [cmd waitUntilCompleted];
-        if (cmd.status == MTLCommandBufferStatusError)
-            throw std::runtime_error(std::string("Metal rdr2geo failed: ") +
-                                     cmd.error.localizedDescription.UTF8String);
+        metalWait(cmd, "Metal rdr2geo");
     }
 }
 

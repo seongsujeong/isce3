@@ -11,11 +11,11 @@ import numpy as np
 from scipy.fft import next_fast_len
 
 from isce3.io import HDF5OptimizedReader
+from isce3.io.hdf5_chunks import chunk_aligned_lines
 from isce3.splitspectrum import splitspectrum
 from nisar.h5 import cp_h5_meta_data
 from nisar.products.insar.product_paths import CommonPaths
 from nisar.products.readers import RSLC
-from nisar.workflows.helpers import chunk_aligned_lines
 from nisar.workflows.bandpass_insar_runconfig import BandpassRunConfig
 from nisar.workflows.yaml_argparse import YamlArgparse
 

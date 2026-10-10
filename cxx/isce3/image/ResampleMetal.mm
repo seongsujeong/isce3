@@ -55,19 +55,9 @@ id<MTLBuffer> sincFilter()
                 table[i * SINC_LEN + j] =
                         static_cast<float>(filter[i + SINC_SUB * j] / ssum);
         }
-        return [metalDevice() newBufferWithBytes:table.data()
-                                          length:table.size() * sizeof(float)
-                                         options:MTLResourceStorageModeShared];
+        return metalBuffer(table.data(), table.size() * sizeof(float));
     }();
     return buffer;
-}
-
-id<MTLBuffer> upload(const void* data, size_t bytes)
-{
-    id<MTLBuffer> b = [metalDevice() newBufferWithBytes:data length:std::max<size_t>(bytes, 4)
-                                                options:MTLResourceStorageModeShared];
-    if (!b) throw std::runtime_error("Metal resample buffer allocation failed");
-    return b;
 }
 }
 
@@ -130,14 +120,12 @@ void resampleToCoordsMetal(
             p.lutValue = static_cast<float>(lut.refValue());
         }
 
-        id<MTLBuffer> input = upload(input_data_block.data(),
+        id<MTLBuffer> input = metalBuffer(input_data_block.data(),
                                      input_data_block.size() * sizeof(std::complex<float>));
-        id<MTLBuffer> rg = upload(range_input_indices.data(), count * sizeof(double));
-        id<MTLBuffer> az = upload(azimuth_input_indices.data(), count * sizeof(double));
-        id<MTLBuffer> lutBuffer = upload(lutData.data(), lutData.size() * sizeof(float));
-        id<MTLBuffer> out = [metalDevice() newBufferWithLength:std::max<size_t>(count * 8, 4)
-                                                       options:MTLResourceStorageModeShared];
-        if (!out) throw std::runtime_error("Metal resample buffer allocation failed");
+        id<MTLBuffer> rg = metalBuffer(range_input_indices.data(), count * sizeof(double));
+        id<MTLBuffer> az = metalBuffer(azimuth_input_indices.data(), count * sizeof(double));
+        id<MTLBuffer> lutBuffer = metalBuffer(lutData.data(), lutData.size() * sizeof(float));
+        id<MTLBuffer> out = metalBuffer(count * sizeof(std::complex<float>));
 
         id<MTLComputePipelineState> pso = metalPipeline(resampleMetalSource, "resampleToCoords");
         id<MTLCommandBuffer> cmd = [metalQueue() commandBuffer];
@@ -154,10 +142,7 @@ void resampleToCoordsMetal(
               threadsPerThreadgroup:MTLSizeMake(pso.maxTotalThreadsPerThreadgroup, 1, 1)];
         [enc endEncoding];
         [cmd commit];
-        [cmd waitUntilCompleted];
-        if (cmd.status == MTLCommandBufferStatusError)
-            throw std::runtime_error(std::string("Metal resample failed: ") +
-                                     cmd.error.localizedDescription.UTF8String);
+        metalWait(cmd, "Metal resample");
         std::memcpy(resampled_data_block.data(), out.contents,
                     count * sizeof(std::complex<float>));
     }

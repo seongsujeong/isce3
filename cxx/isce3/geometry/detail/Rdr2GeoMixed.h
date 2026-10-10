@@ -8,7 +8,6 @@
 #pragma once
 
 #include <cmath>
-#include <limits>
 
 #include <isce3/core/Basis.h>
 #include <isce3/core/Ellipsoid.h>
@@ -118,57 +117,6 @@ inline bool rdr2geoResidualSetup(Rdr2GeoResidualSetup& s,
     s.ndotvOverVdott = static_cast<float>(ndotv / vdott);
     s.curvature = static_cast<float>(0.5 / std::sqrt(rEast * rNorth));
     return true;
-}
-
-/** \internal FP32 height iteration on residuals (CPU reference of the Metal
- * kernel rdr2geoResidualIterate in Rdr2GeoMixed.metal): target motion dT(dh) for a
- * height change dh of the radius + h model, DEM height at the linearized map
- * coordinates, ellipsoidal height of the target to second order, and the new
- * height of the model. demHeight(x, y) returns the DEM height at map
- * coordinates (the FP64 setup's demX/demY plus FP32 offsets).
- * Returns the height h0 + dh, or NaN if it did not converge to tol. */
-template<class DemHeight>
-inline double rdr2geoResidualIterate(const Rdr2GeoResidualSetup& s,
-        DemHeight&& demHeight, int maxiter, float tol)
-{
-    float dh = 0.f;
-    for (int it = 0; it < maxiter; ++it) {
-        // cos(look) change: b^2 - b0^2 = dh (2 b0 + dh)
-        const float dc = -dh * (2.f * s.b0 + dh) / (2.f * s.a * s.r);
-        const float dgamma = s.r * dc;
-        const float dalpha = -dgamma * s.ndotvOverVdott;
-        // beta^2 - beta0^2 = -r^2 dc (2 c0 + dc) - dalpha (2 alpha0 + dalpha)
-        const float dbeta2 = -s.r * s.r * dc * (2.f * s.c0 + dc) -
-                             dalpha * (2.f * s.alpha0 + dalpha);
-        const float root = std::sqrt(std::fmax(s.beta0 * s.beta0 + dbeta2, 0.f));
-        const float dbeta = dbeta2 / (s.beta0 + std::copysign(root, s.beta0));
-        float dT[3];
-        for (int j = 0; j < 3; ++j)
-            dT[j] = dalpha * s.that[j] + dbeta * s.chat[j] + dgamma * s.nhat[j];
-        // DEM height at the target
-        const float dx = s.jac[0][0] * dT[0] + s.jac[0][1] * dT[1] + s.jac[0][2] * dT[2];
-        const float dy = s.jac[1][0] * dT[0] + s.jac[1][1] * dT[1] + s.jac[1][2] * dT[2];
-        const float hdem = static_cast<float>(demHeight(s.demX + dx, s.demY + dy));
-        // ellipsoidal height of the target, then onto the DEM along the normal
-        const float dn = s.n0[0] * dT[0] + s.n0[1] * dT[1] + s.n0[2] * dT[2];
-        const float dT2 = dT[0] * dT[0] + dT[1] * dT[1] + dT[2] * dT[2];
-        const float hT = s.hT0 + dn + (dT2 - dn * dn) * s.curvature;
-        float dX[3], tdotx = 0.f, dX2 = 0.f;
-        for (int j = 0; j < 3; ++j) {
-            dX[j] = dT[j] + (hdem - hT) * s.n0[j];
-            tdotx += s.tHat[j] * dX[j];
-            dX2 += dX[j] * dX[j];
-        }
-        // |T0 + dX| - |T0| without forming the ~6.4e6 m norms in FP32
-        const float dnorm = (2.f * tdotx * s.tNorm + dX2) /
-                            (s.tNorm + std::sqrt(s.tNorm * s.tNorm + 2.f * tdotx * s.tNorm + dX2));
-        const float dhNew = s.dh0 + dnorm;
-        const bool done = std::fabs(dhNew - dh) < tol;
-        dh = dhNew;
-        if (done)
-            return s.h0 + dh;
-    }
-    return std::numeric_limits<double>::quiet_NaN();
 }
 
 }}} // namespace isce3::geometry::detail

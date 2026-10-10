@@ -21,6 +21,7 @@
 #include "cuSincOverSampler.h"
 #include "float2.h"
 
+#include <isce3/core/detail/MetalContext.h>
 #include <isce3/matchtemplate/pycuampcor/cuMetalSource.h>
 
 #include <algorithm>
@@ -34,17 +35,17 @@
 #include <mutex>
 #include <stdexcept>
 #include <string>
-#include <unistd.h>
 #include <vector>
 
 namespace isce3::matchtemplate::pycuampcor {
+
+using namespace isce3::core::detail;
 
 namespace {
 
 // Kernel parameter structs; layouts match cuAmpcor.metal
 struct GatherParams { int inNX, inNY, outNX, outNY, absolute, withMagnitude; };
 struct Shape2 { int inNX, inNY, outNX, outNY, offsetX, offsetY; };
-struct PackParams { int tNX, tNY, iNX, iNY, outNX, outNY; };
 struct InsertParams { int inNX, inNY, outNY, offsetX, offsetY, elemWords; };
 struct VarParams { int NX, NY, templateSize; };
 struct SatParams { int nx, ny; };
@@ -122,109 +123,29 @@ struct FFTPlan {
     id<MTLBuffer> radixBuffer = nil;  // radices as int, read by fft1d
 };
 
-// Process-wide Metal state: device, queue, kernel library and caches of
-// pipelines and FFT plans. Several GPU feeding threads share it, so the
-// caches are guarded by a mutex; returned entries are never removed.
-class Context {
-public:
-    id<MTLDevice> device = nil;
-    id<MTLCommandQueue> queue = nil;
-
-    // initialized once, thread-safe; nullptr when no Metal device exists
-    static Context *get()
-    {
-        static Context ctx;
-        static bool ok = false;
-        static std::once_flag once;
-        std::call_once(once, [] { ok = ctx.init(); });
-        return ok ? &ctx : nullptr;
-    }
-
-    // compute pipeline of kernel `name`, built on first use
-    id<MTLComputePipelineState> pipeline(const std::string &name)
-    {
-        std::lock_guard<std::mutex> lock(mutex);
-        auto it = pipelines.find(name);
-        if (it != pipelines.end()) return it->second;
-        id<MTLFunction> f = [library newFunctionWithName:@(name.c_str())];
-        if (!f) throw std::runtime_error("no Metal kernel " + name);
-        NSError *err = nil;
-        id<MTLComputePipelineState> p =
-            [device newComputePipelineStateWithFunction:f error:&err];
-        if (!p)
-            throw std::runtime_error("Metal pipeline " + name + ": " +
-                                     err.localizedDescription.UTF8String);
-        pipelines[name] = p;
-        return p;
-    }
-
-    // Mixed-radix plan of length n (radices 4, 2, then odd factors)
-    const FFTPlan &fftPlan(int n)
-    {
-        std::lock_guard<std::mutex> lock(mutex);
-        auto it = plans.find(n);
-        if (it != plans.end()) return it->second;
-        if (!fftSupported(n))
-            throw std::runtime_error("unsupported Metal FFT length " + std::to_string(n));
-        FFTPlan plan;
-        plan.n = n;
-        plan.radices = fftRadices(n);
-        std::vector<float2> tw(n);
-        for (int k = 0; k < n; k++) {
-            const double a = 2.0 * M_PI * k / n;
-            tw[k] = make_float2((float)std::cos(a), (float)std::sin(a));
-        }
-        plan.twiddles = [device newBufferWithBytes:tw.data() length:n * sizeof(float2)
-                                           options:MTLResourceStorageModeShared];
-        plan.radixBuffer = [device newBufferWithBytes:plan.radices.data()
-                                               length:plan.radices.size() * sizeof(int)
-                                              options:MTLResourceStorageModeShared];
-        return plans[n] = plan;
-    }
-
-private:
-    id<MTLLibrary> library = nil;
-    std::mutex mutex;
-    std::map<std::string, id<MTLComputePipelineState>> pipelines;
-    std::map<int, FFTPlan> plans;
-
-    // kernels are compiled from the source embedded by CMake (cuMetalSource.h)
-    bool init()
-    {
-        @autoreleasepool {
-            device = MTLCreateSystemDefaultDevice();
-            if (!device) return false;
-            MTLCompileOptions *options = [MTLCompileOptions new];
-            options.mathMode = MTLMathModeSafe;  // follow the CPU arithmetic
-            NSError *error = nil;
-            library = [device newLibraryWithSource:@(cuAmpcorMetalSource)
-                                           options:options error:&error];
-            if (!library)
-                throw std::runtime_error(std::string("Metal ampcor kernels: ") +
-                                         error.localizedDescription.UTF8String);
-            queue = [device newCommandQueue];
-            return true;
-        }
-    }
-};
-
-size_t roundToPage(size_t bytes)
+// Mixed-radix plan of length n (radices 4, 2, then odd factors), built on
+// first use. Several GPU feeding threads share the cache, so it is guarded
+// by a mutex; returned entries are never removed.
+const FFTPlan &fftPlan(int n)
 {
-    const size_t page = getpagesize();
-    return std::max<size_t>((bytes + page - 1) / page * page, page);
-}
-
-// Zero-copy buffer over page-aligned host memory (pageAlignedAlloc). The
-// length is rounded up to whole pages, which pageAlignedAlloc also
-// allocates; the host keeps ownership (no deallocator) and must outlive
-// the buffer.
-id<MTLBuffer> wrap(const void *data, size_t bytes)
-{
-    id<MTLBuffer> b = [Context::get()->device
-        newBufferWithBytesNoCopy:const_cast<void *>(data) length:roundToPage(bytes)
-                         options:MTLResourceStorageModeShared deallocator:nil];
-    if (!b) throw std::runtime_error("Metal buffer over host memory failed");
-    return b;
+    static std::mutex mutex;
+    static std::map<int, FFTPlan> plans;
+    std::lock_guard<std::mutex> lock(mutex);
+    auto it = plans.find(n);
+    if (it != plans.end()) return it->second;
+    if (!fftSupported(n))
+        throw std::runtime_error("unsupported Metal FFT length " + std::to_string(n));
+    FFTPlan plan;
+    plan.n = n;
+    plan.radices = fftRadices(n);
+    std::vector<float2> tw(n);
+    for (int k = 0; k < n; k++) {
+        const double a = 2.0 * M_PI * k / n;
+        tw[k] = make_float2((float)std::cos(a), (float)std::sin(a));
+    }
+    plan.twiddles = metalBuffer(tw.data(), n * sizeof(float2));
+    plan.radixBuffer = metalBuffer(plan.radices.data(), plan.radices.size() * sizeof(int));
+    return plans[n] = plan;
 }
 
 // Batch of `count` images of height x width elements of T in a GPU buffer
@@ -236,11 +157,8 @@ struct Batch {
     Batch() = default;
     Batch(int h, int w, int n) : height(h), width(w), count(n)
     {
-        // shared storage: the CPU reads/writes data() directly; at least
-        // 4 bytes since Metal rejects empty buffers
-        buffer = [Context::get()->device newBufferWithLength:std::max<size_t>(bytes(), 4)
-                                                     options:MTLResourceStorageModeShared];
-        if (!buffer) throw std::runtime_error("Metal buffer allocation failed");
+        // shared storage: the CPU reads/writes data() directly
+        buffer = metalBuffer(bytes());
     }
     size_t size() const { return (size_t)height * width; }
     size_t elements() const { return size() * count; }
@@ -282,7 +200,7 @@ public:
             flushProfile();
             current = label.empty() ? name : label;
         }
-        pso = Context::get()->pipeline(name);
+        pso = metalPipeline(cuAmpcorMetalSource, name);
         [enc setComputePipelineState:pso];
         nbuf = 0;
         return *this;
@@ -326,31 +244,36 @@ private:
         [cmd waitUntilCompleted];
         profile.gpu[current] += cmd.GPUEndTime - cmd.GPUStartTime;
         current.clear();
-        cmd = [Context::get()->queue commandBuffer];
+        cmd = [metalQueue() commandBuffer];
         enc = [cmd computeCommandEncoder];
     }
 };
 
 // -------------------------------------------------------------- operations
 
-// Input of the first pass of fft2d instead of the batch itself (fft1d
-// fftLoad): 1 copy of a complex batch c, 2 its spectrum padded to the batch
-// size (padSpectrum, c of nx x ny), 3 real pair f + i f2 zero padded
-// (packRealPair, f of nx x ny, f2 of nx2 x ny2), 5 conj(T) S * coef of the
-// packed spectrum c of the batch size (mulConjPacked), 6 copy of c
-// deramped by the per-image phase ramps (derampPhase)
+// Input of the first pass and output of the last pass of fft2d (fft1d
+// fftLoad / fftStore; values match FFTLoadMode / FFTStoreMode of
+// cuAmpcor.metal, which describes them)
+enum FFTLoadMode {
+    LOAD_DATA = 0, LOAD_COPY = 1, LOAD_PAD_SPECTRUM = 2, LOAD_REAL_PAIR = 3,
+    LOAD_ZERO_ROWS = 4, LOAD_MUL_CONJ = 5, LOAD_DERAMPED = 6,
+};
+enum FFTStoreMode { STORE_DATA = 0, STORE_MAGNITUDE = 1, STORE_REAL = 2 };
+
+// Input of the first pass of fft2d instead of the batch itself: c complex
+// (nx x ny for LOAD_PAD_SPECTRUM), f and f2 real (nx x ny, nx2 x ny2 for
+// LOAD_REAL_PAIR), ramp per-image phase ramps (LOAD_DERAMPED)
 struct FFTLoad {
-    int mode = 0;
+    int mode = LOAD_DATA;
     id<MTLBuffer> c = nil, f = nil, f2 = nil, ramp = nil;
     int nx = 0, ny = 0, nx2 = 0, ny2 = 0;
     float coef = 1.0f;
 };
 
-// Output of the last pass of fft2d instead of the batch (fft1d fftStore):
-// 1 magnitudes into f (complexAbs, same size), 2 real parts of the top-left
-// nx x ny into f (extractReal)
+// Output of the last pass of fft2d instead of the batch, into f (nx x ny
+// for STORE_REAL)
 struct FFTStore {
-    int mode = 0;
+    int mode = STORE_DATA;
     id<MTLBuffer> f = nil;
     int nx = 0, ny = 0;
 };
@@ -374,14 +297,14 @@ void fft2d(Encoder &e, const Batch<float2> &b, int sign, int rows = -1, bool row
             p.coef = load.coef;
         } else if (!first && load.mode && rowsFirst && rows < b.height) {
             // rows the first pass did not write are zero
-            p.loadMode = 4;
+            p.loadMode = LOAD_ZERO_ROWS;
             p.validRows = rows;
         }
         if (last && store.mode) {
             p.storeMode = store.mode;
             p.dstNX = store.nx; p.dstNY = store.ny;
         }
-        const FFTPlan &plan = Context::get()->fftPlan(n);
+        const FFTPlan &plan = fftPlan(n);
         p.n = n;
         p.nradix = (int)plan.radices.size();
         p.sign = sign;
@@ -411,12 +334,6 @@ void fft2d(Encoder &e, const Batch<float2> &b, int sign, int rows = -1, bool row
     };
     if (rowsFirst) { rowPass(true); colPass(false); }
     else { colPass(true); rowPass(false); }
-}
-
-// cuArraysAbs
-void complexAbs(Encoder &e, const Batch<float2> &in, const Batch<float> &out)
-{
-    e.kernel("complexAbs").buf(in).buf(out).grid((int)in.elements());
 }
 
 // cuArraysSubtractMean, in place
@@ -463,7 +380,7 @@ struct Correlator {
         // size, packed by the first pass; rows beyond the inputs are zero
         const int nx = workT.height, ny = workT.width;
         FFTLoad pack;
-        pack.mode = 3;
+        pack.mode = LOAD_REAL_PAIR;
         pack.f = templates.buffer; pack.nx = templates.height; pack.ny = templates.width;
         pack.f2 = images.buffer; pack.nx2 = images.height; pack.ny2 = images.width;
         fft2d(e, workT, -1, std::max(templates.height, images.height), true, pack);
@@ -473,11 +390,11 @@ struct Correlator {
         // then only the result rows, whose real parts the last pass stores
         // into the results
         FFTLoad mulConj;
-        mulConj.mode = 5;
+        mulConj.mode = LOAD_MUL_CONJ;
         mulConj.c = workT.buffer;
         mulConj.coef = 1.0f / (nx * ny);
         FFTStore real;
-        real.mode = 2;
+        real.mode = STORE_REAL;
         real.f = results.buffer; real.nx = results.height; real.ny = results.width;
         fft2d(e, workS, +1, results.height, false, mulConj, real);
     }
@@ -510,12 +427,6 @@ struct Normalizer {
     }
 };
 
-// GPU copy of `bytes` (a multiple of 4), ordered with the other kernels
-void copyBuffer(Encoder &e, id<MTLBuffer> in, id<MTLBuffer> out, size_t bytes)
-{
-    e.kernel("copyWords").buf(in).buf(out).grid((int)(bytes / 4));
-}
-
 // Spectrum padding of cuArraysPaddingMany
 void padSpectrum(Encoder &e, const Batch<float2> &in, const Batch<float2> &out)
 {
@@ -539,17 +450,17 @@ struct OverSamplerC2C {
         // forward FFT of a copy (the first pass reads in, deramped if
         // requested), leaving in unchanged
         FFTLoad copy;
-        copy.mode = ramp ? 6 : 1;
+        copy.mode = ramp ? LOAD_DERAMPED : LOAD_COPY;
         copy.c = in.buffer;
         if (ramp) copy.ramp = ramp->buffer;
         fft2d(e, workIn, +1, -1, true, copy);
         // inverse of the padded spectrum (the first pass pads)
         FFTLoad pad;
-        pad.mode = 2;
+        pad.mode = LOAD_PAD_SPECTRUM;
         pad.c = workIn.buffer; pad.nx = workIn.height; pad.ny = workIn.width;
         FFTStore abs;
         if (outAbs) {
-            abs.mode = 1;
+            abs.mode = STORE_MAGNITUDE;
             abs.f = outAbs->buffer;
         }
         fft2d(e, out, -1, -1, true, pad, abs);
@@ -637,7 +548,7 @@ public:
             // sinc: the CPU sampler provides the filter table; only a
             // size x size window around the peak is computed (sincCols)
             sinc = std::make_unique<cuSincOverSamplerR2R>(param->oversamplingFactor);
-            sincFilter = wrap(sinc->filter(), sinc->filterLength() * sizeof(float));
+            sincFilter = metalWrap(sinc->filter(), sinc->filterLength() * sizeof(float));
             const int size = 2 * sinc->sincWindow() * sinc->covs() + 1;
             sincRowsBuf = Batch<float>(rCorrZoomInAdjust.height, size, nwd * nwa);
             sincWindowBuf = Batch<float>(size, size, nwd * nwa);
@@ -659,7 +570,7 @@ public:
             const double t0 = CFAbsoluteTimeGetCurrent();
             load();
             profile.cpuLoad += CFAbsoluteTimeGetCurrent() - t0;
-            Encoder e([Context::get()->queue commandBuffer]);
+            Encoder e([metalQueue() commandBuffer]);
             encode(e);
             cmd = e.finish();
             [cmd commit];
@@ -670,10 +581,7 @@ public:
     void wait()
     {
         if (!cmd) return;
-        [cmd waitUntilCompleted];
-        if (cmd.status == MTLCommandBufferStatusError)
-            throw std::runtime_error(std::string("Metal ampcor chunk: ") +
-                                     cmd.error.localizedDescription.UTF8String);
+        metalWait(cmd, "Metal ampcor chunk");
         cmd = nil;
     }
 
@@ -913,11 +821,7 @@ private:
 
 } // namespace
 
-// first call initializes the Metal context (compiles the kernels)
-bool metalAvailable()
-{
-    return Context::get() != nullptr;
-}
+bool metalAvailable() { return metalDevice() != nil; }
 
 bool metalSupported(const cuAmpcorParameter *param)
 {
@@ -964,10 +868,10 @@ int runAmpcorMetal(const std::vector<MetalLayer> &layers, GDALImage *reference,
     };
     std::vector<Slots> slots;
     for (const auto &l : layers)
-        slots.push_back({RunImages{wrap(l.offsetImageRun->devData, l.offsetImageRun->getByteSize()),
-                                   wrap(l.snrImageRun->devData, l.snrImageRun->getByteSize()),
-                                   wrap(l.covImageRun->devData, l.covImageRun->getByteSize()),
-                                   wrap(l.corrImageRun->devData, l.corrImageRun->getByteSize()),
+        slots.push_back({RunImages{metalWrap(l.offsetImageRun->devData, l.offsetImageRun->getByteSize()),
+                                   metalWrap(l.snrImageRun->devData, l.snrImageRun->getByteSize()),
+                                   metalWrap(l.covImageRun->devData, l.covImageRun->getByteSize()),
+                                   metalWrap(l.corrImageRun->devData, l.corrImageRun->getByteSize()),
                                    l.offsetImageRun->width},
                          {}, std::vector<bool>(nSlots, false)});
 
