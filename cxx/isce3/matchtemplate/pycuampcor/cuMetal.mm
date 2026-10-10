@@ -337,10 +337,11 @@ private:
 // fftLoad): 1 copy of a complex batch c, 2 its spectrum padded to the batch
 // size (padSpectrum, c of nx x ny), 3 real pair f + i f2 zero padded
 // (packRealPair, f of nx x ny, f2 of nx2 x ny2), 5 conj(T) S * coef of the
-// packed spectrum c of the batch size (mulConjPacked)
+// packed spectrum c of the batch size (mulConjPacked), 6 copy of c
+// deramped by the per-image phase ramps (derampPhase)
 struct FFTLoad {
     int mode = 0;
-    id<MTLBuffer> c = nil, f = nil, f2 = nil;
+    id<MTLBuffer> c = nil, f = nil, f2 = nil, ramp = nil;
     int nx = 0, ny = 0, nx2 = 0, ny2 = 0;
     float coef = 1.0f;
 };
@@ -390,7 +391,8 @@ void fft2d(Encoder &e, const Batch<float2> &b, int sign, int rows = -1, bool row
         e.kernel("fft1d", "fft1d n=" + std::to_string(n) + (p.elemStride == 1 ? " rows" : " cols"))
             .buf(b).buf(plan.twiddles).buf(plan.radixBuffer).bytes(p)
             .buf(load.c ? load.c : b.buffer).buf(load.f ? load.f : b.buffer)
-            .buf(load.f2 ? load.f2 : b.buffer).buf(store.f ? store.f : b.buffer);
+            .buf(load.f2 ? load.f2 : b.buffer).buf(store.f ? store.f : b.buffer)
+            .buf(load.ramp ? load.ramp : b.buffer);
         // Stockham ping-pong buffers; Metal needs a multiple of 16 bytes
         [e.enc setThreadgroupMemoryLength:(2 * n * p.group * sizeof(float2) + 15) / 16 * 16
                                   atIndex:0];
@@ -421,6 +423,12 @@ void complexAbs(Encoder &e, const Batch<float2> &in, const Batch<float> &out)
 void subtractMean(Encoder &e, const Batch<float> &b)
 {
     e.kernel("subtractMean").buf(b).bytes((int)b.size()).groups(b.count);
+}
+
+// subtractMean, then the sum of squares of every image into sum2
+void subtractMeanSumSquare(Encoder &e, const Batch<float> &b, const Batch<float> &sum2)
+{
+    e.kernel("subtractMeanSumSquare").buf(b).buf(sum2).bytes((int)b.size()).groups(b.count);
 }
 
 // cuFreqCorrelator / cuCorrTimeDomain: correlation of every template with
@@ -484,10 +492,12 @@ struct Normalizer {
     Normalizer(int nx, int ny, int count)
         : refSum2(1, 1, count), sat(nx, ny, count), sat2(nx, ny, count) {}
 
+    // refSum2 is already set if refSum2Done (subtractMeanSumSquare)
     void encode(Encoder &e, const Batch<float> &corr, const Batch<float> &ref,
-                const Batch<float> &sec)
+                const Batch<float> &sec, bool refSum2Done = false)
     {
-        e.kernel("sumSquare").buf(ref).buf(refSum2).bytes((int)ref.size()).groups(ref.count);
+        if (!refSum2Done)
+            e.kernel("sumSquare").buf(ref).buf(refSum2).bytes((int)ref.size()).groups(ref.count);
         const SatParams sp{sec.height, sec.width};
         e.kernel("satRows").buf(sec).buf(sat).buf(sat2).bytes(sp).bytes(ref.count);
         // one SIMD group (32 threads) per row of every image
@@ -522,13 +532,16 @@ struct OverSamplerC2C {
 
     // oversampled in into out, or only its magnitudes into outAbs if given
     // (complexAbs fused into the last pass; out is then scratch)
+    // ramp: per-image phase ramps (derampPhase) removed from in, if given
     void encode(Encoder &e, const Batch<float2> &in, const Batch<float2> &out,
-                const Batch<float> *outAbs = nullptr)
+                const Batch<float> *outAbs = nullptr, const Batch<float2> *ramp = nullptr)
     {
-        // forward FFT of a copy (the first pass reads in), leaving in unchanged
+        // forward FFT of a copy (the first pass reads in, deramped if
+        // requested), leaving in unchanged
         FFTLoad copy;
-        copy.mode = 1;
+        copy.mode = ramp ? 6 : 1;
         copy.c = in.buffer;
+        if (ramp) copy.ramp = ramp->buffer;
         fft2d(e, workIn, +1, -1, true, copy);
         // inverse of the padded spectrum (the first pass pads)
         FFTLoad pad;
@@ -586,6 +599,7 @@ public:
           nwd(param->numberWindowDownInChunk), nwa(param->numberWindowAcrossInChunk),
           refChunk(param->maxReferenceChunkHeight, param->maxReferenceChunkWidth, 1),
           secChunk(param->maxSecondaryChunkHeight, param->maxSecondaryChunkWidth, 1),
+          refRamp(1, 1, nwd * nwa), secRamp(1, 1, nwd * nwa),
           refOffDown(nwd, nwa, 1), refOffAcross(nwd, nwa, 1),
           secOffDown(nwd, nwa, 1), secOffAcross(nwd, nwa, 1),
           cRefRaw(param->windowSizeHeightRaw, param->windowSizeWidthRaw, nwd * nwa),
@@ -673,6 +687,8 @@ private:
     id<MTLCommandBuffer> cmd = nil;
 
     Batch<float2> refChunk, secChunk;
+    // per-image deramping phase ramps (derampPhase)
+    Batch<float2> refRamp, secRamp;
     Batch<int> refOffDown, refOffAcross, secOffDown, secOffAcross;
     Batch<float2> cRefRaw, cSecRaw;
     Batch<float> rRefRaw, rSecRaw;
@@ -769,11 +785,14 @@ private:
     }
 
     // cuDeramp, in place (derampMethod 1 only)
-    void deramp(Encoder &e, const Batch<float2> &b)
+    // phase ramps of b (cuDeramp, derampMethod 1 only) into ramp; whether
+    // b is to be deramped
+    bool derampPhase(Encoder &e, const Batch<float2> &b, const Batch<float2> &ramp)
     {
-        if (param->derampMethod != 1) return;
-        e.kernel("deramp").buf(b).bytes(DerampParams{b.height, b.width, param->derampAxis})
-            .groups(b.count);
+        if (param->derampMethod != 1) return false;
+        e.kernel("derampPhase").buf(b).bytes(DerampParams{b.height, b.width, param->derampAxis})
+            .buf(ramp).groups(b.count);
+        return true;
     }
 
     // cuArraysMaxloc2D: peak location and value of every image
@@ -804,13 +823,14 @@ private:
         // reference windows: amplitudes with the mean removed
         gather(e, refChunk, param->referenceChunkWidth[idxChunk], refOffDown, refOffAcross,
                cRefRaw, &rRefRaw);
-        subtractMean(e, rRefRaw);
+        // with the sum of squares for the normalization
+        subtractMeanSumSquare(e, rRefRaw, normRaw.refSum2);
         // secondary search windows
         gather(e, secChunk, param->secondaryChunkWidth[idxChunk], secOffDown, secOffAcross,
                cSecRaw, &rSecRaw);
         // correlation before oversampling and its integer peak
         corrRaw.encode(e, rRefRaw, rSecRaw, rCorrRaw);
-        normRaw.encode(e, rCorrRaw, rRefRaw, rSecRaw);
+        normRaw.encode(e, rCorrRaw, rRefRaw, rSecRaw, true);
         if (param->flowDirectionDown.empty()) {
             maxloc(e, rCorrRaw, offsetInit, rMaxval);
         } else {
@@ -838,18 +858,19 @@ private:
                                        param->halfZoomWindowSizeRaw, param->halfZoomWindowSizeRaw, n})
             .grid(n);
         // oversampled reference
-        deramp(e, cRefRaw);
-        ovsRef.encode(e, cRefRaw, cRefOvs, &rRefOvs);
-        subtractMean(e, rRefOvs);
+        // deramped by the first pass of the oversampling
+        const bool dr = derampPhase(e, cRefRaw, refRamp);
+        ovsRef.encode(e, cRefRaw, cRefOvs, &rRefOvs, dr ? &refRamp : nullptr);
+        subtractMeanSumSquare(e, rRefOvs, normOvs.refSum2);
         // oversampled secondary
         e.kernel("extractComplexOffsets").buf(cSecRaw).buf(cSecZoomIn).buf(offsetInit)
             .bytes(Shape2{cSecRaw.height, cSecRaw.width, cSecZoomIn.height, cSecZoomIn.width, 0, 0})
             .grid(cSecZoomIn.width, cSecZoomIn.height, n);
-        deramp(e, cSecZoomIn);
-        ovsSec.encode(e, cSecZoomIn, cSecOvs, &rSecOvs);
+        const bool ds = derampPhase(e, cSecZoomIn, secRamp);
+        ovsSec.encode(e, cSecZoomIn, cSecOvs, &rSecOvs, ds ? &secRamp : nullptr);
         // oversampled correlation
         corrOvs.encode(e, rRefOvs, rSecOvs, rCorrZoomIn);
-        normOvs.encode(e, rCorrZoomIn, rRefOvs, rSecOvs);
+        normOvs.encode(e, rCorrZoomIn, rRefOvs, rSecOvs, true);
         e.kernel("extractFloat").buf(rCorrZoomIn).buf(rCorrZoomInAdjust)
             .bytes(Shape2{rCorrZoomIn.height, rCorrZoomIn.width,
                           rCorrZoomInAdjust.height, rCorrZoomInAdjust.width, 0, 0})

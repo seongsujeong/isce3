@@ -213,6 +213,27 @@ kernel void subtractMean(device float *images [[buffer(0)]],
     for (int i = tid; i < imageSize; i += REDUCE_THREADS) image[i] -= mean;
 }
 
+// subtractMean, then sumSquare of the result into sum2 (same sums)
+kernel void subtractMeanSumSquare(device float *images [[buffer(0)]],
+                                  device float *sum2 [[buffer(1)]],
+                                  constant int &imageSize [[buffer(2)]],
+                                  uint img [[threadgroup_position_in_grid]],
+                                  uint tid [[thread_position_in_threadgroup]])
+{
+    threadgroup float scratch[REDUCE_THREADS];
+    device float *image = images + (size_t)img * imageSize;
+    float sum = 0.0f;
+    for (int i = tid; i < imageSize; i += REDUCE_THREADS) sum += image[i];
+    const float mean = threadgroupSum(sum, scratch, tid) * (1.0f / imageSize);
+    float s = 0.0f;
+    for (int i = tid; i < imageSize; i += REDUCE_THREADS) {
+        image[i] -= mean;
+        s += image[i] * image[i];
+    }
+    s = threadgroupSum(s, scratch, tid);
+    if (tid == 0) sum2[img] = s;
+}
+
 // sum_square_kernel (one threadgroup per image)
 kernel void sumSquare(device const float *images [[buffer(0)]],
                       device float *sum2 [[buffer(1)]],
@@ -474,7 +495,8 @@ struct FFTParams {
     // srcC, 2 spectrum padding of srcC (srcNX x srcNY, padSpectrum), 3 real
     // pair srcF + i src2F (packRealPair), 4 data with rows >= validRows
     // zero, 5 conj(T) S * coef of the packed spectrum srcC of the same size
-    // (mulConjPacked); store 0 data, 1 magnitude into dstF (complexAbs), 2 real part
+    // (mulConjPacked), 6 copy of srcC deramped by ramp[img] (derampPhase);
+    // store 0 data, 1 magnitude into dstF (complexAbs), 2 real part
     // into dstF (dstNX x dstNY, extractReal)
     int nx, ny, loadMode, storeMode;
     int srcNX, srcNY, src2NX, src2NY, dstNX, dstNY, validRows;
@@ -485,6 +507,7 @@ struct FFTParams {
 // element (row, col) of image img of the first pass
 inline float2 fftLoad(device const float2 *data, device const float2 *srcC,
                       device const float *srcF, device const float *src2F,
+                      device const float2 *ramp,
                       constant FFTParams &p, size_t addr, int img, int row, int col)
 {
     switch (p.loadMode) {
@@ -504,6 +527,13 @@ inline float2 fftLoad(device const float2 *data, device const float2 *srcC,
     }
     case 4:
         return row < p.validRows ? data[addr] : float2(0.0f);
+    case 6: {
+        // copy of srcC deramped (deramp of cuLinearDeramp_kernel)
+        const float phase = row * ramp[img].x + col * ramp[img].y;
+        const float c = cos(phase), s = sin(phase);
+        const float2 v = srcC[addr];
+        return float2(v.x * c - v.y * s, v.x * s + v.y * c);
+    }
     case 5: {
         device const float2 *zi = srcC + (size_t)img * p.nx * p.ny;
         const float2 a = zi[row * p.ny + col];
@@ -583,6 +613,7 @@ kernel void fft1d(device float2 *data [[buffer(0)]],
                   device const float *srcF [[buffer(5)]],
                   device const float *src2F [[buffer(6)]],
                   device float *dstF [[buffer(7)]],
+                  device const float2 *ramp [[buffer(8)]],
                   threadgroup float2 *shared [[threadgroup(0)]],
                   uint groupIdx [[threadgroup_position_in_grid]],
                   uint tid [[thread_position_in_threadgroup]],
@@ -599,7 +630,7 @@ kernel void fft1d(device float2 *data [[buffer(0)]],
         const int line = line0 + c;
         const int img = line / p.linesPerImage, l = line % p.linesPerImage;
         const size_t addr = (size_t)img * p.imageSize + l * p.lineStride + i * p.elemStride;
-        a[c * n + i] = fftLoad(data, srcC, srcF, src2F, p, addr, img,
+        a[c * n + i] = fftLoad(data, srcC, srcF, src2F, ramp, p, addr, img,
                                contiguous ? l : i, contiguous ? i : l);
     }
     threadgroup_barrier(mem_flags::mem_threadgroup);
@@ -662,17 +693,19 @@ kernel void fft1d(device float2 *data [[buffer(0)]],
 
 struct DerampParams { int nx, ny, axis; };
 
-// cuLinearDeramp_kernel (one threadgroup per image): the phase ramp along
-// each axis is the angle of sum v_k conj(v_k+1), i.e. minus the ramp, so
-// multiplying by exp(i phase) removes it; axis 0: x only, 1: y only,
-// otherwise both
-kernel void deramp(device float2 *images [[buffer(0)]],
-                   constant DerampParams &p [[buffer(1)]],
-                   uint img [[threadgroup_position_in_grid]],
-                   uint tid [[thread_position_in_threadgroup]])
+// cuLinearDeramp_kernel (one threadgroup per image), its estimate: the
+// phase ramp along each axis is the angle of sum v_k conj(v_k+1), i.e.
+// minus the ramp, so multiplying element (row, col) by exp(i (row ramp.x +
+// col ramp.y)) removes it (done by the loads of fft1d, mode 6); axis 0: x
+// only, 1: y only, otherwise both
+kernel void derampPhase(device const float2 *images [[buffer(0)]],
+                        constant DerampParams &p [[buffer(1)]],
+                        device float2 *ramp [[buffer(2)]],
+                        uint img [[threadgroup_position_in_grid]],
+                        uint tid [[thread_position_in_threadgroup]])
 {
     threadgroup float2 scratch[REDUCE_THREADS];
-    device float2 *image = images + (size_t)img * p.nx * p.ny;
+    device const float2 *image = images + (size_t)img * p.nx * p.ny;
     float phaseY = 0.0f;
     if (p.axis != 0) {
         float2 d = float2(0.0f);
@@ -692,12 +725,7 @@ kernel void deramp(device float2 *images [[buffer(0)]],
         d = threadgroupSum(d, scratch, tid);
         phaseX = atan2(d.y, d.x);
     }
-    for (int i = tid; i < p.nx * p.ny; i += REDUCE_THREADS) {
-        const float phase = (i / p.ny) * phaseX + (i % p.ny) * phaseY;
-        const float c = cos(phase), s = sin(phase);
-        const float2 v = image[i];
-        image[i] = float2(v.x * c - v.y * s, v.x * s + v.y * c);
-    }
+    if (tid == 0) ramp[img] = float2(phaseX, phaseY);
 }
 
 // ------------------------------------------------------------------ peaks
