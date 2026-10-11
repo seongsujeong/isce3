@@ -27,6 +27,8 @@
 
 #include <limits>
 
+#include "forward.h"
+
 // Declaration
 namespace isce3 {
     namespace geometry {
@@ -133,6 +135,23 @@ public:
                  const std::string & outdir,
                  double azshift=0.0, double rgshift=0.0);
 
+    /**
+     * Run topo and geo2rdr of its targets in one pass, with the outputs of
+     * geo2rdr(topoRaster, outdir) for the topo radar grid: each block of
+     * targets goes from topo to geo2rdr in memory (no topo rasters), and
+     * geo2rdr of a block runs while topo computes the next one.
+     *
+     * @param[in] topo Topo object (its radar grid is the output grid; its
+     * layover/shadow mask computation is turned off)
+     * @param[in] demRaster DEM raster for topo
+     * @param[in] outdir directory to write range.off and azimuth.off to
+     * @param[in] azshift Number of lines to shift by in azimuth
+     * @param[in] rgshift Number of pixels to shift by in range
+     */
+    void geo2rdr(Topo & topo, isce3::io::Raster & demRaster,
+                 const std::string & outdir,
+                 double azshift=0.0, double rgshift=0.0);
+
     /** NoData Value*/
     const double NULL_VALUE =  -1000000.0;
 
@@ -162,6 +181,18 @@ public:
     size_t linesPerBlock() const { return _linesPerBlock; }
 
 private:
+
+    // Radar grid extents with the constant shifts
+    struct Extents { double t0, tend, dtaz, r0, rngend, dmrg; };
+    Extents _extents(double azshift, double rgshift) const;
+
+    // geo2rdr of a block of targets (x, y, height in the topo projection,
+    // blockLength lines of width pixels from line lineStart); returns the
+    // number of converged pixels
+    size_t _geo2rdrBlock(const Extents & e, const double * x,
+                         const double * y, const double * hgt,
+                         size_t lineStart, size_t blockLength, size_t width,
+                         double * rgoff, double * azoff) const;
 
     /** Print information for debugging */
     void _printExtents(pyre::journal::info_t &,

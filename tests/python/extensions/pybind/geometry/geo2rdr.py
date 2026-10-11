@@ -5,6 +5,7 @@ import os
 from osgeo import gdal
 import numpy as np
 import numpy.testing as npt
+import pytest
 
 import iscetest
 import isce3.ext.isce3 as isce3
@@ -108,6 +109,51 @@ def test_run():
         # Allow a actual error to slightly exceed requested tolerance since
         # Newton step size isn't a perfect error estimate.
         assert (test_err < 2 * tol_pixels), f"{test_output} accumulated error fail"
+
+
+@pytest.mark.parametrize("mixed_precision", [False, True])
+def test_run_with_rdr2geo(tmp_path, mixed_precision):
+    '''
+    geo2rdr(rdr2geo, dem, outdir) gives the offsets of rdr2geo to topo
+    rasters followed by geo2rdr
+    '''
+    h5_path = os.path.join(iscetest.data, "envisat.h5")
+    slc = SLC(hdf5file=h5_path)
+    radargrid = slc.getRadarGrid()
+    orbit = slc.getOrbit()
+    ellipsoid = isce3.core.Ellipsoid()
+    dem = isce3.io.Raster(os.path.join(iscetest.data, "srtm_cropped.tif"))
+
+    def objects():
+        rdr2geo = isce3.geometry.Rdr2Geo(radargrid, orbit, ellipsoid,
+                                         lines_per_block=150)
+        rdr2geo.mixed_precision = mixed_precision
+        geo2rdr = isce3.geometry.Geo2Rdr(radargrid, orbit, ellipsoid,
+                                         lines_per_block=150)
+        return rdr2geo, geo2rdr
+
+    # separate: topo rasters, then geo2rdr
+    rdr2geo, geo2rdr = objects()
+    xyz = [isce3.io.Raster(str(tmp_path / f"{n}.rdr"), radargrid.width,
+                           radargrid.length, 1, gdal.GDT_Float64, "ENVI")
+           for n in "xyz"]
+    rdr2geo.topo(dem, *xyz)
+    topo = isce3.io.Raster(str(tmp_path / "topo.vrt"), xyz)
+    topo.set_epsg(rdr2geo.epsg_out)
+    del xyz
+    (tmp_path / "separate").mkdir()
+    geo2rdr.geo2rdr(topo, str(tmp_path / "separate"))
+    del topo
+
+    # in one pass
+    rdr2geo, geo2rdr = objects()
+    (tmp_path / "fused").mkdir()
+    geo2rdr.geo2rdr(rdr2geo, dem, str(tmp_path / "fused"))
+
+    for name in ["range.off", "azimuth.off"]:
+        a, b = [gdal.Open(str(tmp_path / d / name)).ReadAsArray()
+                for d in ["separate", "fused"]]
+        npt.assert_array_equal(a, b)
 
 
 if  __name__ == "__main__":

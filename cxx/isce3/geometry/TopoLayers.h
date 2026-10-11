@@ -28,6 +28,10 @@ class isce3::geometry::TopoLayers {
                    isce3::io::Raster * groundToSatEastRaster = nullptr,
                    isce3::io::Raster * groundToSatNorthRaster = nullptr);
 
+        /** x, y and height blocks of the given width kept in memory only (no
+         * rasters), e.g. for a block callback of Topo::topo */
+        TopoLayers(size_t linesPerBlock, size_t width);
+
         // Destructor
         ~TopoLayers() {
             if (_haveOwnRasters) {
@@ -295,4 +299,5 @@ class isce3::geometry::TopoLayers {
         // Should be false when the Rasters are passed
         // from outside and setRaster method is called
         bool _haveOwnRasters;
+        bool _xyzInMemory = false;
 };

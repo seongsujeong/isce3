@@ -12,13 +12,29 @@ import isce3
 from isce3.core import crop_external_orbit
 from nisar.products.readers import SLC
 from nisar.products.readers.orbit import load_orbit_from_xml
+from nisar.workflows import rdr2geo
 from nisar.workflows.geo2rdr_runconfig import Geo2rdrRunConfig
 from nisar.workflows.yaml_argparse import YamlArgparse
 
 
-def run(cfg):
+def can_run_with_rdr2geo(cfg):
     '''
-    run geo2rdr
+    Whether run(cfg, with_rdr2geo=True) can replace rdr2geo.run(cfg) followed
+    by run(cfg): CPU processing, rdr2geo writing only the x, y, z layers that
+    geo2rdr reads, and geo2rdr reading them from the scratch path
+    '''
+    use_gpu = isce3.core.gpu_check.use_gpu(cfg['worker']['gpu_enabled'],
+                                           cfg['worker']['gpu_id'])
+    topo_path = pathlib.Path(cfg['processing']['geo2rdr']['topo_path'])
+    scratch_path = pathlib.Path(cfg['product_path_group']['scratch_path'])
+    return not use_gpu and rdr2geo.only_xyz(cfg) and topo_path == scratch_path
+
+
+def run(cfg, with_rdr2geo=False):
+    '''
+    run geo2rdr; with_rdr2geo (CPU only, see can_run_with_rdr2geo): run
+    rdr2geo too, its targets passed to geo2rdr in memory block by block (no
+    topo rasters; same offsets)
     '''
 
     # Pull parameters from cfg dict
@@ -66,6 +82,10 @@ def run(cfg):
 
     t_all = time.time()
 
+    rdr2geo_objs = {freq: (rdr2geo_obj, dem)
+                    for freq, _, rdr2geo_obj, dem in rdr2geo.rdr2geo_objects(cfg)
+                    } if with_rdr2geo else {}
+
     for freq in freq_pols.keys():
 
         # Get parameters specific for that frequency
@@ -84,6 +104,12 @@ def run(cfg):
         geo2rdr_obj = Geo2Rdr(radar_grid, orbit, ellipsoid, doppler_grid,
                               threshold, numiter, lines_per_block)
 
+        if with_rdr2geo:
+            # Run rdr2geo and geo2rdr in one pass
+            rdr2geo_obj, dem = rdr2geo_objs[freq]
+            geo2rdr_obj.geo2rdr(rdr2geo_obj, dem, str(geo2rdr_scratch_path))
+            continue
+
         # Open Topo Raster
         topo_path = pathlib.Path(cfg['processing']['geo2rdr']['topo_path'])
         rdr2geo_topo_path = topo_path / 'rdr2geo' / f'freq{freq}' / 'topo.vrt'
@@ -93,7 +119,8 @@ def run(cfg):
         geo2rdr_obj.geo2rdr(topo_raster, str(geo2rdr_scratch_path))
 
     t_all_elapsed = time.time() - t_all
-    info_channel.log(f"Successfully ran geo2rdr in {t_all_elapsed:.3f} seconds")
+    name = 'rdr2geo + geo2rdr' if with_rdr2geo else 'geo2rdr'
+    info_channel.log(f"Successfully ran {name} in {t_all_elapsed:.3f} seconds")
 
 
 if __name__ == "__main__":

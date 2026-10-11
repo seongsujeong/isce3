@@ -48,13 +48,23 @@ rounding).
 
 **geo2rdr.** CPU; the next block is read and the previous one written while
 the current one is computed; the initial azimuth time is the previous pixel's
-solution (was uninitialized).
+solution (was uninitialized). When the InSAR workflow runs both steps on the
+CPU and rdr2geo writes only x, y, z (the default), they run in one pass
+(`Geo2rdr::geo2rdr(Topo&, ...)`, `geo2rdr.run(cfg, with_rdr2geo=True)`):
+each block of targets goes to geo2rdr in memory, which runs on the CPU
+while rdr2geo computes the next block on the GPU; no topo rasters are
+written.
 
 **Ampcor (dense offsets, offsets product).** CPU threads and Metal feeding
 threads share the chunks. Images are read through row-block caches aligned
 to the chunk height; all offset layers run in one pass over the images. The
 Metal pipeline fuses copies, padding, magnitudes, packing and deramping into
 the FFT load/store passes (`FFTLoadMode`, `FFTStoreMode` in `cuAmpcor.metal`).
+The FFT uses radix-8/4/2 and odd butterflies; row passes skip rows known to
+be zero (padded spectra, zero-padded correlation inputs) or not needed
+(correlation results), and the column passes of a correlation (forward,
+conj(T) S, inverse) run in one kernel over column pairs j, -j (`corrCols`).
+The summed-area tables of the normalization store only the rows it reads.
 
 **Rubbersheet.** Saves only the offsets grid; fine resampling and the
 ionosphere decimation compute the full-resolution offsets on read.
@@ -78,7 +88,8 @@ HDF5 chunks compressed in parallel threads.
 | rdr2geo threshold 1e-4 | < 0.1 mm (p99.99) vs 1e-7 |
 | rdr2geo mixed / double-float | p99.99 ~0.1 mm; > 1 m in ~1e-5 of the pixels, where several solutions exist (layover, ice front) |
 | Metal resample | relative difference median 2e-7, p99.99 8.4e-6, same NaN mask |
-| Ampcor | 0.03-0.05% of the windows differ run to run (CPU/GPU chunk split, FFTW plans); Metal-only runs are deterministic |
+| rdr2geo + geo2rdr in one pass | bit-identical to the two steps |
+| Ampcor | 0.03-0.05% of the windows differ run to run (CPU/GPU chunk split, FFTW plans); Metal-only runs are deterministic. The radix-8 FFT changes 0.07-0.12% of the Metal offsets, mostly by one oversampled step (1/128 pixel) |
 
 Product differences at the end of the workflow are dominated by whole-cycle
 unwrapping differences between regions and the low-coherence islands in the
@@ -94,9 +105,11 @@ ionosphere screen; compare products region by region.
 | 21bf437d | 1309 s |
 | 3597478d | 1183 s |
 | 8230f4b5 | 1092 s |
+| rdr2geo + geo2rdr in one pass, Metal FFT | 977 s |
 
-Largest steps at 8230f4b5: offsets product 243-265 s, crossmul ~90 s, unwrap
-77 s, rdr2geo 74 s, fine resample 69 s, coarse resample 56 s.
+Largest steps of the last run: offsets product 195 s, crossmul 85 s, unwrap
+78 s, rdr2geo + geo2rdr 72 s, prepare_insar_hdf5 69 s, fine resample 66 s,
+coarse resample 60 s.
 
 ## Verifying changes
 

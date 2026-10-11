@@ -48,13 +48,14 @@ struct GatherParams { int inNX, inNY, outNX, outNY, absolute, withMagnitude; };
 struct Shape2 { int inNX, inNY, outNX, outNY, offsetX, offsetY; };
 struct InsertParams { int inNX, inNY, outNY, offsetX, offsetY, elemWords; };
 struct VarParams { int NX, NY, templateSize; };
-struct SatParams { int nx, ny; };
+struct SatParams { int nx, ny, keep0, keep1; };
 struct NormParams { int corNX, corNY, refNX, refNY, secNX, secNY; };
 struct TimeCorrParams { int tNX, tNY, iNX, iNY, rNX, rNY; };
 struct FFTParams {
     int n, nradix, sign, linesPerImage, imageSize, lineStride, elemStride, lines, group;
     int nx, ny, loadMode, storeMode;
-    int srcNX, srcNY, src2NX, src2NY, dstNX, dstNY, validRows;
+    int srcNX, srcNY, src2NX, src2NY, dstNX, dstNY;
+    int gapStart, gapEnd, gapStore;
     float coef;
 };
 struct DerampParams { int nx, ny, axis; };
@@ -70,12 +71,13 @@ constexpr int REDUCE_THREADS = 256;   // must match cuAmpcor.metal
 constexpr int MAX_FFT_LENGTH = 2048;  // 2n complex in 32 KB threadgroup memory
 constexpr int MAX_FFT_RADIX = 31;     // largest radix with a butterfly kernel
 
-// FFT factors: radix 4, 2, then odd factors (radix 4 first: fewer stages,
-// i.e. fewer threadgroup memory passes)
+// FFT factors: radix 8, 4, 2, then odd factors (large radices first: fewer
+// stages, i.e. fewer threadgroup memory passes)
 std::vector<int> fftRadices(int n)
 {
     std::vector<int> radices;
     int m = n;
+    while (m % 8 == 0) { radices.push_back(8); m /= 8; }
     while (m % 4 == 0) { radices.push_back(4); m /= 4; }
     while (m % 2 == 0) { radices.push_back(2); m /= 2; }
     for (int f = 3; m > 1; f += 2)
@@ -94,13 +96,14 @@ bool fftSupported(int n)
 }
 
 // Relative cost of a 2D FFT of n x n: complex operations per output of each
-// stage (radix-4/2 butterflies, general radix r: r - 1 twiddles + (r - 1)^2
+// stage (radix-8/4/2 butterflies, general radix r: r - 1 twiddles + (r - 1)^2
 // DFT terms per r outputs) plus a load/store pass per stage
 double fftCost(int n)
 {
     double c = 0;
     for (int r : fftRadices(n))
-        c += 1.0 + (r == 4 ? 1.0 : r == 2 ? 0.75 : ((r - 1) + (r - 1.0) * (r - 1)) / r);
+        c += 1.0 + (r == 8 ? 1.25 : r == 4 ? 1.0 : r == 2 ? 0.75
+                                    : ((r - 1) + (r - 1.0) * (r - 1)) / r);
     return (double)n * n * c;
 }
 
@@ -278,62 +281,70 @@ struct FFTStore {
     int nx = 0, ny = 0;
 };
 
-// Unnormalized 2D DFT of every image, in place (sign -1 = FFTW_FORWARD).
-// rows: rows transformed by the row pass (all by default); with
-// rowsFirst = false, columns go first and only those rows of the result are
-// valid; with rowsFirst, the other rows must be zero on input (or are taken
-// as zero with a load). load/store replace the input of the first pass and
-// the output of the last one.
-void fft2d(Encoder &e, const Batch<float2> &b, int sign, int rows = -1, bool rowsFirst = true,
-           const FFTLoad &load = {}, const FFTStore &store = {})
+// Lines per threadgroup of fft1d (or column pairs of corrCols, lines = 2):
+// 2 n lines group complex fit in 32 KB
+int fftGroup(int n, int lines = 1) { return std::max(1, std::min(16, MAX_FFT_LENGTH / (n * lines))); }
+
+// One pass of fft2d: unnormalized 1D DFTs of the rows (rows = true;
+// without rows [gapStart, gapEnd)) or of the columns of every image, in
+// place; load/store replace its input/output; gapStore: a column pass does
+// not store the gap rows
+void fftPass(Encoder &e, const Batch<float2> &b, int sign, bool rows, int gapStart, int gapEnd,
+             const FFTLoad &load, const FFTStore &store, bool gapStore = false)
 {
-    auto pass = [&](int n, int lines, FFTParams p, bool first, bool last) {
-        p.nx = b.height;
-        p.ny = b.width;
-        if (first && load.mode) {
-            p.loadMode = load.mode;
-            p.srcNX = load.nx; p.srcNY = load.ny;
-            p.src2NX = load.nx2; p.src2NY = load.ny2;
-            p.coef = load.coef;
-        } else if (!first && load.mode && rowsFirst && rows < b.height) {
-            // rows the first pass did not write are zero
-            p.loadMode = LOAD_ZERO_ROWS;
-            p.validRows = rows;
-        }
-        if (last && store.mode) {
-            p.storeMode = store.mode;
-            p.dstNX = store.nx; p.dstNY = store.ny;
-        }
-        const FFTPlan &plan = fftPlan(n);
-        p.n = n;
-        p.nradix = (int)plan.radices.size();
-        p.sign = sign;
-        p.lines = lines;
-        // lines per threadgroup: 2 n group complex fit in 32 KB
-        p.group = std::max(1, std::min(16, MAX_FFT_LENGTH / n));
-        e.kernel("fft1d", "fft1d n=" + std::to_string(n) + (p.elemStride == 1 ? " rows" : " cols"))
-            .buf(b).buf(plan.twiddles).buf(plan.radixBuffer).bytes(p)
-            .buf(load.c ? load.c : b.buffer).buf(load.f ? load.f : b.buffer)
-            .buf(load.f2 ? load.f2 : b.buffer).buf(store.f ? store.f : b.buffer)
-            .buf(load.ramp ? load.ramp : b.buffer);
-        // Stockham ping-pong buffers; Metal needs a multiple of 16 bytes
-        [e.enc setThreadgroupMemoryLength:(2 * n * p.group * sizeof(float2) + 15) / 16 * 16
-                                  atIndex:0];
-        [e.enc dispatchThreadgroups:MTLSizeMake((lines + p.group - 1) / p.group, 1, 1)
-              threadsPerThreadgroup:MTLSizeMake(256, 1, 1)];
-    };
     const int nx = b.height, ny = b.width, size = nx * ny;
-    if (rows < 0) rows = nx;
+    const int n = rows ? ny : nx;
     // FFTParams {.., linesPerImage, imageSize, lineStride, elemStride, ..}:
     // a row is ny contiguous elements, a column ny-strided
-    auto rowPass = [&](bool first) {
-        pass(ny, b.count * rows, FFTParams{0, 0, 0, rows, size, ny, 1, 0, 0}, first, !first);
-    };
-    auto colPass = [&](bool first) {
-        pass(nx, b.count * ny, FFTParams{0, 0, 0, ny, size, 1, ny, 0, 0}, first, !first);
-    };
-    if (rowsFirst) { rowPass(true); colPass(false); }
-    else { colPass(true); rowPass(false); }
+    FFTParams p = rows ? FFTParams{0, 0, 0, nx - (gapEnd - gapStart), size, ny, 1, 0, 0}
+                       : FFTParams{0, 0, 0, ny, size, 1, ny, 0, 0};
+    p.nx = nx;
+    p.ny = ny;
+    p.loadMode = load.mode;
+    p.srcNX = load.nx; p.srcNY = load.ny;
+    p.src2NX = load.nx2; p.src2NY = load.ny2;
+    p.coef = load.coef;
+    p.storeMode = store.mode;
+    p.dstNX = store.nx; p.dstNY = store.ny;
+    p.gapStart = gapStart;
+    p.gapEnd = gapEnd;
+    p.gapStore = gapStore;
+    const FFTPlan &plan = fftPlan(n);
+    p.n = n;
+    p.nradix = (int)plan.radices.size();
+    p.sign = sign;
+    p.lines = b.count * p.linesPerImage;
+    p.group = fftGroup(n);
+    e.kernel("fft1d", "fft1d n=" + std::to_string(n) + (rows ? " rows" : " cols"))
+        .buf(b).buf(plan.twiddles).buf(plan.radixBuffer).bytes(p)
+        .buf(load.c ? load.c : b.buffer).buf(load.f ? load.f : b.buffer)
+        .buf(load.f2 ? load.f2 : b.buffer).buf(store.f ? store.f : b.buffer)
+        .buf(load.ramp ? load.ramp : b.buffer);
+    // Stockham ping-pong buffers; Metal needs a multiple of 16 bytes
+    [e.enc setThreadgroupMemoryLength:(2 * n * p.group * sizeof(float2) + 15) / 16 * 16
+                              atIndex:0];
+    [e.enc dispatchThreadgroups:MTLSizeMake((p.lines + p.group - 1) / p.group, 1, 1)
+          threadsPerThreadgroup:MTLSizeMake(256, 1, 1)];
+}
+
+// Unnormalized 2D DFT of every image, in place (sign -1 = FFTW_FORWARD).
+// Rows [gapStart, gapEnd) are skipped by the row pass: with rowsFirst, they
+// are zero on input (the column pass takes them as zero without reading);
+// with rowsFirst = false (columns first), they are not valid in the result
+// (the column pass does not store them). load/store replace the input of
+// the first pass and the output of the last one.
+void fft2d(Encoder &e, const Batch<float2> &b, int sign, int gapStart = 0, int gapEnd = 0,
+           bool rowsFirst = true, const FFTLoad &load = {}, const FFTStore &store = {})
+{
+    FFTLoad zeroGap;
+    if (gapEnd > gapStart) zeroGap.mode = LOAD_ZERO_ROWS;
+    if (rowsFirst) {
+        fftPass(e, b, sign, true, gapStart, gapEnd, load, {});
+        fftPass(e, b, sign, false, gapStart, gapEnd, zeroGap, store);
+    } else {
+        fftPass(e, b, sign, false, gapStart, gapEnd, load, {}, true);
+        fftPass(e, b, sign, true, gapStart, gapEnd, {}, store);
+    }
 }
 
 // cuArraysSubtractMean, in place
@@ -353,8 +364,9 @@ void subtractMeanSumSquare(Encoder &e, const Batch<float> &b, const Batch<float>
 // (iNY - tNY + 1)); algorithm 0 = frequency domain
 struct Correlator {
     int algorithm;
-    // workT: packed spectrum FFT(t + i s); workS: conj(T) S, then its
-    // inverse transform (both at the padded correlationLength size)
+    // workT: packed spectrum FFT(t + i s) after its row pass; workS: the
+    // inverse transform of conj(T) S after its column pass (both at the
+    // padded correlationLength size)
     Batch<float2> workT, workS;
 
     Correlator(int algorithm_, int nx, int ny, int count) : algorithm(algorithm_)
@@ -377,26 +389,40 @@ struct Correlator {
             return;
         }
         // both real inputs through one complex FFT (t + i s) of the padded
-        // size, packed by the first pass; rows beyond the inputs are zero
+        // size, packed by the row pass; rows beyond the inputs are zero
         const int nx = workT.height, ny = workT.width;
+        const int rows = std::max(templates.height, images.height);
         FFTLoad pack;
         pack.mode = LOAD_REAL_PAIR;
         pack.f = templates.buffer; pack.nx = templates.height; pack.ny = templates.width;
         pack.f2 = images.buffer; pack.nx2 = images.height; pack.ny2 = images.width;
-        fft2d(e, workT, -1, std::max(templates.height, images.height), true, pack);
-        // unnormalized forward and inverse transforms scale by nx * ny: the
-        // result is the linear correlation, as cuFreqCorrelator for nx x ny
-        // inverse of conj(T) S (computed by the first pass): columns first,
-        // then only the result rows, whose real parts the last pass stores
+        fftPass(e, workT, -1, true, rows, nx, pack, {});
+        // column passes in one kernel: forward, conj(T) S, inverse of the
+        // result rows (unnormalized forward and inverse transforms scale by
+        // nx * ny: the result is the linear correlation, as
+        // cuFreqCorrelator for nx x ny)
+        FFTParams p {};
+        p.nx = nx;
+        p.ny = ny;
+        const FFTPlan &plan = fftPlan(nx);
+        p.nradix = (int)plan.radices.size();
+        p.lines = workT.count * (ny / 2 + 1);
+        p.group = fftGroup(nx, 2);
+        p.gapStart = rows;
+        p.dstNX = results.height;
+        p.coef = 1.0f / (nx * ny);
+        e.kernel("corrCols", "corrCols n=" + std::to_string(nx))
+            .buf(workT).buf(workS).buf(plan.twiddles).buf(plan.radixBuffer).bytes(p);
+        [e.enc setThreadgroupMemoryLength:(2 * nx * 2 * p.group * sizeof(float2) + 15) / 16 * 16
+                                  atIndex:0];
+        [e.enc dispatchThreadgroups:MTLSizeMake((p.lines + p.group - 1) / p.group, 1, 1)
+              threadsPerThreadgroup:MTLSizeMake(256, 1, 1)];
+        // inverse row pass of the result rows, whose real parts are stored
         // into the results
-        FFTLoad mulConj;
-        mulConj.mode = LOAD_MUL_CONJ;
-        mulConj.c = workT.buffer;
-        mulConj.coef = 1.0f / (nx * ny);
         FFTStore real;
         real.mode = STORE_REAL;
         real.f = results.buffer; real.nx = results.height; real.ny = results.width;
-        fft2d(e, workS, +1, results.height, false, mulConj, real);
+        fftPass(e, workS, +1, true, results.height, nx, {}, real);
     }
 };
 
@@ -415,7 +441,8 @@ struct Normalizer {
     {
         if (!refSum2Done)
             e.kernel("sumSquare").buf(ref).buf(refSum2).bytes((int)ref.size()).groups(ref.count);
-        const SatParams sp{sec.height, sec.width};
+        // box corners at rows tx - 1 and tx + ref.height - 1 of the lags tx
+        const SatParams sp{sec.height, sec.width, corr.height - 1, ref.height - 1};
         e.kernel("satRows").buf(sec).buf(sat).buf(sat2).bytes(sp).bytes(ref.count);
         // one SIMD group (32 threads) per row of every image
         [e.enc dispatchThreadgroups:MTLSizeMake(sec.height * ref.count, 1, 1)
@@ -453,7 +480,7 @@ struct OverSamplerC2C {
         copy.mode = ramp ? LOAD_DERAMPED : LOAD_COPY;
         copy.c = in.buffer;
         if (ramp) copy.ramp = ramp->buffer;
-        fft2d(e, workIn, +1, -1, true, copy);
+        fft2d(e, workIn, +1, 0, 0, true, copy);
         // inverse of the padded spectrum (the first pass pads)
         FFTLoad pad;
         pad.mode = LOAD_PAD_SPECTRUM;
@@ -463,7 +490,9 @@ struct OverSamplerC2C {
             abs.mode = STORE_MAGNITUDE;
             abs.f = outAbs->buffer;
         }
-        fft2d(e, out, -1, -1, true, pad, abs);
+        // rows of the padded spectrum between its corners are zero
+        const int h = workIn.height / 2;
+        fft2d(e, out, -1, h, out.height - h, true, pad, abs);
     }
 };
 

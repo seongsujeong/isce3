@@ -147,25 +147,31 @@ void TopoLayers::writeData(size_t xidx, size_t yidx)
 }
 
 // Set new block sizes
+TopoLayers::TopoLayers(size_t linesPerBlock, size_t width)
+    : _haveOwnRasters(false), _xyzInMemory(true)
+{
+    setBlockSize(linesPerBlock, width);
+}
+
 void TopoLayers::setBlockSize(size_t length, size_t width)
 {
     _length = length;
     _width = width;
 
-    if (_xRaster || _maskRaster) {
+    if (_xRaster || _maskRaster || _xyzInMemory) {
         _x.resize(length * width);
     } else {
         _x.resize(0);
     }
 
-    if (_yRaster || _maskRaster) {
+    if (_yRaster || _maskRaster || _xyzInMemory) {
         _y.resize(length * width);
     }
     else {
         _y.resize(0);
     }
 
-    if (_zRaster) {
+    if (_zRaster || _xyzInMemory) {
         _z.resize(length * width);
     }
     else {

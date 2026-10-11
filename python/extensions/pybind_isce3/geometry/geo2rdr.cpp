@@ -14,6 +14,7 @@
 #include <isce3/core/Vector.h>
 #include <isce3/focus/Backproject.h>
 #include <isce3/geometry/geometry.h>
+#include <isce3/geometry/Topo.h>
 #include <isce3/io/Raster.h>
 #include <isce3/product/RadarGridParameters.h>
 
@@ -64,6 +65,17 @@ void addbinding(py::class_<Geo2rdr> & pyGeo2Rdr)
         .def("geo2rdr", py::overload_cast<isce3::io::Raster &, const std::string &,
                 double, double>
                 (&Geo2rdr::geo2rdr),
+                py::arg("dem_raster"),
+                py::arg("outdir"),
+                py::arg("az_shift") = 0.0,
+                py::arg("rg_shift") = 0.0)
+        .def("geo2rdr", py::overload_cast<isce3::geometry::Topo &,
+                isce3::io::Raster &, const std::string &, double, double>
+                (&Geo2rdr::geo2rdr),
+                R"(Run rdr2geo and geo2rdr of its targets in one pass, with
+                the outputs of geo2rdr(topo raster, outdir) on the rdr2geo
+                radar grid; no topo rasters are written.)",
+                py::arg("rdr2geo"),
                 py::arg("dem_raster"),
                 py::arg("outdir"),
                 py::arg("az_shift") = 0.0,

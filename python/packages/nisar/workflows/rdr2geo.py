@@ -29,15 +29,16 @@ def get_raster_obj(out_path: str, radargrid: isce3.product.RadarGridParameters,
     return isce3.io.Raster(out_path, radargrid.width, radargrid.length, 1,
                            dtype, 'ENVI')
 
-def run(cfg):
+def rdr2geo_objects(cfg):
     '''
-    run rdr2geo
+    Yield (frequency, radar grid, Rdr2Geo object, DEM raster) for each
+    frequency to process: the reference RSLC radar grid of that frequency
+    and the Rdr2Geo object on it (CPU or CUDA as configured)
     '''
     # pull parameters from cfg
     input_hdf5 = cfg['input_file_group']['reference_rslc_file']
     dem_file = cfg['dynamic_ancillary_file_group']['dem_file']
     ref_orbit = cfg['dynamic_ancillary_file_group']['orbit_files']['reference_orbit_file']
-    scratch_path = pathlib.Path(cfg['product_path_group']['scratch_path'])
     freq_pols = cfg['processing']['input_subset']['list_of_frequencies']
     threshold = cfg['processing']['rdr2geo']['threshold']
     numiter = cfg['processing']['rdr2geo']['numiter']
@@ -64,9 +65,6 @@ def run(cfg):
     # NISAR RSLC products are always zero doppler
     grid_doppler = isce3.core.LUT2d()
 
-    info_channel = journal.info("rdr2geo.run")
-    info_channel.log("starting rdr2geo")
-
     # check if gpu ok to use
     use_gpu = isce3.core.gpu_check.use_gpu(cfg['worker']['gpu_enabled'],
                                            cfg['worker']['gpu_id'])
@@ -75,14 +73,9 @@ def run(cfg):
         device = isce3.cuda.core.Device(cfg['worker']['gpu_id'])
         isce3.cuda.core.set_device(device)
 
-    t_all = time.time()
     for freq in freq_pols.keys():
         # get frequency specific parameters
         radargrid = slc.getRadarGrid(freq)
-
-        # create separate directory within scratch dir for rdr2geo run
-        rdr2geo_scratch_path = scratch_path / 'rdr2geo' / f'freq{freq}'
-        rdr2geo_scratch_path.mkdir(parents=True, exist_ok=True)
 
         # init CPU or CUDA object accordingly
         if use_gpu:
@@ -97,6 +90,33 @@ def run(cfg):
         if not use_gpu:
             # FP32 height iterations on the Metal GPU (Apple) if available
             rdr2geo_obj.mixed_precision = cfg['worker'].get('metal_enabled', False)
+
+        yield freq, radargrid, rdr2geo_obj, dem_raster
+
+
+def only_xyz(cfg):
+    '''Whether rdr2geo writes the x, y, z layers only (all geo2rdr needs)'''
+    rdr2geo_cfg = cfg['processing']['rdr2geo']
+    return all(rdr2geo_cfg[f'write_{key}'] == (key in 'xyz') for key in
+               ['x', 'y', 'z', 'incidence', 'heading', 'local_incidence',
+                'local_psi', 'simulated_amplitude', 'layover_shadow'])
+
+
+def run(cfg):
+    '''
+    run rdr2geo
+    '''
+    scratch_path = pathlib.Path(cfg['product_path_group']['scratch_path'])
+
+    info_channel = journal.info("rdr2geo.run")
+    info_channel.log("starting rdr2geo")
+
+    t_all = time.time()
+    for freq, radargrid, rdr2geo_obj, dem_raster in rdr2geo_objects(cfg):
+
+        # create separate directory within scratch dir for rdr2geo run
+        rdr2geo_scratch_path = scratch_path / 'rdr2geo' / f'freq{freq}'
+        rdr2geo_scratch_path.mkdir(parents=True, exist_ok=True)
 
         # dict of layer names keys to tuples of their output name and GDAL types
         layers = {'x':('x', gdal.GDT_Float64), 'y':('y', gdal.GDT_Float64),

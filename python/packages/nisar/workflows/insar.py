@@ -40,11 +40,16 @@ def run(cfg: dict, out_paths: dict, run_steps: dict):
     if run_steps['bandpass_insar']:
         bandpass_insar.run(cfg)
 
-    if run_steps['rdr2geo']:
-        rdr2geo.run(cfg)
+    if run_steps['rdr2geo'] and run_steps['geo2rdr'] and \
+            geo2rdr.can_run_with_rdr2geo(cfg):
+        # rdr2geo targets passed to geo2rdr in memory (no topo rasters)
+        geo2rdr.run(cfg, with_rdr2geo=True)
+    else:
+        if run_steps['rdr2geo']:
+            rdr2geo.run(cfg)
 
-    if run_steps['geo2rdr']:
-        geo2rdr.run(cfg)
+        if run_steps['geo2rdr']:
+            geo2rdr.run(cfg)
 
     if run_steps['prepare_insar_hdf5']:
         prepare_insar_hdf5.run(cfg)

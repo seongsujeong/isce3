@@ -2,6 +2,8 @@
 
 #include "forward.h"
 
+#include <functional>
+
 #include <isce3/core/forward.h>
 #include <isce3/core/Ellipsoid.h>
 #include <isce3/core/LUT2d.h>
@@ -243,6 +245,18 @@ public:
      * @param[in] layers TopoLayers object for storing and writing results
      */
     void topo(isce3::io::Raster & demRaster, TopoLayers & layers);
+
+    /**
+     * Run topo, passing each finished block to a callback
+     *
+     * @param[in] demRaster input DEM raster
+     * @param[in] layers TopoLayers object for storing and writing results
+     * @param[in] onBlock called with the first line of each block and the
+     * layers holding it, after the block is written; it may move the
+     * layer arrays out (they are reallocated for the next block)
+     */
+    void topo(isce3::io::Raster & demRaster, TopoLayers & layers,
+              const std::function<void(size_t, TopoLayers&)>& onBlock);
 
     /**
      * Run topo with externally created topo rasters; generate mask

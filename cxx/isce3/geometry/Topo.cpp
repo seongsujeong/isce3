@@ -124,6 +124,13 @@ void isce3::geometry::Topo::_topo(T& dem, Raster* xRaster, Raster* yRaster,
 void isce3::geometry::Topo::
 topo(Raster & demRaster, TopoLayers & layers)
 {
+    topo(demRaster, layers, {});
+}
+
+void isce3::geometry::Topo::
+topo(Raster & demRaster, TopoLayers & layers,
+     const std::function<void(size_t, TopoLayers&)>& onBlock)
+{
     // Create reusable pyre::journal channels
     pyre::journal::warning_t warning("isce.geometry.Topo");
     pyre::journal::info_t info("isce.geometry.Topo");
@@ -289,6 +296,8 @@ topo(Raster & demRaster, TopoLayers & layers)
 
         // Write out block of data for all topo layers
         layers.writeData(0, lineStart);
+        if (onBlock)
+            onBlock(lineStart, layers);
 
     } // end for loop blocks
 

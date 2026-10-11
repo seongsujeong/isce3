@@ -313,7 +313,9 @@ kernel void estimateVariance(device const float *corr [[buffer(0)]],
 
 // ---------------------------------------------------------- normalization
 
-struct SatParams { int nx, ny; };
+// image nx x ny; satCols stores rows [0, keep0) and [keep1, nx) only, the
+// rows normalizeSat reads
+struct SatParams { int nx, ny, keep0, keep1; };
 
 // sat2d_kernel, first pass: running sums of value and value^2 along rows;
 // one SIMD group (32 threads) per row, prefix sums over 32-element blocks
@@ -341,7 +343,7 @@ kernel void satRows(device const float *data [[buffer(0)]],
 }
 
 // sat2d_kernel, second pass: running sums along columns, in place (one
-// thread per column of every image)
+// thread per column of every image), stored in the kept rows
 kernel void satCols(device float *sat [[buffer(0)]],
                     device float *sat2 [[buffer(1)]],
                     constant SatParams &p [[buffer(2)]],
@@ -353,8 +355,9 @@ kernel void satCols(device float *sat [[buffer(0)]],
     float sum = sat[index], sum2 = sat2[index];
     for (int i = 1; i < p.nx; i++) {
         index += p.ny;
-        sum += sat[index]; sat[index] = sum;
-        sum2 += sat2[index]; sat2[index] = sum2;
+        sum += sat[index];
+        sum2 += sat2[index];
+        if (i < p.keep0 || i >= p.keep1) { sat[index] = sum; sat2[index] = sum2; }
     }
 }
 
@@ -428,7 +431,11 @@ struct FFTParams {
     // FFTStoreMode below; FFTLoad, FFTStore of cuMetal.mm); image size
     // nx x ny
     int nx, ny, loadMode, storeMode;
-    int srcNX, srcNY, src2NX, src2NY, dstNX, dstNY, validRows;
+    int srcNX, srcNY, src2NX, src2NY, dstNX, dstNY;
+    // rows [gapStart, gapEnd) of every image are skipped: not transformed
+    // by a row pass, zero for LOAD_ZERO_ROWS, not stored by a column pass
+    // with gapStore
+    int gapStart, gapEnd, gapStore;
     float coef;         // LOAD_MUL_CONJ scale
 };
 
@@ -440,7 +447,7 @@ enum FFTLoadMode {
                             // corners, scaled by 1 / (srcNX srcNY)
     LOAD_REAL_PAIR = 3,     // srcF + i src2F, zero padded: both real inputs
                             // of a correlation through one complex FFT
-    LOAD_ZERO_ROWS = 4,     // the batch, rows >= validRows taken as zero
+    LOAD_ZERO_ROWS = 4,     // the batch, rows in the gap taken as zero
     LOAD_MUL_CONJ = 5,      // conj(T) S * coef from the packed spectrum
                             // Z = FFT(t + i s) in srcC: T = (Z_k + conj Z_-k)
                             // / 2, S = (Z_k - conj Z_-k) / 2i
@@ -479,7 +486,7 @@ inline float2 fftLoad(device const float2 *data, device const float2 *srcC,
         return float2(t, v);
     }
     case LOAD_ZERO_ROWS:
-        return row < p.validRows ? data[addr] : float2(0.0f);
+        return row < p.gapStart || row >= p.gapEnd ? data[addr] : float2(0.0f);
     case LOAD_DERAMPED: {
         const float phase = row * ramp[img].x + col * ramp[img].y;
         const float c = cos(phase), s = sin(phase);
@@ -553,6 +560,94 @@ inline void butterfly(threadgroup const float2 *x, threadgroup float2 *y, int j,
     }
 }
 
+// Unnormalized 1D DFTs of C lines of length n in threadgroup memory, line c
+// at a[c * n], mixed-radix Stockham autosort with b as the other buffer;
+// returns the buffer holding the result (a or b). tw[k] = (cos, sin)(2 pi
+// k / n). Called by all threads of the threadgroup.
+inline threadgroup float2 *stockham(threadgroup float2 *a, threadgroup float2 *b, int C, int n,
+                                    int nradix, device const int *radix,
+                                    device const float2 *tw, int sign, uint tid, uint nt)
+{
+    // Stockham stage s: x holds m-strided inputs; each butterfly j = jq ns + k
+    // combines r inputs x[j + rr m] with twiddles exp(2 pi i rr k / (ns r))
+    // = tw[rr k step] into y[jq ns r + k + q ns]; ns = product of the
+    // radices done so far. a/b swap after every stage.
+    int ns = 1;
+    for (int s = 0; s < nradix; s++) {
+        const int r = radix[s], m = n / r, step = n / (ns * r);
+        // quotients by m and ns as float products (integer divisions are
+        // slow on the GPU): exact, since the quotients are small (< 2^11)
+        // and t + 0.5 is at least 0.5 away from a multiple
+        const float invM = 1.0f / m, invNs = 1.0f / ns;
+        for (int t = tid; t < C * m; t += nt) {
+            const int c = int((t + 0.5f) * invM), j = t - c * m;
+            const int jq = int((j + 0.5f) * invNs), k = j - jq * ns;
+            threadgroup float2 *x = a + c * n, *y = b + c * n;
+            const int out = jq * ns * r + k;
+            if (r == 8) {
+                // radix 8 as two radix-4 DFTs (even and odd inputs) and a
+                // radix-2 step with w8^q, w8 = (1 + i sign) / sqrt(2)
+                float2 v[8];
+                v[0] = x[j];
+                for (int rr = 1; rr < 8; rr++)
+                    v[rr] = twiddle(x[j + rr * m], tw[rr * k * step], sign);
+                const float2 es02 = v[0] + v[4], ed02 = v[0] - v[4], es13 = v[2] + v[6];
+                const float2 ed13 = mulI(v[2] - v[6], sign);
+                const float2 os02 = v[1] + v[5], od02 = v[1] - v[5], os13 = v[3] + v[7];
+                const float2 od13 = mulI(v[3] - v[7], sign);
+                const float2 e0 = es02 + es13, e1 = ed02 + ed13, e2 = es02 - es13, e3 = ed02 - ed13;
+                const float h = M_SQRT1_2_F;
+                const float2 o0 = os02 + os13;
+                const float2 o1 = cmul(od02 + od13, float2(h, sign * h));
+                const float2 o2 = mulI(os02 - os13, sign);
+                const float2 o3 = cmul(od02 - od13, float2(-h, sign * h));
+                y[out] = e0 + o0;
+                y[out + ns] = e1 + o1;
+                y[out + 2 * ns] = e2 + o2;
+                y[out + 3 * ns] = e3 + o3;
+                y[out + 4 * ns] = e0 - o0;
+                y[out + 5 * ns] = e1 - o1;
+                y[out + 6 * ns] = e2 - o2;
+                y[out + 7 * ns] = e3 - o3;
+            } else if (r == 4) {
+                // radix 4 without multiplications: w4 = i * sign
+                const float2 v0 = x[j];
+                const float2 v1 = twiddle(x[j + m], tw[k * step], sign);
+                const float2 v2 = twiddle(x[j + 2 * m], tw[2 * k * step], sign);
+                const float2 v3 = twiddle(x[j + 3 * m], tw[3 * k * step], sign);
+                const float2 s02 = v0 + v2, d02 = v0 - v2, s13 = v1 + v3;
+                const float2 d13 = mulI(v1 - v3, sign);
+                y[out] = s02 + s13;
+                y[out + ns] = d02 + d13;
+                y[out + 2 * ns] = s02 - s13;
+                y[out + 3 * ns] = d02 - d13;
+            } else if (r == 2) {
+                const float2 v0 = x[j];
+                const float2 v1 = twiddle(x[j + m], tw[k * step], sign);
+                y[out] = v0 + v1;
+                y[out + ns] = v0 - v1;
+            } else {
+#define BUTTERFLY(R) case R: butterfly<R>(x, y, j, m, k, step, out, ns, n, tw, sign); break;
+                switch (r) {
+                    BUTTERFLY(3) BUTTERFLY(5) BUTTERFLY(7) BUTTERFLY(11) BUTTERFLY(13)
+                    BUTTERFLY(17) BUTTERFLY(19) BUTTERFLY(23) BUTTERFLY(29) BUTTERFLY(31)
+                }
+#undef BUTTERFLY
+            }
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+        threadgroup float2 *t = a; a = b; b = t;
+        ns *= r;
+    }
+    return a;
+}
+
+// line l of an image: row of a row pass (lines skip the gap), else column
+inline int gapRow(constant FFTParams &p, int l, bool rowPass)
+{
+    return rowPass && l >= p.gapStart ? l + (p.gapEnd - p.gapStart) : l;
+}
+
 // Unnormalized 1D DFTs of p.group lines per threadgroup, mixed-radix
 // Stockham autosort in threadgroup memory (2 * n * group complex).
 // tw[k] = (cos, sin)(2 pi k / n). Lines adjacent in memory (columns) are
@@ -580,64 +675,81 @@ kernel void fft1d(device float2 *data [[buffer(0)]],
         const int c = contiguous ? idx / n : idx % C;
         const int i = contiguous ? idx % n : idx / C;
         const int line = line0 + c;
-        const int img = line / p.linesPerImage, l = line % p.linesPerImage;
+        const int img = line / p.linesPerImage, l = gapRow(p, line % p.linesPerImage, contiguous);
         const size_t addr = (size_t)img * p.imageSize + l * p.lineStride + i * p.elemStride;
         a[c * n + i] = fftLoad(data, srcC, srcF, src2F, ramp, p, addr, img,
                                contiguous ? l : i, contiguous ? i : l);
     }
     threadgroup_barrier(mem_flags::mem_threadgroup);
 
-    // Stockham stage s: x holds m-strided inputs; each butterfly j = jq ns + k
-    // combines r inputs x[j + rr m] with twiddles exp(2 pi i rr k / (ns r))
-    // = tw[rr k step] into y[jq ns r + k + q ns]; ns = product of the
-    // radices done so far. a/b swap after every stage.
-    int ns = 1;
-    for (int s = 0; s < p.nradix; s++) {
-        const int r = radix[s], m = n / r, step = n / (ns * r);
-        for (int t = tid; t < C * m; t += nt) {
-            // two integer divisions per butterfly (they are slow on the GPU)
-            const int c = t / m, j = t - c * m;
-            const int jq = j / ns, k = j - jq * ns;
-            threadgroup float2 *x = a + c * n, *y = b + c * n;
-            const int out = jq * ns * r + k;
-            if (r == 4) {
-                // radix 4 without multiplications: w4 = i * sign
-                const float2 v0 = x[j];
-                const float2 v1 = twiddle(x[j + m], tw[k * step], p.sign);
-                const float2 v2 = twiddle(x[j + 2 * m], tw[2 * k * step], p.sign);
-                const float2 v3 = twiddle(x[j + 3 * m], tw[3 * k * step], p.sign);
-                const float2 s02 = v0 + v2, d02 = v0 - v2, s13 = v1 + v3;
-                const float2 d13 = mulI(v1 - v3, p.sign);
-                y[out] = s02 + s13;
-                y[out + ns] = d02 + d13;
-                y[out + 2 * ns] = s02 - s13;
-                y[out + 3 * ns] = d02 - d13;
-            } else if (r == 2) {
-                const float2 v0 = x[j];
-                const float2 v1 = twiddle(x[j + m], tw[k * step], p.sign);
-                y[out] = v0 + v1;
-                y[out + ns] = v0 - v1;
-            } else {
-#define BUTTERFLY(R) case R: butterfly<R>(x, y, j, m, k, step, out, ns, n, tw, p.sign); break;
-                switch (r) {
-                    BUTTERFLY(3) BUTTERFLY(5) BUTTERFLY(7) BUTTERFLY(11) BUTTERFLY(13)
-                    BUTTERFLY(17) BUTTERFLY(19) BUTTERFLY(23) BUTTERFLY(29) BUTTERFLY(31)
-                }
-#undef BUTTERFLY
-            }
-        }
-        threadgroup_barrier(mem_flags::mem_threadgroup);
-        threadgroup float2 *t = a; a = b; b = t;
-        ns *= r;
-    }
+    a = stockham(a, b, C, n, p.nradix, radix, tw, p.sign, tid, nt);
     // result in a (after the last swap), stored back in place
     for (int idx = tid; idx < n * C; idx += nt) {
         const int c = contiguous ? idx / n : idx % C;
         const int i = contiguous ? idx % n : idx / C;
+        if (!contiguous && p.gapStore && i >= p.gapStart && i < p.gapEnd) continue;
         const int line = line0 + c;
-        const int img = line / p.linesPerImage, l = line % p.linesPerImage;
+        const int img = line / p.linesPerImage, l = gapRow(p, line % p.linesPerImage, contiguous);
         const size_t addr = (size_t)img * p.imageSize + l * p.lineStride + i * p.elemStride;
         fftStore(data, dstF, p, addr, img, contiguous ? l : i, contiguous ? i : l, a[c * n + i]);
+    }
+}
+
+// column of local line c of corrCols and its image: c < G: column j of pair
+// pair0 + c, c >= G: its partner -j of pair pair0 + c - G
+inline int corrColumn(int c, int G, int pair0, int pairs, int ny, thread int &img)
+{
+    const int q = pair0 + (c < G ? c : c - G);
+    img = q / pairs;
+    const int j = q % pairs;
+    return c < G ? j : (ny - j) % ny;
+}
+
+// Column passes of the frequency-domain correlation (Correlator), fused:
+// forward DFTs of columns j and -j of the packed spectrum z = FFT(t + i s)
+// after its row pass (rows >= p.gapStart are zero), conj(T) S * p.coef of
+// both columns (as LOAD_MUL_CONJ), inverse DFTs, rows < p.dstNX stored
+// into out. p.group column pairs (j = 0 .. ny / 2) per threadgroup, p.lines
+// pairs in all; image size p.nx x p.ny, transform length p.nx.
+kernel void corrCols(device const float2 *z [[buffer(0)]],
+                     device float2 *out [[buffer(1)]],
+                     device const float2 *tw [[buffer(2)]],
+                     device const int *radix [[buffer(3)]],
+                     constant FFTParams &p [[buffer(4)]],
+                     threadgroup float2 *shared [[threadgroup(0)]],
+                     uint groupIdx [[threadgroup_position_in_grid]],
+                     uint tid [[thread_position_in_threadgroup]],
+                     uint nt [[threads_per_threadgroup]])
+{
+    const int n = p.nx, ny = p.ny, pairs = ny / 2 + 1;
+    const int pair0 = groupIdx * p.group, G = min(p.group, p.lines - pair0), C = 2 * G;
+    threadgroup float2 *a = shared, *b = shared + n * 2 * p.group;
+    for (int idx = tid; idx < n * C; idx += nt) {
+        const int c = idx % C, i = idx / C;
+        int img;
+        const int col = corrColumn(c, G, pair0, pairs, ny, img);
+        a[c * n + i] = i < p.gapStart ? z[((size_t)img * n + i) * ny + col] : float2(0.0f);
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    a = stockham(a, b, C, n, p.nradix, radix, tw, -1, tid, nt);
+    b = a == shared ? shared + n * 2 * p.group : shared;
+    for (int idx = tid; idx < n * C; idx += nt) {
+        const int c = idx % C, i = idx / C;
+        const float2 u = a[c * n + i];                                   // Z_k
+        const float2 v = a[(c < G ? c + G : c - G) * n + (i == 0 ? 0 : n - i)];  // Z_-k
+        const float2 t = float2(u.x + v.x, u.y - v.y) * 0.5f;
+        const float2 s = float2(u.y + v.y, v.x - u.x) * 0.5f;
+        b[c * n + i] = float2(t.x * s.x + t.y * s.y, -t.y * s.x + t.x * s.y) * p.coef;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    a = stockham(b, a, C, n, p.nradix, radix, tw, +1, tid, nt);
+    for (int idx = tid; idx < p.dstNX * C; idx += nt) {
+        const int c = idx % C, i = idx / C;
+        int img;
+        const int col = corrColumn(c, G, pair0, pairs, ny, img);
+        if (c >= G && col == corrColumn(c - G, G, pair0, pairs, ny, img))
+            continue;  // j = -j: stored once
+        out[((size_t)img * n + i) * ny + col] = a[c * n + i];
     }
 }
 

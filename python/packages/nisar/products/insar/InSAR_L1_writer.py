@@ -543,8 +543,11 @@ class L1InSARWriter(InSARBaseWriter):
             # geo2rdr to generate the offsets products
             if ((not os.path.exists(range_offset_path)) or
                 (not os.path.exists(azimuth_offset_path))):
-                rdr2geo.run(self.cfg)
-                geo2rdr.run(self.cfg)
+                if geo2rdr.can_run_with_rdr2geo(self.cfg):
+                    geo2rdr.run(self.cfg, with_rdr2geo=True)
+                else:
+                    rdr2geo.run(self.cfg)
+                    geo2rdr.run(self.cfg)
 
             # get the nearest neighbor slant range and azimuth index in the RSLC radar grid
             # to generate subswath mask
@@ -786,8 +789,11 @@ class L1InSARWriter(InSARBaseWriter):
             # geo2rdr to generate the offsets products
             if ((not os.path.exists(range_offset_path)) or
                 (not os.path.exists(azimuth_offset_path))):
-                rdr2geo.run(self.cfg)
-                geo2rdr.run(self.cfg)
+                if geo2rdr.can_run_with_rdr2geo(self.cfg):
+                    geo2rdr.run(self.cfg, with_rdr2geo=True)
+                else:
+                    rdr2geo.run(self.cfg)
+                    geo2rdr.run(self.cfg)
 
             # get the nearest neighbor slant range and azimuth index in the RSLC radar grid
             # to generate subswath mask
