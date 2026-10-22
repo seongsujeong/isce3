@@ -201,6 +201,8 @@ phase_unwrap_options:
 
     bridge: include('bridge_options', required=False)
 
+    deramp: include('deramp_options', required=False)
+
 icu_options:
     correlation_threshold_increments: num(min=0, max=1, required=False)
     seed: int(min=0, required=False)
@@ -279,6 +281,14 @@ unwrap_mask_options:
 
 distance_interp_options:
     distance: int(required=False)
+
+deramp_options:
+    enabled: bool(required=False)
+    offset_smoothing_sigma: num(min=0, required=False)
+    offsets_product: str(required=False)
+    center_frequency: num(required=False)
+    offset_source: enum('rubbersheet', 'velocity', required=False)
+    velocity_offsets_path: str(required=False)
 
 bridge_options:
     enabled: bool(required=False)
