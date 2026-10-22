@@ -695,6 +695,24 @@ runconfig:
                 # In this case the wrapped interferogram in RIFG will be unwrapped.
                 range_looks: 1
                 azimuth_looks: 1
+                # Deramp the wrapped interferogram before unwrapping (snaphu and whirlwind only):
+                # the interferometric phase predicted from the rubbersheet slant range offsets
+                # (4 pi f / c * offset) is subtracted before unwrapping and added back after.
+                # Removes the dense fringes of fast motion (e.g. glaciers) that unwrappers cannot
+                # follow. Applies to the main and the ionosphere unwrapping.
+                deramp:
+                    # Enable/disable deramping
+                    enabled: False
+                    # Standard deviation (offset-grid pixels) of the NaN-aware Gaussian filter
+                    # applied to the rubbersheet slant range offsets. 0 disables smoothing
+                    offset_smoothing_sigma: 2.0
+                    # RIFG product with pixelOffsets/slantRangeOffset. If not provided, the RIFG
+                    # being unwrapped is used (the ionosphere workflow sets the main RIFG)
+                    offsets_product:
+                    # Center frequency (Hz) used to convert offsets to phase. If not provided, the
+                    # centerFrequency of the RIFG being unwrapped is used (the ionosphere workflow
+                    # sets the frequency difference for differential interferograms)
+                    center_frequency:
                 # Mask and fill wrapped InSAR phase prior to unwrapping
                 preprocess_wrapped_phase:
                     # Enable/disable preprocessing of wrapped igram
