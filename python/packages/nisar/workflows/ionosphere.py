@@ -1202,7 +1202,21 @@ def insar_ionosphere_pair(original_cfg, runw_hdf5):
 
 
 def get_center_frequency(product_path, freq):
-    '''Center frequency (Hz) of frequency `freq` of an RIFG or RUNW product'''
+    '''
+    Center frequency of frequency `freq` of an RIFG or RUNW product
+
+    Parameters
+    ----------
+    product_path: str or pathlib.Path
+        RIFG or RUNW HDF5 file path
+    freq: str
+        Frequency ('A' or 'B')
+
+    Returns
+    -------
+    center_frequency: float
+        swaths/frequency<freq>/centerFrequency (Hz)
+    '''
     with HDF5OptimizedReader(name=str(product_path), mode='r', libver='latest',
                              swmr=True) as h5:
         for product_type in ['RIFG', 'RUNW']:
@@ -1214,9 +1228,23 @@ def get_center_frequency(product_path, freq):
 
 def unwrap_ionosphere_interferogram(iono_insar_cfg, rifg_path, runw_path,
                                     original_dict):
-    '''Unwrap an ionosphere interferogram. Deramping uses the offsets of the
+    '''
+    Unwrap an ionosphere interferogram. Deramping uses the offsets of the
     main RUNW and the velocity offsets of the main scratch (ionosphere
-    interferograms have no rubbersheet or velocity offsets of their own).'''
+    interferograms have no rubbersheet or velocity offsets of their own).
+
+    Parameters
+    ----------
+    iono_insar_cfg: dict
+        InSAR runconfig modified for the ionosphere pair
+    rifg_path: str
+        Ionosphere RIFG to unwrap
+    runw_path: str
+        Ionosphere RUNW to write
+    original_dict: dict
+        Parameters of the original InSAR runconfig; uses 'output_runw' (main
+        RUNW) and 'scratch_path' (main scratch)
+    '''
     unwrap.run(iono_insar_cfg, rifg_path, runw_path,
                offsets_hdf5=original_dict['output_runw'],
                velocity_offsets_dir=os.path.join(original_dict['scratch_path'],
@@ -1226,9 +1254,27 @@ def unwrap_ionosphere_interferogram(iono_insar_cfg, rifg_path, runw_path,
 def unwrap_differential_interferogram(iono_insar_cfg, rifg_path, runw_path,
                                       center_frequency_difference,
                                       original_dict):
-    '''Unwrap a differential (first * conj(second)) interferogram. When
+    '''
+    Unwrap a differential (first * conj(second)) interferogram. When
     deramping is enabled, the offset phase is computed with the difference
-    of the center frequencies of the two interferograms.'''
+    of the center frequencies of the two interferograms, unless the user set
+    phase_unwrap.deramp.center_frequency.
+
+    Parameters
+    ----------
+    iono_insar_cfg: dict
+        InSAR runconfig modified for the ionosphere pair
+    rifg_path: str
+        RIFG holding the differential interferogram
+    runw_path: str
+        RUNW to write
+    center_frequency_difference: float
+        Center frequency of the first minus that of the second
+        interferogram (Hz)
+    original_dict: dict
+        Parameters of the original InSAR runconfig (see
+        unwrap_ionosphere_interferogram)
+    '''
     deramp_cfg = iono_insar_cfg['processing']['phase_unwrap']['deramp']
     user_center_frequency = deramp_cfg['center_frequency']
     if user_center_frequency is None:

@@ -86,6 +86,22 @@ def run(cfg: dict, input_hdf5: str, output_hdf5: str,
     ref_slc = None
 
     def get_ref_slc_and_orbit(freq):
+        """
+        Reference RSLC (opened on first call) and its orbit, cropped from
+        the external reference orbit file if one is provided
+
+        Parameters
+        ----------
+        freq: str
+            Frequency of the radar grid used for the orbit reference epoch
+
+        Returns
+        -------
+        ref_slc: nisar.products.readers.SLC
+            Reference RSLC reader
+        ref_orbit: isce3.core.Orbit
+            Reference orbit
+        """
         nonlocal ref_slc
         if ref_slc is None:
             ref_slc = SLC(hdf5file=ref_slc_hdf5)

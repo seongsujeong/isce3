@@ -36,13 +36,41 @@ SECONDS_PER_YEAR = 365.25 * 86400.0
 
 
 def gross_offset_path(scratch_path, freq):
-    '''Path of the gross offset file computed for frequency `freq`'''
+    '''
+    Path of the gross offset file computed for frequency `freq`
+
+    Parameters
+    ----------
+    scratch_path: str or pathlib.Path
+        InSAR scratch directory
+    freq: str
+        Frequency ('A' or 'B')
+
+    Returns
+    -------
+    path: pathlib.Path
+        <scratch_path>/velocity_offsets/freq<freq>/gross_offset.bin
+    '''
     return pathlib.Path(scratch_path) / 'velocity_offsets' / \
         f'freq{freq}' / 'gross_offset.bin'
 
 
 def time_interval_years(ref_grid, sec_grid):
-    '''Secondary minus reference mid-scene time in years'''
+    '''
+    Secondary minus reference mid-scene time in years
+
+    Parameters
+    ----------
+    ref_grid: isce3.product.RadarGridParameters
+        Radar grid of the reference RSLC
+    sec_grid: isce3.product.RadarGridParameters
+        Radar grid of the secondary RSLC
+
+    Returns
+    -------
+    dt: float
+        Time interval (years of 365.25 days)
+    '''
     dt = (sec_grid.ref_epoch - ref_grid.ref_epoch).total_seconds() \
         + sec_grid.sensing_mid - ref_grid.sensing_mid
     return dt / SECONDS_PER_YEAR
@@ -50,8 +78,23 @@ def time_interval_years(ref_grid, sec_grid):
 
 def read_window(path, xmin, xmax, ymin, ymax, nodata=None):
     '''
-    Read the part of a north-up raster covering [xmin, xmax] x [ymin, ymax].
-    Returns float64 array (nodata -> NaN) and its geotransform.
+    Read the part of a north-up raster covering [xmin, xmax] x [ymin, ymax]
+
+    Parameters
+    ----------
+    path: str
+        GDAL-readable raster file path
+    xmin, xmax, ymin, ymax: float
+        Bounding box in the raster map coordinates
+    nodata: float, optional
+        Nodata value; the raster nodata value is used if None
+
+    Returns
+    -------
+    data: np.ndarray
+        float64 window of band 1, nodata set to NaN
+    geotransform: tuple
+        GDAL geotransform of the window
     '''
     ds = gdal.Open(path)
     x0, dx, _, y0, _, dy = ds.GetGeoTransform()
@@ -72,6 +115,22 @@ def read_smoothed(path, xmin, xmax, ymin, ymax, spacing):
     '''
     Raster covering [xmin, xmax] x [ymin, ymax] block-averaged to `spacing`
     (map units) to keep only its large-scale trend
+
+    Parameters
+    ----------
+    path: str
+        GDAL-readable raster file path (e.g. DEM)
+    xmin, xmax, ymin, ymax: float
+        Bounding box in the raster map coordinates (padded by one spacing)
+    spacing: float
+        Output posting in map units
+
+    Returns
+    -------
+    data: np.ndarray
+        float64 block-averaged raster, nodata set to NaN
+    geotransform: tuple
+        GDAL geotransform of `data`
     '''
     ds = gdal.Warp('', path, format='MEM', outputBounds=(
         xmin - spacing, ymin - spacing, xmax + spacing, ymax + spacing),
@@ -87,6 +146,20 @@ def fill_gaps(data, max_distance, smoothing_iterations):
     '''
     Fill NaN gaps by inverse distance interpolation (gdal.FillNodata) up to
     max_distance pixels from valid data; farther gaps are set to 0.
+
+    Parameters
+    ----------
+    data: np.ndarray
+        2D array with NaN gaps
+    max_distance: float
+        Maximum search distance (pixels) for the interpolation
+    smoothing_iterations: int
+        Number of 3x3 smoothing passes applied to the filled values
+
+    Returns
+    -------
+    filled: np.ndarray
+        float64 array without NaN
     '''
     mem = gdal.GetDriverByName('MEM').Create('', data.shape[1], data.shape[0],
                                              1, gdal.GDT_Float64)
@@ -98,7 +171,23 @@ def fill_gaps(data, max_distance, smoothing_iterations):
 
 
 def sample(data, geotransform, x, y):
-    '''Bilinear sampling of a north-up raster at map coordinates x, y'''
+    '''
+    Bilinear sampling of a north-up raster at map coordinates x, y
+
+    Parameters
+    ----------
+    data: np.ndarray
+        2D raster (pixel-is-area)
+    geotransform: tuple
+        GDAL geotransform of `data`
+    x, y: np.ndarray
+        Map coordinates of the sampling points (same shape)
+
+    Returns
+    -------
+    values: np.ndarray
+        Sampled values, shape of `x`; points outside use the nearest edge
+    '''
     x0, dx, _, y0, _, dy = geotransform
     # pixel-is-area: centers at x0 + (col + 0.5) * dx
     cols = (x - x0) / dx - 0.5
@@ -107,7 +196,21 @@ def sample(data, geotransform, x, y):
 
 
 def transform_xy(x, y, epsg_in, epsg_out):
-    '''Transform map coordinates between EPSG codes'''
+    '''
+    Transform map coordinates between EPSG codes
+
+    Parameters
+    ----------
+    x, y: np.ndarray
+        Coordinates in `epsg_in` (traditional x/easting, y/northing order)
+    epsg_in, epsg_out: int
+        Input and output EPSG codes
+
+    Returns
+    -------
+    x_out, y_out: np.ndarray
+        Coordinates in `epsg_out`, shape of the inputs
+    '''
     if epsg_in == epsg_out:
         return x, y
     srs_in, srs_out = osr.SpatialReference(), osr.SpatialReference()
@@ -120,7 +223,18 @@ def transform_xy(x, y, epsg_in, epsg_out):
 
 
 def write_envi(path, bands, dtype=gdal.GDT_Float32):
-    '''Write a list of equally shaped 2D arrays as a multiband ENVI file'''
+    '''
+    Write a list of equally shaped 2D arrays as a multiband ENVI file
+
+    Parameters
+    ----------
+    path: str or pathlib.Path
+        Output file path (an ENVI .hdr is written alongside)
+    bands: list of np.ndarray
+        2D arrays written as bands 1, 2, ...
+    dtype: int, optional
+        GDAL data type (default gdal.GDT_Float32)
+    '''
     length, width = bands[0].shape
     ds = gdal.GetDriverByName('ENVI').Create(str(path), width, length,
                                              len(bands), dtype)
@@ -131,7 +245,32 @@ def write_envi(path, bands, dtype=gdal.GDT_Float32):
 
 def run_rdr2geo(radar_grid, orbit, ellipsoid, dem_raster, epsg, rdr2geo_cfg,
                 outdir):
-    '''Ground x, y (in epsg) and height of each radar grid point'''
+    '''
+    Ground x, y (in epsg) and height of each radar grid point
+
+    Parameters
+    ----------
+    radar_grid: isce3.product.RadarGridParameters
+        Radar grid (offsets product grid)
+    orbit: isce3.core.Orbit
+        Reference orbit
+    ellipsoid: isce3.core.Ellipsoid
+        Ellipsoid of the DEM
+    dem_raster: isce3.io.Raster
+        DEM raster
+    epsg: int
+        EPSG code of the output x, y
+    rdr2geo_cfg: dict
+        processing.rdr2geo runconfig group (threshold, numiter, extraiter,
+        lines_per_block)
+    outdir: pathlib.Path
+        Directory for the x.rdr, y.rdr, z.rdr rasters
+
+    Returns
+    -------
+    x, y, z: np.ndarray
+        Ground coordinates (epsg) and height of each radar grid point
+    '''
     rdr2geo_obj = isce3.geometry.Rdr2Geo(
         radar_grid, orbit, ellipsoid, isce3.core.LUT2d(),
         threshold=rdr2geo_cfg['threshold'], numiter=rdr2geo_cfg['numiter'],
@@ -150,6 +289,29 @@ def run_geo2rdr(radar_grid, orbit, ellipsoid, x, y, z, epsg, geo2rdr_cfg,
     '''
     Azimuth/range offsets (radar grid pixels) of points x, y, z (in epsg)
     from the radar grid point they are stored at; NaN where geo2rdr fails.
+
+    Parameters
+    ----------
+    radar_grid: isce3.product.RadarGridParameters
+        Radar grid (offsets product grid)
+    orbit: isce3.core.Orbit
+        Reference orbit
+    ellipsoid: isce3.core.Ellipsoid
+        Ellipsoid of the coordinates
+    x, y, z: np.ndarray
+        Ground coordinates (epsg) and height, shape of the radar grid
+    epsg: int
+        EPSG code of x, y
+    geo2rdr_cfg: dict
+        processing.geo2rdr runconfig group (threshold, maxiter,
+        lines_per_block)
+    outdir: pathlib.Path
+        Directory for the displaced topo and azimuth.off/range.off rasters
+
+    Returns
+    -------
+    az, rg: np.ndarray
+        Azimuth and range offsets in radar grid pixels
     '''
     for name, data in zip('xyz', (x, y, z)):
         write_envi(outdir / f'{name}_displaced.rdr', [data], gdal.GDT_Float64)
@@ -176,6 +338,29 @@ def velocity_offsets(cfg, freq, outdir):
     '''
     Predicted azimuth/range offsets [reference RSLC pixels] of the offsets
     product grid of frequency `freq`, and the velocity sampled on that grid
+
+    Each grid point is located with rdr2geo, moved by the velocity times
+    the acquisition interval, its height updated with the smoothed DEM
+    (surface-parallel motion), and located back with geo2rdr using the
+    reference orbit.
+
+    Parameters
+    ----------
+    cfg: dict
+        InSAR runconfig (input RSLCs, DEM, orbit, offsets product,
+        velocity_gross_offset, rdr2geo and geo2rdr groups)
+    freq: str
+        Frequency ('A' or 'B')
+    outdir: pathlib.Path
+        Scratch directory for the intermediate rasters
+
+    Returns
+    -------
+    az_off, rg_off: np.ndarray
+        Azimuth and slant range offsets in reference RSLC pixels (NaN where
+        geo2rdr fails)
+    vx, vy: np.ndarray
+        Velocity sampled on the offsets grid (map units per year)
     '''
     info = journal.info('velocity_offsets.velocity_offsets')
     vel_cfg = cfg['processing']['velocity_gross_offset']
@@ -239,7 +424,16 @@ def velocity_offsets(cfg, freq, outdir):
 
 
 def run(cfg: dict):
-    '''Compute velocity-based gross offsets for each processed frequency'''
+    '''
+    Compute velocity-based gross offsets for each processed frequency and
+    write velocity_offsets (azimuth, range [RSLC pixels]), velocity (vx, vy)
+    and gross_offset.bin (int32) to <scratch_path>/velocity_offsets/freq<freq>
+
+    Parameters
+    ----------
+    cfg: dict
+        InSAR runconfig
+    '''
     info = journal.info('velocity_offsets.run')
     info.log('Start velocity-based gross offsets')
     t_all = time.time()

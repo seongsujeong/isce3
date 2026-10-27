@@ -341,6 +341,35 @@ def clip_gross_offsets(ampcor_obj, gross_azimuth, gross_range):
     '''
     def clip(gross, start, skip, n_windows, half_search, window, size,
              n_other, axis):
+        '''
+        Clip gross offsets along one axis
+
+        Parameters
+        ----------
+        gross: np.ndarray
+            Flattened gross offsets along this axis
+        start: int
+            Reference start pixel of the first window
+        skip: int
+            Window skip (pixels)
+        n_windows: int
+            Number of windows along this axis
+        half_search: int
+            Half search range (pixels)
+        window: int
+            Window size (pixels)
+        size: int
+            Secondary image size along this axis (pixels)
+        n_other: int
+            Number of windows along the other axis
+        axis: int
+            0 for azimuth (down), 1 for range (across)
+
+        Returns
+        -------
+        clipped: np.ndarray
+            Gross offsets of shape (n_down, n_across)
+        '''
         # reference start pixel of each window along this axis
         ref = start + skip * np.arange(n_windows)
         ref = np.expand_dims(ref, axis=1 - axis)
