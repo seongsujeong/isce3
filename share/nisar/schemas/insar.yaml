@@ -285,8 +285,8 @@ distance_interp_options:
 deramp_options:
     enabled: bool(required=False)
     offset_smoothing_sigma: num(min=0, required=False)
-    offsets_product: str(required=False)
     center_frequency: num(required=False)
+    offset_source: enum('rubbersheet', 'velocity', required=False)
 
 bridge_options:
     enabled: bool(required=False)

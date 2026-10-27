@@ -18,7 +18,7 @@ from isce3.unwrap.bridge_phase import bridge_unwrapped_phase
 from isce3.unwrap.preprocess import preprocess_wrapped_igram as preprocess
 from isce3.unwrap.preprocess import project_map_to_radar
 
-from nisar.products.insar.product_paths import RIFGGroupsPaths
+from nisar.products.insar.product_paths import RIFGGroupsPaths, RUNWGroupsPaths
 from nisar.products.readers import SLC
 from nisar.products.readers.orbit import load_orbit_from_xml
 from nisar.products.utils import (interpret_subswath_mask,
@@ -33,7 +33,8 @@ from osgeo import gdal
 from scipy import ndimage
 
 
-def run(cfg: dict, input_hdf5: str, output_hdf5: str):
+def run(cfg: dict, input_hdf5: str, output_hdf5: str,
+        offsets_hdf5: str = None, velocity_offsets_dir: str = None):
     """
     run phase unwrapping
 
@@ -45,6 +46,13 @@ def run(cfg: dict, input_hdf5: str, output_hdf5: str):
         File path to input HDF5 product (i.e., RIFG)
     output_hdf5: str
         File path to output HDF5 product (i.e., RUNW)
+    offsets_hdf5: str, optional
+        RUNW product whose pixelOffsets slantRangeOffset is used for
+        deramping. Defaults to `output_hdf5` (the ionosphere workflow passes
+        the main RUNW, as ionosphere interferograms have no rubbersheet)
+    velocity_offsets_dir: str, optional
+        velocity_offsets scratch directory used for deramping with
+        offset_source 'velocity'. Defaults to <scratch_path>/velocity_offsets
     """
 
     # pull parameters from dictionary
@@ -98,6 +106,21 @@ def run(cfg: dict, input_hdf5: str, output_hdf5: str):
             src_freq_bandwidth_group_path = (f"{rifg_obj.ProcessingInformationPath}/parameters"
                                              f"/reference/frequency{freq}")
             dst_freq_group_path = src_freq_group_path.replace("RIFG", "RUNW")
+
+            # Copy the (rubbersheet) pixel offsets into RUNW before unwrapping:
+            # deramping reads the slant range offsets from RUNW. Offset
+            # polarizations can differ from interferogram polarizations if
+            # single pol offset mode is enabled
+            stats_attrs = ('min_value', 'mean_value', 'max_value', 'sample_stddev')
+            for off_pol in offset_pol_list:
+                for dataset in ['alongTrackOffset', 'slantRangeOffset',
+                                'correlationSurfacePeak']:
+                    path = f'pixelOffsets/{off_pol}/{dataset}'
+                    src_dataset = src_h5[f'{src_freq_group_path}/{path}']
+                    dst_h5[f'{dst_freq_group_path}/{path}'][:, :] = src_dataset[()]
+                    # Copy the stats from the source dataset
+                    dst_h5[f'{dst_freq_group_path}/{path}'].attrs.update(
+                        {k: src_dataset.attrs[k] for k in stats_attrs if k in src_dataset.attrs})
 
             for pol in pol_list:
                 src_pol_group_path = \
@@ -227,8 +250,8 @@ def run(cfg: dict, input_hdf5: str, output_hdf5: str):
                 # Run unwrapping based on user-defined algorithm
                 algorithm = unwrap_args["algorithm"]
 
-                # Interferometric phase predicted from the rubbersheet slant
-                # range offsets; subtracted before and added back after
+                # Interferometric phase predicted from the slant range offsets
+                # (rubbersheet or velocity map); subtracted before and added back after
                 # unwrapping when deramping is enabled
                 deramp_cfg = unwrap_args["deramp"]
                 offset_phase = None
@@ -319,13 +342,17 @@ def run(cfg: dict, input_hdf5: str, output_hdf5: str):
                             center_freq = src_h5[f"{src_freq_group_path}/centerFrequency"][()]
                         out_time = dst_h5[f"{dst_freq_group_path}/interferogram/zeroDopplerTime"][()]
                         out_range = dst_h5[f"{dst_freq_group_path}/interferogram/slantRange"][()]
-                        deramp_args = (freq, pol, out_time, out_range, center_freq,
+                        off_pol = pol if pol in offset_pol_list else offset_pol_list[0]
+                        deramp_args = (freq, off_pol, out_time, out_range, center_freq,
                                        deramp_cfg["offset_smoothing_sigma"])
-                        if deramp_cfg["offsets_product"] is None:
-                            offset_phase = estimate_offset_phase(src_h5, *deramp_args)
+                        if deramp_cfg["offset_source"] == "velocity":
+                            deramp_args += (velocity_offsets_dir or
+                                            scratch_path / "velocity_offsets",)
+                        if offsets_hdf5 is None:
+                            offset_phase = estimate_offset_phase(dst_h5, *deramp_args)
                         else:
-                            with HDF5OptimizedReader(name=deramp_cfg["offsets_product"],
-                                                     mode="r", libver="latest", swmr=True) as off_h5:
+                            with HDF5OptimizedReader(name=offsets_hdf5, mode="r",
+                                                     libver="latest", swmr=True) as off_h5:
                                 offset_phase = estimate_offset_phase(off_h5, *deramp_args)
                         if offset_phase.shape != igram_array.shape:
                             err_str = (f"offset phase shape {offset_phase.shape} differs from "
@@ -336,7 +363,7 @@ def run(cfg: dict, input_hdf5: str, output_hdf5: str):
                                        np.exp(-1j * offset_phase)).astype(np.complex64)
                         info_channel.log(
                             "Deramped the wrapped interferogram with the phase of the "
-                            f"rubbersheet slant range offsets (center frequency {center_freq:.6g} Hz, "
+                            f"{deramp_cfg['offset_source']} slant range offsets (center frequency {center_freq:.6g} Hz, "
                             f"phase range {np.nanmin(offset_phase):.1f} to {np.nanmax(offset_phase):.1f} rad)")
 
                     # Combine the snaphu and preprocessing mask
@@ -435,17 +462,9 @@ def run(cfg: dict, input_hdf5: str, output_hdf5: str):
 
                 # Allocate coherence in RUNW. If no further multilooking, the coherence
                 # is copied from RIFG
+                # (pixel offsets were copied before unwrapping)
                 datasets = ['coherenceMagnitude']
                 groups = ['interferogram']
-                # append datasets/groups for offsets if polarization exists
-                # offset polarizations can differ from interferogram
-                # polarizations if single pol offset mode enabled
-                if pol in offset_pol_list:
-                    datasets.extend(['alongTrackOffset',
-                                     'slantRangeOffset',
-                                     'correlationSurfacePeak'])
-                    groups.extend(
-                        ['pixelOffsets', 'pixelOffsets', 'pixelOffsets'])
                 for dataset, group in zip(datasets, groups):
                     dst_path = f'{dst_freq_group_path}/{group}/{pol}/{dataset}'
                     src_path = f'{src_freq_group_path}/{group}/{pol}/{dataset}'
@@ -473,13 +492,17 @@ def run(cfg: dict, input_hdf5: str, output_hdf5: str):
 
 
 def estimate_offset_phase(offsets_h5, freq, pol, out_time, out_range,
-                          center_frequency, smoothing_sigma=0.0):
+                          center_frequency, smoothing_sigma=0.0,
+                          velocity_offsets_dir=None):
     """
-    Estimate the interferometric phase of the rubbersheet slant range
-    offsets on the grid of the interferogram to unwrap.
+    Estimate the interferometric phase of slant range offsets on the grid
+    of the interferogram to unwrap.
 
-    The RIFG pixelOffsets slantRangeOffset (meters, written by rubbersheet)
-    is masked (zero, non-finite and subswath-invalid samples), optionally
+    The offsets are the RUNW pixelOffsets slantRangeOffset (meters, copied
+    from the rubbersheet RIFG offsets) or, with `velocity_offsets_dir`, the
+    velocity-map predicted range offsets of the velocity_offsets step (same
+    offsets grid). They are masked (zero, non-finite and subswath-invalid
+    samples), optionally
     smoothed with a NaN-aware Gaussian filter, gap-filled with the nearest
     valid value and bilinearly interpolated to (out_time, out_range).
     With the interferogram defined as reference * conj(secondary) and the
@@ -488,7 +511,7 @@ def estimate_offset_phase(offsets_h5, freq, pol, out_time, out_range,
     Parameters
     ----------
     offsets_h5: h5py.File
-        RIFG product containing pixelOffsets/{pol}/slantRangeOffset
+        RUNW product containing pixelOffsets/{pol}/slantRangeOffset
     freq: str
         Frequency of the interferogram; frequency A offsets are used if the
         product has no pixelOffsets for `freq`
@@ -504,6 +527,10 @@ def estimate_offset_phase(offsets_h5, freq, pol, out_time, out_range,
         center frequencies for differential interferograms)
     smoothing_sigma: float
         Gaussian standard deviation in offset-grid pixels (0: no smoothing)
+    velocity_offsets_dir: str or pathlib.Path, optional
+        velocity_offsets scratch directory (containing freq{A,B}); if given,
+        its predicted range offsets [reference RSLC pixels] replace the
+        rubbersheet offsets
 
     Returns
     -------
@@ -512,7 +539,8 @@ def estimate_offset_phase(offsets_h5, freq, pol, out_time, out_range,
         shape (len(out_time), len(out_range))
     """
     error_channel = journal.error("unwrap.estimate_offset_phase")
-    swaths_path = RIFGGroupsPaths().SwathsPath
+    runw_obj = RUNWGroupsPaths()
+    swaths_path = runw_obj.SwathsPath
     off_freq = freq if f"{swaths_path}/frequency{freq}/pixelOffsets" in offsets_h5 else "A"
     offsets_group = offsets_h5[f"{swaths_path}/frequency{off_freq}/pixelOffsets"]
     off_pols = [p for p in offsets_group
@@ -529,6 +557,20 @@ def estimate_offset_phase(offsets_h5, freq, pol, out_time, out_range,
         reference_valid, secondary_valid, _ = \
             interpret_subswath_mask(offsets_group["mask"][()])
         invalid |= ~reference_valid | ~secondary_valid
+    if velocity_offsets_dir is not None:
+        velocity_path = pathlib.Path(velocity_offsets_dir) / f"freq{off_freq}" / "velocity_offsets"
+        velocity_ds = gdal.Open(str(velocity_path))  # keep the dataset alive while reading
+        velocity_offsets = velocity_ds.GetRasterBand(2).ReadAsArray()
+        del velocity_ds
+        if velocity_offsets.shape != offsets.shape:
+            err_str = (f"{velocity_path} shape {velocity_offsets.shape} differs from the "
+                       f"offsets grid {offsets.shape}")
+            error_channel.log(err_str)
+            raise ValueError(err_str)
+        range_spacing = offsets_h5[f"{runw_obj.ProcessingInformationPath}/parameters"
+                                   f"/reference/frequency{off_freq}/slantRangeSpacing"][()]
+        offsets = velocity_offsets.astype(np.float64) * range_spacing
+        invalid = ~np.isfinite(offsets)
     if invalid.all():
         err_str = f"No valid slant range offsets in {offsets_group.name}"
         error_channel.log(err_str)

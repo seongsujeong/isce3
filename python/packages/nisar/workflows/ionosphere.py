@@ -849,12 +849,6 @@ def insar_ionosphere_pair(original_cfg, runw_hdf5):
     orig_product_type = original_cfg['primary_executable']['product_type']
 
     iono_insar_cfg = deepcopy_runconfig_and_keep_isce3_obj(original_cfg)
-
-    # Deramping of the ionosphere interferograms uses the rubbersheet slant
-    # range offsets of the main RIFG (ionosphere RIFGs have no rubbersheet)
-    deramp_cfg = iono_insar_cfg['processing']['phase_unwrap']['deramp']
-    if deramp_cfg['enabled'] and deramp_cfg['offsets_product'] is None:
-        deramp_cfg['offsets_product'] = str(original_out_paths['RIFG'])
     iono_insar_cfg['primary_executable'][
                 'product_type'] = 'RUNW'
 
@@ -1042,7 +1036,8 @@ def insar_ionosphere_pair(original_cfg, runw_hdf5):
                 unwrap_differential_interferogram(
                     iono_insar_cfg, out_paths['RIFG'], out_paths['RUNW'],
                     get_center_frequency(phase_first, 'A') -
-                    get_center_frequency(phase_second, 'A'))
+                    get_center_frequency(phase_second, 'A'),
+                    partial_orig_cfg_dict)
 
     elif iono_method in ['main_side_band', 'main_diff_ms_band']:
         rerun_insar_pairs = 0
@@ -1183,7 +1178,8 @@ def insar_ionosphere_pair(original_cfg, runw_hdf5):
             unwrap_differential_interferogram(
                 iono_insar_cfg, out_paths['RIFG'], out_paths['RUNW'],
                 get_center_frequency(phase_first, 'A') -
-                get_center_frequency(phase_second, 'B'))
+                get_center_frequency(phase_second, 'B'),
+                partial_orig_cfg_dict)
 
     # restore original paths
     original_cfg['input_file_group']['reference_rslc_file'] = \
@@ -1216,8 +1212,20 @@ def get_center_frequency(product_path, freq):
     raise KeyError(f'No frequency{freq} centerFrequency in {product_path}')
 
 
+def unwrap_ionosphere_interferogram(iono_insar_cfg, rifg_path, runw_path,
+                                    original_dict):
+    '''Unwrap an ionosphere interferogram. Deramping uses the offsets of the
+    main RUNW and the velocity offsets of the main scratch (ionosphere
+    interferograms have no rubbersheet or velocity offsets of their own).'''
+    unwrap.run(iono_insar_cfg, rifg_path, runw_path,
+               offsets_hdf5=original_dict['output_runw'],
+               velocity_offsets_dir=os.path.join(original_dict['scratch_path'],
+                                                 'velocity_offsets'))
+
+
 def unwrap_differential_interferogram(iono_insar_cfg, rifg_path, runw_path,
-                                      center_frequency_difference):
+                                      center_frequency_difference,
+                                      original_dict):
     '''Unwrap a differential (first * conj(second)) interferogram. When
     deramping is enabled, the offset phase is computed with the difference
     of the center frequencies of the two interferograms.'''
@@ -1226,7 +1234,8 @@ def unwrap_differential_interferogram(iono_insar_cfg, rifg_path, runw_path,
     if user_center_frequency is None:
         deramp_cfg['center_frequency'] = center_frequency_difference
     try:
-        unwrap.run(iono_insar_cfg, rifg_path, runw_path)
+        unwrap_ionosphere_interferogram(iono_insar_cfg, rifg_path, runw_path,
+                                        original_dict)
     finally:
         deramp_cfg['center_frequency'] = user_center_frequency
 
@@ -1295,7 +1304,8 @@ def run_insar_workflow(iono_insar_cfg, original_dict, out_paths,
         filter_interferogram.run(iono_insar_cfg, out_paths['RIFG'])
 
     if 'RUNW' in out_paths and unwrapping_flag:
-        unwrap.run(iono_insar_cfg, out_paths['RIFG'], out_paths['RUNW'])
+        unwrap_ionosphere_interferogram(iono_insar_cfg, out_paths['RIFG'],
+                                        out_paths['RUNW'], original_dict)
 
 
 def run(cfg: dict, runw_hdf5: str):
