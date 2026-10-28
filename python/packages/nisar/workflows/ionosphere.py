@@ -1033,10 +1033,12 @@ def insar_ionosphere_pair(original_cfg, runw_hdf5):
                 # unwrap low and high subband interferogram, but need to
                 # unwrap the difference between low and high subband
                 # interferogram
+                # phase_first is the high, phase_second the low sub-band RIFG
+                center_frequency_high = get_center_frequency(phase_first, 'A')
+                center_frequency_low = get_center_frequency(phase_second, 'A')
                 unwrap_differential_interferogram(
                     iono_insar_cfg, out_paths['RIFG'], out_paths['RUNW'],
-                    get_center_frequency(phase_first, 'A') -
-                    get_center_frequency(phase_second, 'A'),
+                    center_frequency_high - center_frequency_low,
                     partial_orig_cfg_dict)
 
     elif iono_method in ['main_side_band', 'main_diff_ms_band']:
@@ -1175,10 +1177,13 @@ def insar_ionosphere_pair(original_cfg, runw_hdf5):
             # Since main_diff_low_high_subband method does not need to
             # unwrap low and high subband interferogram, but need to
             # unwrap the difference between low and high subband interferogram
+            # phase_first is the main band (A) RUNW, phase_second the side
+            # band (B) RIFG
+            center_frequency_main = get_center_frequency(phase_first, 'A')
+            center_frequency_side = get_center_frequency(phase_second, 'B')
             unwrap_differential_interferogram(
                 iono_insar_cfg, out_paths['RIFG'], out_paths['RUNW'],
-                get_center_frequency(phase_first, 'A') -
-                get_center_frequency(phase_second, 'B'),
+                center_frequency_main - center_frequency_side,
                 partial_orig_cfg_dict)
 
     # restore original paths
