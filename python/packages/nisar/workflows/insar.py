@@ -4,6 +4,7 @@ import shutil
 import pathlib
 
 import journal
+from nisar.workflows.offset_phase import deramp_phase_function
 from nisar.workflows import (bandpass_insar, baseline, crossmul, dense_offsets,
                              filter_interferogram, geo2rdr, geocode_insar,
                              h5_prep, ionosphere, offsets_product,
@@ -105,7 +106,11 @@ def run(cfg: dict, out_paths: dict, run_steps: dict):
         filter_interferogram.run(cfg, out_paths['RIFG'])
 
     if run_steps['unwrap'] and 'RUNW' in out_paths:
-        unwrap.run(cfg, out_paths['RIFG'], out_paths['RUNW'])
+        # deramp with the RIFG offsets (copied to RUNW by unwrap.run)
+        apriori_phase = deramp_phase_function(cfg, out_paths['RIFG'],
+                                              out_paths['RUNW'])
+        unwrap.run(cfg, out_paths['RIFG'], out_paths['RUNW'],
+                   apriori_phase=apriori_phase)
 
     # Remove the 'fine_resample_slc','crossmul', 'coarse_resample_slc', 'unwrap' scratch folders
     for workflow_name in ['fine_resample_slc','coarse_resample_slc',

@@ -719,9 +719,9 @@ runconfig:
                 range_looks: 1
                 azimuth_looks: 1
                 # Deramp the wrapped interferogram before unwrapping (snaphu and whirlwind only):
-                # the interferometric phase predicted from slant range offsets (RUNW rubbersheet
-                # offsets or velocity map, see offset_source), 4 pi f / c * offset, is subtracted
-                # before unwrapping and added back after.
+                # the interferometric phase predicted from slant range offsets (rubbersheet offsets
+                # or velocity map, see offset_source), 4 pi f / c * offset, is subtracted before
+                # unwrapping and added back after (unwrap.run apriori_phase).
                 # Removes the dense fringes of fast motion (e.g. glaciers) that unwrappers cannot
                 # follow. Applies to the main and the ionosphere unwrapping.
                 deramp:
@@ -730,11 +730,7 @@ runconfig:
                     # Standard deviation (offset-grid pixels) of the NaN-aware Gaussian filter
                     # applied to the slant range offsets. 0 disables smoothing
                     offset_smoothing_sigma: 2.0
-                    # Center frequency (Hz) used to convert offsets to phase. If not provided, the
-                    # centerFrequency of the RIFG being unwrapped is used (the ionosphere workflow
-                    # sets the frequency difference for differential interferograms)
-                    center_frequency:
-                    # Source of the slant range offsets: 'rubbersheet' (RUNW pixelOffsets) or
+                    # Source of the slant range offsets: 'rubbersheet' (pixelOffsets) or
                     # 'velocity' (velocity-map prediction of the velocity_offsets step;
                     # requires velocity_gross_offset enabled)
                     offset_source: rubbersheet
