@@ -39,6 +39,7 @@ from nisar.workflows.compute_stats import compute_stats_real_hdf5_dataset
 from nisar.workflows.qfsp_ionosphere import (check_qfsp_flag,
                                              correct_qfsp_phase_artifact)
 from nisar.workflows.ionosphere_runconfig import InsarIonosphereRunConfig
+from nisar.workflows.offset_phase import deramp_phase_function
 from nisar.workflows.yaml_argparse import YamlArgparse
 from osgeo import gdal
 
@@ -1033,7 +1034,14 @@ def insar_ionosphere_pair(original_cfg, runw_hdf5):
                 # unwrap low and high subband interferogram, but need to
                 # unwrap the difference between low and high subband
                 # interferogram
-                unwrap.run(iono_insar_cfg, out_paths['RIFG'], out_paths['RUNW'])
+                # phase_first is the high, phase_second the low sub-band RIFG
+                center_frequency_high = get_center_frequency(phase_first, 'A')
+                center_frequency_low = get_center_frequency(phase_second, 'A')
+                unwrap.run(iono_insar_cfg, out_paths['RIFG'], out_paths['RUNW'],
+                           apriori_phase=main_offsets_phase_function(
+                               iono_insar_cfg, partial_orig_cfg_dict,
+                               out_paths['RUNW'],
+                               center_frequency_high - center_frequency_low))
 
     elif iono_method in ['main_side_band', 'main_diff_ms_band']:
         rerun_insar_pairs = 0
@@ -1171,7 +1179,15 @@ def insar_ionosphere_pair(original_cfg, runw_hdf5):
             # Since main_diff_low_high_subband method does not need to
             # unwrap low and high subband interferogram, but need to
             # unwrap the difference between low and high subband interferogram
-            unwrap.run(iono_insar_cfg, out_paths['RIFG'], out_paths['RUNW'])
+            # phase_first is the main band (A) RUNW, phase_second the side
+            # band (B) RIFG
+            center_frequency_main = get_center_frequency(phase_first, 'A')
+            center_frequency_side = get_center_frequency(phase_second, 'B')
+            unwrap.run(iono_insar_cfg, out_paths['RIFG'], out_paths['RUNW'],
+                       apriori_phase=main_offsets_phase_function(
+                           iono_insar_cfg, partial_orig_cfg_dict,
+                           out_paths['RUNW'],
+                           center_frequency_main - center_frequency_side))
 
     # restore original paths
     original_cfg['input_file_group']['reference_rslc_file'] = \
@@ -1191,6 +1207,65 @@ def insar_ionosphere_pair(original_cfg, runw_hdf5):
     original_cfg['primary_executable'][
                 'product_type'] = orig_product_type
     original_cfg['processing']['geo2rdr']['topo_path'] = orig_scratch_path
+
+
+def get_center_frequency(product_path, freq):
+    '''
+    Center frequency of frequency `freq` of an RIFG or RUNW product
+
+    Parameters
+    ----------
+    product_path: str or pathlib.Path
+        RIFG or RUNW HDF5 file path
+    freq: str
+        Frequency ('A' or 'B')
+
+    Returns
+    -------
+    center_frequency: float
+        swaths/frequency<freq>/centerFrequency (Hz)
+    '''
+    with HDF5OptimizedReader(name=str(product_path), mode='r', libver='latest',
+                             swmr=True) as h5:
+        for product_type in ['RIFG', 'RUNW']:
+            path = f'/science/LSAR/{product_type}/swaths/frequency{freq}/centerFrequency'
+            if path in h5:
+                return h5[path][()]
+    raise KeyError(f'No frequency{freq} centerFrequency in {product_path}')
+
+
+def main_offsets_phase_function(iono_insar_cfg, original_dict, runw_path,
+                                center_frequency=None):
+    '''
+    A priori phase function (unwrap.run apriori_phase) for an ionosphere
+    interferogram: ionosphere interferograms have no rubbersheet or velocity
+    offsets of their own, so the main RUNW offsets and the main scratch
+    velocity offsets are used
+
+    Parameters
+    ----------
+    iono_insar_cfg: dict
+        InSAR runconfig modified for the ionosphere pair
+    original_dict: dict
+        Parameters of the original InSAR runconfig; uses 'output_runw' (main
+        RUNW) and 'scratch_path' (main scratch)
+    runw_path: str
+        Ionosphere RUNW to write (unwrapping grid)
+    center_frequency: float, optional
+        Difference of the center frequencies (Hz) for differential
+        (first * conj(second)) interferograms; the RUNW center frequency if
+        None
+
+    Returns
+    -------
+    apriori_phase: callable or None
+        See offset_phase.deramp_phase_function
+    '''
+    return deramp_phase_function(
+        iono_insar_cfg, original_dict['output_runw'], runw_path,
+        center_frequency=center_frequency,
+        velocity_offsets_dir=os.path.join(original_dict['scratch_path'],
+                                          'velocity_offsets'))
 
 
 def run_insar_workflow(iono_insar_cfg, original_dict, out_paths,
@@ -1257,7 +1332,9 @@ def run_insar_workflow(iono_insar_cfg, original_dict, out_paths,
         filter_interferogram.run(iono_insar_cfg, out_paths['RIFG'])
 
     if 'RUNW' in out_paths and unwrapping_flag:
-        unwrap.run(iono_insar_cfg, out_paths['RIFG'], out_paths['RUNW'])
+        unwrap.run(iono_insar_cfg, out_paths['RIFG'], out_paths['RUNW'],
+                   apriori_phase=main_offsets_phase_function(
+                       iono_insar_cfg, original_dict, out_paths['RUNW']))
 
 
 def run(cfg: dict, runw_hdf5: str):

@@ -551,6 +551,30 @@ runconfig:
                     half_search_range: 16
                     half_search_azimuth: 16
 
+            # Per-window dense offsets or offsets product gross offsets from an
+            # ice velocity map. Overrides gross_offset_filepath of the enabled
+            # dense_offsets or offsets_product step and enables
+            # merge_gross_offset.
+            velocity_gross_offset:
+                enabled: False
+                # GDAL-readable x/y velocity rasters [map units/yr],
+                # e.g. 'NETCDF:"velocity.nc":VX'
+                vx:
+                vy:
+                # EPSG code of the velocity rasters
+                epsg: 3031
+                # Value marking missing velocity
+                nodata: 0.0
+                # Extra map area read around the scene footprint [map units]
+                read_margin: 20000
+                # Gap filling (inverse distance) max search distance [velocity
+                # pixels]; farther gaps are set to 0
+                fill_max_distance: 20
+                fill_smoothing_iterations: 0
+                # DEM block-averaging spacing [DEM map units] for the surface
+                # slope applied to displaced points
+                dem_smoothing: 1000
+
             rubbersheet:
                 # Path to dense offsets outputs (offsets, snr, covariance).
                 # Not required as InSAR workflow allows using intermediate outputs
@@ -695,6 +719,22 @@ runconfig:
                 # In this case the wrapped interferogram in RIFG will be unwrapped.
                 range_looks: 1
                 azimuth_looks: 1
+                # Deramp the wrapped interferogram before unwrapping (snaphu and whirlwind only):
+                # the interferometric phase predicted from slant range offsets (rubbersheet offsets
+                # or velocity map, see offset_source), 4 pi f / c * offset, is subtracted before
+                # unwrapping and added back after (unwrap.run apriori_phase).
+                # Removes the dense fringes of fast motion (e.g. glaciers) that unwrappers cannot
+                # follow. Applies to the main and the ionosphere unwrapping.
+                deramp:
+                    # Enable/disable deramping
+                    enabled: False
+                    # Standard deviation (offset-grid pixels) of the NaN-aware Gaussian filter
+                    # applied to the slant range offsets. 0 disables smoothing
+                    offset_smoothing_sigma: 2.0
+                    # Source of the slant range offsets: 'rubbersheet' (pixelOffsets) or
+                    # 'velocity' (velocity-map prediction of the velocity_offsets step;
+                    # requires velocity_gross_offset enabled)
+                    offset_source: rubbersheet
                 # Mask and fill wrapped InSAR phase prior to unwrapping
                 preprocess_wrapped_phase:
                     # Enable/disable preprocessing of wrapped igram

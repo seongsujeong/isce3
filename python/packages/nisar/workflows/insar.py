@@ -4,12 +4,13 @@ import shutil
 import pathlib
 
 import journal
+from nisar.workflows.offset_phase import deramp_phase_function
 from nisar.workflows import (bandpass_insar, baseline, crossmul, dense_offsets,
                              filter_interferogram, geo2rdr, geocode_insar,
                              h5_prep, ionosphere, offsets_product,
                              prepare_insar_hdf5, rdr2geo, resample_slc_v2,
                              rubbersheet, solid_earth_tides, split_spectrum,
-                             troposphere, unwrap)
+                             troposphere, unwrap, velocity_offsets)
 from nisar.workflows.geocode_insar import InputProduct
 from nisar.workflows.insar_runconfig import InsarRunConfig
 from nisar.workflows.persistence import Persistence
@@ -51,6 +52,10 @@ def run(cfg: dict, out_paths: dict, run_steps: dict):
 
     if run_steps['coarse_resample']:
         resample_slc_v2.run(cfg, 'coarse')
+
+    if (run_steps['velocity_offsets']) and \
+            (cfg['processing']['velocity_gross_offset']['enabled']):
+        velocity_offsets.run(cfg)
 
     if (run_steps['dense_offsets']) and \
             (cfg['processing']['dense_offsets']['enabled']):
@@ -101,7 +106,11 @@ def run(cfg: dict, out_paths: dict, run_steps: dict):
         filter_interferogram.run(cfg, out_paths['RIFG'])
 
     if run_steps['unwrap'] and 'RUNW' in out_paths:
-        unwrap.run(cfg, out_paths['RIFG'], out_paths['RUNW'])
+        # deramp with the RIFG offsets (copied to RUNW by unwrap.run)
+        apriori_phase = deramp_phase_function(cfg, out_paths['RIFG'],
+                                              out_paths['RUNW'])
+        unwrap.run(cfg, out_paths['RIFG'], out_paths['RUNW'],
+                   apriori_phase=apriori_phase)
 
     # Remove the 'fine_resample_slc','crossmul', 'coarse_resample_slc', 'unwrap' scratch folders
     for workflow_name in ['fine_resample_slc','coarse_resample_slc',
