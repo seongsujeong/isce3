@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 '''
-Per-window gross offsets for the offsets product from an ice velocity map.
+Per-window gross offsets for dense offsets or the offsets product from an ice
+velocity map.
 
-For each point P of the offsets product grid of the reference RSLC:
+For each point P of the offsets grid (dense offsets or offsets product) of
+the reference RSLC:
   1. rdr2geo  -> ground position P (x, y, h) in the velocity map projection
   2. P' = P + v(P) * dt, dt = secondary - reference acquisition time,
      h' = h + S(P') - S(P), S = smoothed DEM (surface features keep their
@@ -15,7 +17,7 @@ Outputs in <scratch>/velocity_offsets/freq<freq> (offsets grid geometry):
   velocity_offsets  ENVI float32, band 1 azimuth, band 2 range [RSLC pixels]
   velocity          ENVI float32, band 1 vx, band 2 vy [map units/yr]
   gross_offset.bin  int32 (azimuth, range) per window, the format of
-                    offsets_product `gross_offset_filepath`
+                    dense_offsets or offsets_product `gross_offset_filepath`
 '''
 import pathlib
 import time
@@ -251,7 +253,7 @@ def run_rdr2geo(radar_grid, orbit, ellipsoid, dem_raster, epsg, rdr2geo_cfg,
     Parameters
     ----------
     radar_grid: isce3.product.RadarGridParameters
-        Radar grid (offsets product grid)
+        Radar grid (dense offsets or offsets product grid)
     orbit: isce3.core.Orbit
         Reference orbit
     ellipsoid: isce3.core.Ellipsoid
@@ -293,7 +295,7 @@ def run_geo2rdr(radar_grid, orbit, ellipsoid, x, y, z, epsg, geo2rdr_cfg,
     Parameters
     ----------
     radar_grid: isce3.product.RadarGridParameters
-        Radar grid (offsets product grid)
+        Radar grid (dense offsets or offsets product grid)
     orbit: isce3.core.Orbit
         Reference orbit
     ellipsoid: isce3.core.Ellipsoid
@@ -347,7 +349,7 @@ def velocity_offsets(cfg, freq, outdir):
     Parameters
     ----------
     cfg: dict
-        InSAR runconfig (input RSLCs, DEM, orbit, offsets product,
+        InSAR runconfig (input RSLCs, DEM, orbit, offsets,
         velocity_gross_offset, rdr2geo and geo2rdr groups)
     freq: str
         Frequency ('A' or 'B')
@@ -384,12 +386,12 @@ def velocity_offsets(cfg, freq, outdir):
     dem_epsg = dem_raster.get_epsg()
     ellipsoid = isce3.core.make_projection(dem_epsg).ellipsoid
 
-    off_grid = get_offset_radar_grid(cfg, ref_grid)
-    info.log(f'offsets grid: {off_grid.length} x {off_grid.width}')
+    offset_grid = get_offset_radar_grid(cfg, ref_grid)
+    info.log(f'offsets grid: {offset_grid.length} x {offset_grid.width}')
 
     # 1. ground positions in the velocity map projection
     vel_epsg = vel_cfg['epsg']
-    x, y, z = run_rdr2geo(off_grid, orbit, ellipsoid, dem_raster, vel_epsg,
+    x, y, z = run_rdr2geo(offset_grid, orbit, ellipsoid, dem_raster, vel_epsg,
                           proc_cfg['rdr2geo'], outdir)
 
     # 2. velocity at P (gap filled) and displaced position P'
@@ -415,11 +417,11 @@ def velocity_offsets(cfg, freq, outdir):
     z_disp = z + np.nan_to_num(s_disp - s)
 
     # 3. radar offsets of P' w.r.t. P, converted to RSLC pixels
-    az_off, rg_off = run_geo2rdr(off_grid, orbit, ellipsoid, x_disp, y_disp,
+    az_off, rg_off = run_geo2rdr(offset_grid, orbit, ellipsoid, x_disp, y_disp,
                                  z_disp, vel_epsg, proc_cfg['geo2rdr'],
                                  outdir)
-    az_off *= ref_grid.prf / off_grid.prf
-    rg_off *= off_grid.range_pixel_spacing / ref_grid.range_pixel_spacing
+    az_off *= ref_grid.prf / offset_grid.prf
+    rg_off *= offset_grid.range_pixel_spacing / ref_grid.range_pixel_spacing
     return az_off, rg_off, vx, vy
 
 

@@ -551,8 +551,9 @@ runconfig:
                     half_search_range: 16
                     half_search_azimuth: 16
 
-            # Per-window offsets product gross offsets from an ice velocity
-            # map. Overrides offsets_product gross_offset_filepath and enables
+            # Per-window dense offsets or offsets product gross offsets from an
+            # ice velocity map. Overrides gross_offset_filepath of the enabled
+            # dense_offsets or offsets_product step and enables
             # merge_gross_offset.
             velocity_gross_offset:
                 enabled: False

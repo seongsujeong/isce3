@@ -53,13 +53,13 @@ def run(cfg: dict, out_paths: dict, run_steps: dict):
     if run_steps['coarse_resample']:
         resample_slc_v2.run(cfg, 'coarse')
 
-    if (run_steps['dense_offsets']) and \
-            (cfg['processing']['dense_offsets']['enabled']):
-        dense_offsets.run(cfg)
-
     if (run_steps['velocity_offsets']) and \
             (cfg['processing']['velocity_gross_offset']['enabled']):
         velocity_offsets.run(cfg)
+
+    if (run_steps['dense_offsets']) and \
+            (cfg['processing']['dense_offsets']['enabled']):
+        dense_offsets.run(cfg)
 
     if (run_steps['offsets_product']) and \
             (cfg['processing']['offsets_product']['enabled']):

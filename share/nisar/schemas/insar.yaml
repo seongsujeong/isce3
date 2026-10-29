@@ -423,8 +423,8 @@ dense_offsets_options:
 
 velocity_gross_offset_options:
     # Enable gross offsets predicted from a velocity map (default: False).
-    # Overrides offsets_product gross_offset_filepath and enables
-    # merge_gross_offset.
+    # Overrides the dense_offsets or offsets_product gross_offset_filepath and
+    # enables merge_gross_offset.
     enabled: bool(required=False)
 
     # GDAL-readable x and y velocity rasters, in map units per year

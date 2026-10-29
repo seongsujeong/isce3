@@ -79,19 +79,33 @@ class InsarRunConfig(Geo2rdrRunConfig):
                                 'switching off offsets product and run dense offsets')
             self.cfg['processing']['offsets_product']['enabled'] = False
 
-        # Velocity-based gross offsets feed the offsets product only. Ampcor
-        # offsets must include them for rubbersheet and the ROFF product.
+        # Velocity-based gross offsets feed the dense offsets or the offsets
+        # product (whichever runs). Ampcor offsets must include them for
+        # rubbersheet and the ROFF product.
         vel_cfg = self.cfg['processing']['velocity_gross_offset']
+        offsets_step = next((step for step in ['dense_offsets', 'offsets_product']
+                             if self.cfg['processing'][step]['enabled']), None)
         if vel_cfg['enabled']:
-            if not self.cfg['processing']['offsets_product']['enabled']:
-                err_str = 'velocity_gross_offset requires offsets_product enabled'
+            if offsets_step is None:
+                err_str = ('velocity_gross_offset requires dense_offsets or '
+                           'offsets_product enabled')
                 error_channel.log(err_str)
                 raise ValueError(err_str)
             if vel_cfg['vx'] is None or vel_cfg['vy'] is None:
                 err_str = 'velocity_gross_offset requires vx and vy rasters'
                 error_channel.log(err_str)
                 raise ValueError(err_str)
-            self.cfg['processing']['offsets_product']['merge_gross_offset'] = True
+            self.cfg['processing'][offsets_step]['merge_gross_offset'] = True
+
+        # Deramping with velocity-map offsets reads the velocity_offsets step
+        # output, which only runs with velocity_gross_offset
+        deramp_cfg = self.cfg['processing']['phase_unwrap']['deramp']
+        if deramp_cfg['enabled'] and deramp_cfg['offset_source'] == 'velocity' \
+                and not vel_cfg['enabled']:
+            err_str = ("phase_unwrap.deramp.offset_source 'velocity' requires "
+                       "velocity_gross_offset enabled")
+            error_channel.log(err_str)
+            raise ValueError(err_str)
 
         # If either dense_offsets and offsets_product are enabled and process
         # single co-pol for offsets enabled, check if co-pol values exist
