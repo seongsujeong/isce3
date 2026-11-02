@@ -141,8 +141,8 @@ def offsets_to_phase(offsets, zero_doppler_time, slant_range, out_time,
     return phase
 
 
-def deramp_phase_function(cfg, offsets_hdf5, runw_hdf5, center_frequency=None,
-                          velocity_offsets_dir=None):
+def deramp_phase_function(cfg, offsets_hdf5_path, runw_hdf5_path,
+                          center_frequency=None, velocity_offsets_dir=None):
     '''
     A priori phase function for unwrap.run when
     processing.phase_unwrap.deramp is enabled
@@ -154,14 +154,14 @@ def deramp_phase_function(cfg, offsets_hdf5, runw_hdf5, center_frequency=None,
     ----------
     cfg: dict
         InSAR runconfig
-    offsets_hdf5: str
+    offsets_hdf5_path: str
         RIFG or RUNW product with the (rubbersheet) slant range offsets
-    runw_hdf5: str
+    runw_hdf5_path: str
         RUNW product to write; defines the unwrapping grid and the center
         frequency
     center_frequency: float, optional
-        Center frequency (Hz) overriding that of `runw_hdf5`; the difference
-        of the center frequencies for differential interferograms
+        Center frequency (Hz) overriding that of `runw_hdf5_path`; the
+        difference of the center frequencies for differential interferograms
     velocity_offsets_dir: str, optional
         velocity_offsets scratch directory for offset_source 'velocity';
         defaults to <scratch_path>/velocity_offsets
@@ -184,14 +184,14 @@ def deramp_phase_function(cfg, offsets_hdf5, runw_hdf5, center_frequency=None,
 
     freq_pols = [(freq, pol) for freq, pols, _ in get_cfg_freq_pols(cfg) for pol in pols]
     grids, offsets = {}, {}
-    with HDF5OptimizedReader(name=runw_hdf5, mode='r', libver='latest', swmr=True) as h5:
+    with HDF5OptimizedReader(name=runw_hdf5_path, mode='r', libver='latest', swmr=True) as h5:
         swaths = RUNWGroupsPaths().SwathsPath
         for freq, _ in freq_pols:
             group = h5[f'{swaths}/frequency{freq}']
             fc = group['centerFrequency'][()] if center_frequency is None else center_frequency
             grids[freq] = (group['interferogram/zeroDopplerTime'][()],
                            group['interferogram/slantRange'][()], fc)
-    with HDF5OptimizedReader(name=offsets_hdf5, mode='r', libver='latest', swmr=True) as h5:
+    with HDF5OptimizedReader(name=offsets_hdf5_path, mode='r', libver='latest', swmr=True) as h5:
         for freq, pol in freq_pols:
             offsets[freq, pol] = read_slant_range_offsets(h5, freq, pol, velocity_offsets_dir)
 
