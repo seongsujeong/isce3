@@ -32,7 +32,8 @@ from nisar.workflows.yaml_argparse import YamlArgparse
 from osgeo import gdal
 
 
-def run(cfg: dict, input_hdf5: str, output_hdf5: str, apriori_phase=None):
+def run(cfg: dict, input_hdf5: str, output_hdf5: str,
+        apriori_unwrapped_phase=None):
     """
     run phase unwrapping
 
@@ -44,7 +45,7 @@ def run(cfg: dict, input_hdf5: str, output_hdf5: str, apriori_phase=None):
         File path to input HDF5 product (i.e., RIFG)
     output_hdf5: str
         File path to output HDF5 product (i.e., RUNW)
-    apriori_phase: callable, optional
+    apriori_unwrapped_phase: callable, optional
         Function (freq, pol) -> np.ndarray returning an a priori estimate of
         the unwrapped phase (radians) on the grid of the interferogram to
         unwrap, or None. It is subtracted from the wrapped interferogram
@@ -229,8 +230,9 @@ def run(cfg: dict, input_hdf5: str, output_hdf5: str, apriori_phase=None):
 
                 # A priori unwrapped phase, removed before and restored after
                 # unwrapping
-                prior_phase = None
-                if apriori_phase is not None and algorithm not in ["snaphu", "whirlwind"]:
+                prior_unwrapped_phase = None
+                if apriori_unwrapped_phase is not None and \
+                        algorithm not in ["snaphu", "whirlwind"]:
                     journal.warning("unwrap.run").log(
                         f"A priori phase is not supported for {algorithm}; ignored")
 
@@ -311,15 +313,16 @@ def run(cfg: dict, input_hdf5: str, output_hdf5: str, apriori_phase=None):
                     mask_array = open_raster(
                         algorithm_cfg['mask']) if algorithm_cfg['mask'] is not None else None
 
-                    if apriori_phase is not None:
-                        prior_phase = apriori_phase(freq, pol)
-                        if prior_phase.shape != igram_array.shape:
-                            err_str = (f"a priori phase shape {prior_phase.shape} differs "
+                    if apriori_unwrapped_phase is not None:
+                        prior_unwrapped_phase = apriori_unwrapped_phase(freq, pol)
+                        if prior_unwrapped_phase.shape != igram_array.shape:
+                            err_str = ("a priori phase shape "
+                                       f"{prior_unwrapped_phase.shape} differs "
                                        f"from interferogram shape {igram_array.shape}")
                             error_channel.log(err_str)
                             raise ValueError(err_str)
                         igram_array = (igram_array *
-                                       np.exp(-1j * prior_phase)).astype(np.complex64)
+                                       np.exp(-1j * prior_unwrapped_phase)).astype(np.complex64)
                         info_channel.log("Removed the a priori phase before unwrapping")
 
                     # Combine the snaphu and preprocessing mask
@@ -405,12 +408,12 @@ def run(cfg: dict, input_hdf5: str, output_hdf5: str, apriori_phase=None):
                     dst_h5[unw_path][:, :] = unwrapped_phase
 
                 # Restore the a priori phase (after bridging the residual phase)
-                if prior_phase is not None:
+                if prior_unwrapped_phase is not None:
                     unwrapped_phase = dst_h5[unw_path][()]
                     valid = np.abs(igram_array) > 0
                     if mask_array is not None:
                         valid &= mask_array.astype(bool)
-                    unwrapped_phase[valid] += prior_phase[valid]
+                    unwrapped_phase[valid] += prior_unwrapped_phase[valid]
                     dst_h5[unw_path][:, :] = unwrapped_phase
                     compute_stats_real_data(isce3.io.Raster(unw_raster_path), unw_dataset)
 
