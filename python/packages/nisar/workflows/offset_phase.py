@@ -1,6 +1,7 @@
 '''
 A priori unwrapped phase from slant range offsets, used to deramp the
-wrapped interferogram before phase unwrapping (see unwrap.run apriori_phase)
+wrapped interferogram before phase unwrapping
+(see unwrap.run apriori_unwrapped_phase)
 
 Fast motion (e.g. glacier flow) produces fringes too dense to unwrap. The
 interferometric phase predicted from slant range offsets, 4 pi f / c * offset
@@ -167,7 +168,7 @@ def deramp_phase_function(cfg, offsets_hdf5, runw_hdf5, center_frequency=None,
 
     Returns
     -------
-    apriori_phase: callable or None
+    apriori_unwrapped_phase: callable or None
         Function (freq, pol) -> phase (radians) on the unwrapping grid, or
         None when deramping is disabled
     '''
@@ -194,9 +195,9 @@ def deramp_phase_function(cfg, offsets_hdf5, runw_hdf5, center_frequency=None,
         for freq, pol in freq_pols:
             offsets[freq, pol] = read_slant_range_offsets(h5, freq, pol, velocity_offsets_dir)
 
-    def apriori_phase(freq, pol):
+    def apriori_unwrapped_phase(freq, pol):
         out_time, out_range, fc = grids[freq]
         return offsets_to_phase(*offsets[freq, pol], out_time, out_range, fc,
                                 deramp_cfg['offset_smoothing_sigma'])
 
-    return apriori_phase
+    return apriori_unwrapped_phase

@@ -114,10 +114,10 @@ def run(cfg: dict, out_paths: dict, run_steps: dict):
 
     if run_steps['unwrap'] and 'RUNW' in out_paths:
         # deramp with the RIFG offsets (copied to RUNW by unwrap.run)
-        apriori_phase = deramp_phase_function(cfg, out_paths['RIFG'],
+        apriori_unwrapped_phase = deramp_phase_function(cfg, out_paths['RIFG'],
                                               out_paths['RUNW'])
         unwrap.run(cfg, out_paths['RIFG'], out_paths['RUNW'],
-                   apriori_phase=apriori_phase)
+                   apriori_unwrapped_phase=apriori_unwrapped_phase)
 
     # Remove the 'fine_resample_slc','crossmul', 'coarse_resample_slc',
     # 'unwrap', 'reference_slc' scratch folders

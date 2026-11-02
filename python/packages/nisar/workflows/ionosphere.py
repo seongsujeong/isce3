@@ -1032,7 +1032,7 @@ def insar_ionosphere_pair(original_cfg, runw_hdf5):
                 center_frequency_high = get_center_frequency(phase_first, 'A')
                 center_frequency_low = get_center_frequency(phase_second, 'A')
                 unwrap.run(iono_insar_cfg, out_paths['RIFG'], out_paths['RUNW'],
-                           apriori_phase=main_offsets_phase_function(
+                           apriori_unwrapped_phase=main_offsets_phase_function(
                                iono_insar_cfg, partial_orig_cfg_dict,
                                out_paths['RUNW'],
                                center_frequency_high - center_frequency_low))
@@ -1178,7 +1178,7 @@ def insar_ionosphere_pair(original_cfg, runw_hdf5):
             center_frequency_main = get_center_frequency(phase_first, 'A')
             center_frequency_side = get_center_frequency(phase_second, 'B')
             unwrap.run(iono_insar_cfg, out_paths['RIFG'], out_paths['RUNW'],
-                       apriori_phase=main_offsets_phase_function(
+                       apriori_unwrapped_phase=main_offsets_phase_function(
                            iono_insar_cfg, partial_orig_cfg_dict,
                            out_paths['RUNW'],
                            center_frequency_main - center_frequency_side))
@@ -1231,7 +1231,7 @@ def get_center_frequency(product_path, freq):
 def main_offsets_phase_function(iono_insar_cfg, original_dict, runw_path,
                                 center_frequency=None):
     '''
-    A priori phase function (unwrap.run apriori_phase) for an ionosphere
+    A priori phase function (unwrap.run apriori_unwrapped_phase) for an ionosphere
     interferogram: ionosphere interferograms have no rubbersheet or velocity
     offsets of their own, so the main RUNW offsets and the main scratch
     velocity offsets are used
@@ -1252,7 +1252,7 @@ def main_offsets_phase_function(iono_insar_cfg, original_dict, runw_path,
 
     Returns
     -------
-    apriori_phase: callable or None
+    apriori_unwrapped_phase: callable or None
         See offset_phase.deramp_phase_function
     '''
     return deramp_phase_function(
@@ -1327,7 +1327,7 @@ def run_insar_workflow(iono_insar_cfg, original_dict, out_paths,
 
     if 'RUNW' in out_paths and unwrapping_flag:
         unwrap.run(iono_insar_cfg, out_paths['RIFG'], out_paths['RUNW'],
-                   apriori_phase=main_offsets_phase_function(
+                   apriori_unwrapped_phase=main_offsets_phase_function(
                        iono_insar_cfg, original_dict, out_paths['RUNW']))
 
 
