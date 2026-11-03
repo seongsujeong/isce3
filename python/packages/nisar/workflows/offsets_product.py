@@ -54,6 +54,10 @@ def run(cfg: dict, output_hdf5: str = None):
     if use_gpu:
         device = isce3.cuda.core.Device(cfg['worker']['gpu_id'])
         isce3.cuda.core.set_device(device)
+    else:
+        err_str = "Currently ISCE3 supports only GPU cross-correlation"
+        error_channel.log(err_str)
+        raise NotImplementedError(err_str)
 
     # Get the slant range and zero doppler time spacing
     ref_radar_grid = ref_slc.getRadarGrid()
@@ -126,13 +130,11 @@ def run(cfg: dict, output_hdf5: str = None):
                     raise ValueError(err_str)
 
                 for key in layer_keys:
-                    # Create and initialize Ampcor object
+                    # Create and initialize Ampcor object (only GPU for now)
                     if use_gpu:
                         ampcor = isce3.cuda.matchtemplate.PyCuAmpcor()
                         ampcor.deviceID = cfg['worker']['gpu_id']
                         ampcor.useMmap = 1
-                    else:
-                        ampcor = isce3.matchtemplate.PyCPUAmpcor()
 
                     # Set parameters related to reference/secondary RSLC
                     ampcor.referenceImageName = str(out_dir / 'reference')
@@ -328,7 +330,7 @@ def clip_gross_offsets(ampcor_obj, gross_azimuth, gross_range):
 
     Parameters
     ----------
-    ampcor_obj: isce3.matchtemplate.PyCPUAmpcor or PyCuAmpcor
+    ampcor_obj: isce3.cuda.matchtemplate.PyCuAmpcor
         Ampcor object with windows, search ranges, skips, start pixels and
         image sizes already set
     gross_azimuth, gross_range: np.ndarray
