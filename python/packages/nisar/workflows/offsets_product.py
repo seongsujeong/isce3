@@ -13,6 +13,8 @@ from nisar.workflows.dense_offsets import create_empty_dataset
 from nisar.workflows.helpers import (copy_raster, get_cfg_freq_pols,
                                      get_ground_track_velocity_product)
 from nisar.workflows.offsets_product_runconfig import OffsetsProductRunConfig
+from nisar.workflows.velocity_offsets import (clip_gross_offsets,
+                                              gross_offset_path)
 from nisar.products.insar.product_paths import ROFFGroupsPaths
 from nisar.workflows.yaml_argparse import YamlArgparse
 from osgeo import gdal
@@ -91,6 +93,12 @@ def run(cfg: dict, output_hdf5: str = None):
         for freq, _, pol_list in get_cfg_freq_pols(cfg):
             off_scratch = scratch_path / f'offsets_product/freq{freq}'
 
+            # Per-frequency velocity-based gross offsets, if enabled
+            freq_params = offs_params
+            if cfg['processing']['velocity_gross_offset']['enabled']:
+                freq_params = {**offs_params, 'gross_offset_filepath':
+                               str(gross_offset_path(scratch_path, freq))}
+
             for pol in pol_list:
                 out_dir = off_scratch / pol
                 out_dir.mkdir(parents=True, exist_ok=True)
@@ -149,7 +157,7 @@ def run(cfg: dict, output_hdf5: str = None):
                             'half_search_range']
                     ampcor.halfSearchRangeDown = lay_cfg[
                             'half_search_azimuth']
-                    ampcor = set_ampcor_params(offs_params, ampcor)
+                    ampcor = set_ampcor_params(freq_params, ampcor)
 
                     # Create empty datasets to store Ampcor results
                     ampcor.offsetImageName = str(
@@ -304,8 +312,8 @@ def set_ampcor_params(cfg, ampcor_obj):
             error_channel.log(err_str)
             raise RuntimeError(err_str)
         gross_offset = gross_offset.reshape(windows_number, 2)
-        gross_azimuth = gross_offset[:, 0]
-        gross_range = gross_offset[:, 1]
+        gross_azimuth, gross_range = clip_gross_offsets(
+            ampcor_obj, gross_offset[:, 0], gross_offset[:, 1])
         ampcor_obj.setVaryingGrossOffset(gross_azimuth, gross_range)
     ampcor_obj.mergeGrossOffset = cfg['merge_gross_offset']
 
@@ -313,6 +321,7 @@ def set_ampcor_params(cfg, ampcor_obj):
     ampcor_obj.checkPixelInImageRange()
 
     return ampcor_obj
+
 
 
 def get_offsets_shape(cfg, slc_lines, slc_cols):

@@ -11,6 +11,8 @@ import isce3
 from osgeo import gdal
 from nisar.products.readers import SLC
 from nisar.workflows.helpers import copy_raster, get_cfg_freq_pols
+from nisar.workflows.velocity_offsets import (clip_gross_offsets,
+                                              gross_offset_path)
 from nisar.workflows.yaml_argparse import YamlArgparse
 from nisar.workflows.dense_offsets_runconfig import \
     DenseOffsetsRunConfig
@@ -60,6 +62,12 @@ def run(cfg: dict):
     for freq, _, pol_list in get_cfg_freq_pols(cfg):
         offset_scratch = scratch_path / f'dense_offsets/freq{freq}'
 
+        # Per-frequency velocity-based gross offsets, if enabled
+        freq_params = offset_params
+        if cfg['processing']['velocity_gross_offset']['enabled']:
+            freq_params = {**offset_params, 'gross_offset_filepath':
+                           str(gross_offset_path(scratch_path, freq))}
+
         for pol in pol_list:
             # Set output directory and output filenames
             out_dir = offset_scratch / pol
@@ -93,7 +101,7 @@ def run(cfg: dict):
             ampcor.secondaryImageWidth = sec_raster.width
 
             # Setup other dense offsets parameters
-            ampcor = set_optional_attributes(ampcor, offset_params,
+            ampcor = set_optional_attributes(ampcor, freq_params,
                                              ref_raster.length,
                                              ref_raster.width)
             # Configure output filenames. It is assumed output are flat binaries (e.g. ENVI files)
@@ -267,8 +275,8 @@ def set_optional_attributes(ampcor_obj, cfg, length, width):
             error_channel.log(err_str)
             raise RuntimeError(err_str)
         gross_offset = gross_offset.reshape(windows_number, 2)
-        gross_azimuth = gross_offset[:, 0]
-        gross_range = gross_offset[:, 1]
+        gross_azimuth, gross_range = clip_gross_offsets(
+            ampcor_obj, gross_offset[:, 0], gross_offset[:, 1])
         ampcor_obj.setVaryingGrossOffset(gross_azimuth, gross_range)
 
     # If True, add constant slant range/azimuth gross offsets to

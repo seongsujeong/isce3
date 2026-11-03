@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 
+import isce3
 import journal
+import numpy as np
 import pytest
 
-from nisar.workflows.offsets_product import get_start_pixels
+from nisar.workflows.offsets_product import (clip_gross_offsets,
+                                             get_start_pixels)
 
 
 def make_cfg(windows, start=None):
@@ -43,3 +46,31 @@ def test_missing_window_size(window_azimuth, window_range):
     with pytest.raises(journal.ApplicationError):
         get_start_pixels(make_cfg((32, 64, 128)), window_azimuth,
                          window_range)
+
+
+def test_clip_gross_offsets():
+    '''Secondary search windows must stay inside the secondary image'''
+    amp = isce3.matchtemplate.PyCPUAmpcor()
+    amp.windowSizeHeight, amp.windowSizeWidth = 32, 64
+    amp.halfSearchRangeDown, amp.halfSearchRangeAcross = 16, 8
+    amp.skipSampleDown, amp.skipSampleAcross = 10, 20
+    amp.referenceStartPixelDownStatic = 20
+    amp.referenceStartPixelAcrossStatic = 10
+    amp.numberWindowDown, amp.numberWindowAcross = 5, 4
+    amp.secondaryImageHeight, amp.secondaryImageWidth = 120, 200
+
+    n = 5 * 4
+    for big in (-1000, 0, 3, 1000):
+        az, rg = clip_gross_offsets(amp, np.full(n, big, np.int32),
+                                    np.full(n, big, np.int32))
+        ref_az = (20 + 10 * np.arange(5))[:, None] + np.zeros((5, 4), int)
+        ref_rg = (10 + 20 * np.arange(4))[None, :] + np.zeros((5, 4), int)
+        sec_az = ref_az.ravel() + az - 16
+        sec_rg = ref_rg.ravel() + rg - 8
+        assert sec_az.min() >= 0 and sec_rg.min() >= 0
+        assert (sec_az + 32 + 2 * 16).max() < 120
+        assert (sec_rg + 64 + 2 * 8).max() < 200
+    # offsets that already fit are unchanged
+    az, rg = clip_gross_offsets(amp, np.full(n, 3, np.int32),
+                                np.full(n, -2, np.int32))
+    assert (az == 3).all() and (rg == -2).all()
