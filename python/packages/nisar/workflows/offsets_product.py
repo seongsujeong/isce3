@@ -14,7 +14,8 @@ from nisar.workflows.helpers import (copy_raster, get_cfg_freq_pols,
                                      reference_slc_copy,
                                      get_ground_track_velocity_product)
 from nisar.workflows.offsets_product_runconfig import OffsetsProductRunConfig
-from nisar.workflows.velocity_offsets import (flow_direction_path,
+from nisar.workflows.velocity_offsets import (clip_gross_offsets,
+                                              flow_direction_path,
                                               gross_offset_path)
 from nisar.products.insar.product_paths import ROFFGroupsPaths
 from nisar.workflows.yaml_argparse import YamlArgparse
@@ -353,86 +354,6 @@ def set_ampcor_params(cfg, ampcor_obj):
     ampcor_obj.checkPixelInImageRange()
 
     return ampcor_obj
-
-
-def clip_gross_offsets(ampcor_obj, gross_azimuth, gross_range):
-    '''
-    Clip per-window gross offsets so that every secondary search window lies
-    inside the secondary image (ampcor does not check it and would read
-    outside the image)
-
-    Parameters
-    ----------
-    ampcor_obj: isce3.matchtemplate.PyCPUAmpcor or PyCuAmpcor
-        Ampcor object with windows, search ranges, skips, start pixels and
-        image sizes already set
-    gross_azimuth, gross_range: np.ndarray
-        Flattened per-window gross offsets (row-major, windows down x across)
-
-    Returns
-    -------
-    gross_azimuth, gross_range: np.ndarray
-        Clipped flattened gross offsets (int32)
-    '''
-    def clip(gross, start, skip, n_windows, half_search, window, size,
-             n_other, axis):
-        '''
-        Clip gross offsets along one axis
-
-        Parameters
-        ----------
-        gross: np.ndarray
-            Flattened gross offsets along this axis
-        start: int
-            Reference start pixel of the first window
-        skip: int
-            Window skip (pixels)
-        n_windows: int
-            Number of windows along this axis
-        half_search: int
-            Half search range (pixels)
-        window: int
-            Window size (pixels)
-        size: int
-            Secondary image size along this axis (pixels)
-        n_other: int
-            Number of windows along the other axis
-        axis: int
-            0 for azimuth (down), 1 for range (across)
-
-        Returns
-        -------
-        clipped: np.ndarray
-            Gross offsets of shape (n_down, n_across)
-        '''
-        # reference start pixel of each window along this axis
-        ref = start + skip * np.arange(n_windows)
-        ref = np.expand_dims(ref, axis=1 - axis)
-        # secondary window [ref + g - half, ref + g + half + window) must
-        # stay within [0, size - 1)
-        low = half_search - ref
-        high = size - 1 - ref - half_search - window
-        shape = (n_windows, n_other) if axis == 0 else (n_other, n_windows)
-        return np.clip(gross.reshape(shape), low, high)
-
-    n_down = ampcor_obj.numberWindowDown
-    n_across = ampcor_obj.numberWindowAcross
-    az = clip(gross_azimuth, ampcor_obj.referenceStartPixelDownStatic,
-              ampcor_obj.skipSampleDown, n_down,
-              ampcor_obj.halfSearchRangeDown, ampcor_obj.windowSizeHeight,
-              ampcor_obj.secondaryImageHeight, n_across, 0)
-    rg = clip(gross_range, ampcor_obj.referenceStartPixelAcrossStatic,
-              ampcor_obj.skipSampleAcross, n_across,
-              ampcor_obj.halfSearchRangeAcross, ampcor_obj.windowSizeWidth,
-              ampcor_obj.secondaryImageWidth, n_down, 1)
-
-    n_clipped = np.count_nonzero((az.ravel() != gross_azimuth) |
-                                 (rg.ravel() != gross_range))
-    if n_clipped:
-        journal.warning('offsets_product.clip_gross_offsets').log(
-            f'{n_clipped} of {gross_azimuth.size} gross offsets clipped to '
-            'keep search windows inside the secondary image')
-    return az.ravel().astype(np.int32), rg.ravel().astype(np.int32)
 
 
 def get_offsets_shape(cfg, slc_lines, slc_cols):
